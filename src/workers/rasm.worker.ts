@@ -109,10 +109,17 @@ SAVE 'PROGRAM.BIN',__cpc_playground_start,__cpc_playground_end-__cpc_playground_
 }
 
 function prepareSnaSource(source: string): string {
-  return `BUILDSNA
-BANKSET 0
-${source}
-`
+  const hasBuildsna = /^\s*BUILDSNA\b/im.test(source)
+  const hasBankset = /^\s*BANKSET\b/im.test(source)
+
+  let result = source
+  if (!hasBankset) {
+    result = `BANKSET 0\n${result}`
+  }
+  if (!hasBuildsna) {
+    result = `BUILDSNA\n${result}`
+  }
+  return result
 }
 
 interface CompileResult {
