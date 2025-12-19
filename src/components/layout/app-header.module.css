@@ -41,6 +41,12 @@
   opacity: 1;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
 .srOnly {
   position: absolute;
   width: 1px;
