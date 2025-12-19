@@ -9,6 +9,11 @@ export function getEmulatorFocus() {
   return emulatorHasFocus
 }
 
+// Get CPCEC Module reference
+function getCpcecModule(): any {
+  return (globalThis as any).Module
+}
+
 export function EmulatorCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -47,6 +52,71 @@ export function EmulatorCanvas() {
         blockKeyboardForCPCEC,
         false
       )
+    }
+  }, [])
+
+  // Handle special CPC keyboard mappings when emulator has focus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!emulatorHasFocus) return
+
+      const Module = getCpcecModule()
+      if (!Module) return
+
+      // Map Option/Alt key to CPC COPY (0x09)
+      if (
+        e.altKey &&
+        !e.shiftKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        (e.code === 'AltLeft' || e.code === 'AltRight')
+      ) {
+        e.preventDefault()
+        if (Module._em_key_press) {
+          Module._em_key_press(0x09) // CPC COPY
+        }
+      }
+
+      // Map Shift+0-9 to CPC function keys F0-F9
+      // Calls C functions em_press_fn / em_release_fn directly
+      if (e.shiftKey && e.code && e.code.startsWith('Digit')) {
+        e.preventDefault()
+        e.stopPropagation()
+        const fnNum = parseInt(e.code.charAt(5)) // 'Digit0' -> 0, etc.
+        if (Module._em_press_fn) {
+          Module._em_press_fn(fnNum)
+        }
+      }
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!emulatorHasFocus) return
+
+      const Module = getCpcecModule()
+      if (!Module) return
+
+      // Release CPC COPY when Option/Alt is released
+      if (e.code === 'AltLeft' || e.code === 'AltRight') {
+        if (Module._em_key_release) {
+          Module._em_key_release(0x09) // CPC COPY
+        }
+      }
+
+      // Handle Shift+number key release for CPC function keys
+      if (e.code && e.code.startsWith('Digit')) {
+        const fnNum = parseInt(e.code.charAt(5))
+        if (Module._em_release_fn) {
+          Module._em_release_fn(fnNum)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keyup', handleKeyUp)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('keyup', handleKeyUp)
     }
   }, [])
 
