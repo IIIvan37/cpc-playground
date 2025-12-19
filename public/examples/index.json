@@ -1,4 +1,7 @@
 [
   { "name": "Hello World", "file": "hello-world.asm" },
-  { "name": "Serval Classic Overscan", "file": "serval-classic-overscan.asm" }
+  {
+    "name": "Serval Classic Raster Overscan",
+    "file": "serval-classic-raster-overscan.asm"
+  }
 ]

@@ -10,8 +10,8 @@
 .main {
   flex: 1;
   display: flex;
-  gap: var(--spacing-md);
-  padding: 0 var(--spacing-md);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
   overflow: hidden;
 }
 
@@ -39,5 +39,5 @@
 }
 
 .footer {
-  padding: 0 var(--spacing-md) var(--spacing-md);
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
 }

@@ -1,7 +1,7 @@
 import { useSetAtom } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
+import { Select, SelectItem } from '@/components/ui/select'
 import { codeAtom } from '@/store'
-import styles from './examples-menu.module.css'
 
 interface Example {
   name: string
@@ -10,7 +10,7 @@ interface Example {
 
 export function ExamplesMenu() {
   const [examples, setExamples] = useState<Example[]>([])
-  const [isOpen, setIsOpen] = useState(false)
+  const [selectedValue, setSelectedValue] = useState('')
   const setCode = useSetAtom(codeAtom)
 
   useEffect(() => {
@@ -20,18 +20,21 @@ export function ExamplesMenu() {
       .catch(console.error)
   }, [])
 
-  const loadExample = useCallback(
-    async (example: Example) => {
+  const handleValueChange = useCallback(
+    async (value: string) => {
+      const example = examples.find((e) => e.file === value)
+      if (!example) return
+
       try {
         const response = await fetch(`/examples/${example.file}`)
         const code = await response.text()
         setCode(code)
-        setIsOpen(false)
+        setSelectedValue(value)
       } catch (error) {
         console.error('Failed to load example:', error)
       }
     },
-    [setCode]
+    [examples, setCode]
   )
 
   if (examples.length === 0) {
@@ -39,28 +42,16 @@ export function ExamplesMenu() {
   }
 
   return (
-    <div className={styles.container}>
-      <button
-        type='button'
-        className={styles.trigger}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        📁 Examples
-      </button>
-      {isOpen && (
-        <div className={styles.dropdown}>
-          {examples.map((example) => (
-            <button
-              key={example.file}
-              type='button'
-              className={styles.item}
-              onClick={() => loadExample(example)}
-            >
-              {example.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <Select
+      value={selectedValue}
+      onValueChange={handleValueChange}
+      placeholder='Examples'
+    >
+      {examples.map((example) => (
+        <SelectItem key={example.file} value={example.file}>
+          {example.name}
+        </SelectItem>
+      ))}
+    </Select>
   )
 }

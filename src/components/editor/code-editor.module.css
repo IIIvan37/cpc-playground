@@ -11,8 +11,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--color-border);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: rgba(42, 58, 42, 0.5);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -36,19 +36,19 @@
 }
 
 .lineNumbersWrapper {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  min-width: 48px;
+  min-width: 52px;
 }
 
 .lineNumbers {
   display: flex;
   flex-direction: column;
-  padding-top: 16px; /* Match textarea padding exactly */
+  padding-top: 16px;
   color: var(--color-disabled-text);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
-  line-height: 21px; /* Exact line height */
+  line-height: 21px;
   text-align: right;
   user-select: none;
 }
@@ -84,7 +84,6 @@
   overflow: hidden;
 }
 
-/* Error highlights container */
 .errorHighlights {
   position: absolute;
   top: 0;
@@ -95,13 +94,12 @@
   overflow: hidden;
 }
 
-/* Individual error line highlight */
 .errorHighlight {
   position: absolute;
   left: 0;
   right: 0;
   height: 21px;
-  background-color: rgba(255, 80, 80, 0.2);
+  background-color: rgba(255, 80, 80, 0.15);
   border-left: 3px solid var(--color-error);
 }
 
@@ -113,12 +111,12 @@
   bottom: 0;
   width: 100%;
   height: 100%;
-  padding: 16px; /* Fixed pixel value for consistency */
+  padding: 16px;
   background-color: transparent;
   color: var(--color-foreground);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
-  line-height: 21px; /* Exact line height */
+  line-height: 21px;
   border: none;
   resize: none;
   outline: none;

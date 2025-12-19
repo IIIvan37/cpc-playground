@@ -2,12 +2,12 @@ export const theme = {
   colors: {
     dark: '#000000',
     light: '#00FFFF',
-    background: '#000000',
+    background: '#0a0a0a',
     foreground: '#A8B5A8',
     accent: '#6B9E6B',
     accentHover: '#5A8A5A',
     accentActive: '#4A7A4A',
-    border: '#3A4A3A',
+    border: '#2a3a2a',
     error: '#D97373',
     hover: {
       primary: '#5A8A5A',
@@ -41,19 +41,19 @@ export const theme = {
     }
   },
   spacing: {
-    xs: '0.29rem',
-    sm: '0.57rem',
-    md: '0.86rem',
-    lg: '1.14rem',
-    xl: '1.71rem'
+    xs: '0.5rem',
+    sm: '0.75rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem'
   },
   radius: {
     none: '0rem',
-    sm: '0.14rem',
-    md: '0.29rem'
+    sm: '0.25rem',
+    md: '0.5rem'
   },
   shadow: {
-    glow: '0 0 0.29rem rgba(107, 158, 107, 0.5)',
-    inner: 'inset 0 0 0.14rem rgba(107, 158, 107, 0.3)'
+    glow: '0 0 0.5rem rgba(107, 158, 107, 0.3)',
+    inner: 'inset 0 0 0.25rem rgba(107, 158, 107, 0.2)'
   }
 }

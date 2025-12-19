@@ -2,14 +2,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--color-border);
 }
 
 .headerContent {
   display: flex;
   align-items: baseline;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
 }
 
 .title {
