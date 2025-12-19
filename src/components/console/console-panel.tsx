@@ -1,3 +1,4 @@
+import Ansi from 'ansi-to-react'
 import { useAtomValue, useSetAtom } from 'jotai'
 import Button from '@/components/ui/button/button'
 import { clearConsoleAtom, consoleMessagesAtom } from '@/store'
@@ -21,7 +22,9 @@ export function ConsolePanel() {
             <span className={styles.timestamp}>
               {msg.timestamp.toLocaleTimeString()}
             </span>
-            <span className={styles.text}>{msg.text}</span>
+            <span className={styles.text}>
+              <Ansi>{msg.text}</Ansi>
+            </span>
           </div>
         ))}
       </div>
