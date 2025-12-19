@@ -2,6 +2,7 @@ import { useAtomValue } from 'jotai'
 import { ConsolePanel } from '@/components/console/console-panel'
 import { CodeEditor } from '@/components/editor/code-editor'
 import { EmulatorCanvas } from '@/components/emulator/emulator-canvas'
+import { useSharedCode } from '@/hooks/use-shared-code'
 import { viewModeAtom } from '@/store'
 import { AppHeader } from './app-header'
 import styles from './main-layout.module.css'
@@ -9,6 +10,9 @@ import { Toolbar } from './toolbar'
 
 export function MainLayout() {
   const viewMode = useAtomValue(viewModeAtom)
+
+  // Load shared code from URL if present
+  useSharedCode()
 
   return (
     <div className={styles.layout}>

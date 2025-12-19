@@ -5,6 +5,15 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  directory = "netlify/functions"
+
+# API routes
+[[redirects]]
+  from = "/api/share"
+  to = "/.netlify/functions/share"
+  status = 200
+
 # Proxy CDN requests to avoid CORS issues
 [[redirects]]
   from = "/cdn/*"
