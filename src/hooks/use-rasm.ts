@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { OutputFormat } from '@/store'
 import {
   addConsoleMessageAtom,
+  clearErrorLinesAtom,
   compilationErrorAtom,
   compilationOutputAtom,
   compilationStatusAtom
@@ -33,6 +34,7 @@ export function useRasm() {
   const setCompilationError = useSetAtom(compilationErrorAtom)
   const setCompilationOutput = useSetAtom(compilationOutputAtom)
   const addConsoleMessage = useSetAtom(addConsoleMessageAtom)
+  const clearErrorLines = useSetAtom(clearErrorLinesAtom)
 
   const pendingRef = useRef<Map<number, (result: CompileResponse) => void>>(
     new Map()
@@ -68,6 +70,7 @@ export function useRasm() {
     ): Promise<Uint8Array | null> => {
       setCompilationStatus('compiling')
       setCompilationError(null)
+      clearErrorLines() // Clear previous error highlights
       addConsoleMessage({
         type: 'info',
         text: `Compiling to ${outputFormat.toUpperCase()}...`
@@ -91,7 +94,7 @@ export function useRasm() {
           }
         }
 
-        // Display stderr lines
+        // Display stderr lines (these will add to errorLinesAtom via addConsoleMessageAtom)
         if (result.stderr && result.stderr.length > 0) {
           for (const line of result.stderr) {
             if (line.trim()) {
@@ -134,7 +137,8 @@ export function useRasm() {
       setCompilationStatus,
       setCompilationError,
       setCompilationOutput,
-      addConsoleMessage
+      addConsoleMessage,
+      clearErrorLines
     ]
   )
 

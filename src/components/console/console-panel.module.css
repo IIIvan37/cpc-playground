@@ -62,3 +62,21 @@
 .warning {
   color: #f0ad4e;
 }
+
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.clickable:hover {
+  text-decoration-style: solid;
+  opacity: 0.8;
+}
+
+.lineHint {
+  opacity: 0.6;
+  font-style: italic;
+  margin-left: 4px;
+}
