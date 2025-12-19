@@ -144,7 +144,7 @@ async function compile(
     const sourceFile = '/input.asm'
     FS.writeFile(sourceFile, finalSource)
 
-    const args: string[] = [sourceFile, '-o', '/output', '-ns']
+    const args: string[] = [sourceFile, '-o', '/output']
 
     console.log('[RASM Worker] Running RASM with args:', args)
     const exitCode = rasmModule.callMain(args)
