@@ -3,8 +3,8 @@
 
 declare const self: DedicatedWorkerGlobalScope
 
-const RASM_WASM_URL = 'https://cpcec-web.iiivan.org/rasm.wasm'
-const RASM_JS_URL = 'https://cpcec-web.iiivan.org/rasm.js'
+const RASM_WASM_URL = '/cdn/rasm.wasm'
+const RASM_JS_URL = '/cdn/rasm.js'
 
 interface RasmModule {
   callMain: (args: string[]) => number

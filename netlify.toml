@@ -5,6 +5,13 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Proxy CDN requests to avoid CORS issues
+[[redirects]]
+  from = "/cdn/*"
+  to = "https://cpcec-web.iiivan.org/:splat"
+  status = 200
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]

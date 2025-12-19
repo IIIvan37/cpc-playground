@@ -46,7 +46,9 @@ export function CodeEditor() {
           }, 0)
         } else {
           // Single line: insert spaces
-          const newValue = `${value.substring(0, start)}    ${value.substring(end)}`
+          const newValue = `${value.substring(0, start)}    ${value.substring(
+            end
+          )}`
           setCode(newValue)
           setTimeout(() => {
             textarea.selectionStart = textarea.selectionEnd = start + 4
@@ -101,7 +103,9 @@ export function CodeEditor() {
             return (
               <div
                 key={lineNum}
-                className={`${styles.lineNumber} ${hasError ? styles.error : ''}`}
+                className={`${styles.lineNumber} ${
+                  hasError ? styles.error : ''
+                }`}
               >
                 {lineNum}
               </div>

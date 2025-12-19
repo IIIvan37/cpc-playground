@@ -6,7 +6,7 @@ import {
   emulatorRunningAtom
 } from '@/store'
 
-const CPCEC_BASE_URL = 'https://cpcec-web.iiivan.org'
+const CPCEC_BASE_URL = '/cdn'
 
 // Singleton for CPCEC module - prevents multiple loads
 let cpcecModule: any = null
