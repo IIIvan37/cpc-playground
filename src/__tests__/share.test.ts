@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import handler, { EXPIRY_DAYS, generateId, type ShareData } from './share'
+import handler, {
+  EXPIRY_DAYS,
+  generateId,
+  type ShareData
+} from '../../netlify/functions/share'
 
 // Mock @netlify/blobs
 const mockStore = {
