@@ -27,13 +27,14 @@ export interface ShareData {
   expiresAt: number
 }
 
-export default async (request: Request, _context: Context) => {
-  const store = getStore(STORE_NAME)
-
-  // Handle preflight
+export default async (request: Request, context: Context) => {
+  // Handle preflight first (no store needed)
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
+
+  // Get store - in Netlify Functions, this should auto-detect credentials
+  const store = getStore(STORE_NAME)
 
   // POST - Create a new share
   if (request.method === 'POST') {
@@ -67,16 +68,26 @@ export default async (request: Request, _context: Context) => {
 
       await store.setJSON(id, data)
 
+      // Debug: verify it was saved
+      const verify = await store.get(id)
+      console.log('Saved ID:', id, 'Verify exists:', !!verify)
+
       return new Response(JSON.stringify({ id }), {
         status: 201,
         headers: { 'Content-Type': 'application/json', ...corsHeaders }
       })
     } catch (error) {
       console.error('Error creating share:', error)
-      return new Response(JSON.stringify({ error: 'Failed to create share' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      })
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to create share',
+          details: String(error)
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
+      )
     }
   }
 
@@ -93,7 +104,9 @@ export default async (request: Request, _context: Context) => {
     }
 
     try {
+      console.log('Looking for ID:', id)
       const data = (await store.get(id, { type: 'json' })) as ShareData | null
+      console.log('Found data:', !!data)
 
       if (!data) {
         return new Response(JSON.stringify({ error: 'Share not found' }), {
@@ -118,7 +131,10 @@ export default async (request: Request, _context: Context) => {
     } catch (error) {
       console.error('Error retrieving share:', error)
       return new Response(
-        JSON.stringify({ error: 'Failed to retrieve share' }),
+        JSON.stringify({
+          error: 'Failed to retrieve share',
+          details: String(error)
+        }),
         {
           status: 500,
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
