@@ -138,10 +138,14 @@ async function compile(
   stdoutLines = []
   stderrLines = []
 
+  // Keep reference to FS for recovery after crash
+  let FS: RasmModule['FS'] | null = null
+  const outputFile = outputFormat === 'dsk' ? '/output.dsk' : '/output.sna'
+
   try {
     // Create a fresh module for each compilation
     const rasmModule = await createFreshRasmModule()
-    const FS = rasmModule.FS
+    FS = rasmModule.FS
 
     const finalSource =
       outputFormat === 'sna'
@@ -166,8 +170,6 @@ async function compile(
         stderr: stderrLines
       }
     }
-
-    const outputFile = outputFormat === 'dsk' ? '/output.dsk' : '/output.sna'
 
     let binary: Uint8Array
     try {
@@ -217,6 +219,40 @@ async function compile(
     return { success: true, binary, stdout: stdoutLines, stderr: stderrLines }
   } catch (e) {
     console.error('[RASM Worker] Compile error:', e)
+
+    // RASM may crash after writing the output file (e.g., during symbol file generation)
+    // Try to recover the output file if it was written before the crash
+    if (FS) {
+      try {
+        console.log(
+          '[RASM Worker] Attempting to recover output file after crash...'
+        )
+        const files = FS.readdir('/')
+        console.log('[RASM Worker] Files available after crash:', files)
+
+        if (
+          files.includes(outputFile.replace('/', '')) ||
+          files.includes(outputFile)
+        ) {
+          const binary = FS.readFile(outputFile) as Uint8Array
+          if (binary && binary.length > 0) {
+            console.log(
+              '[RASM Worker] Successfully recovered output file, size:',
+              binary.length
+            )
+            return {
+              success: true,
+              binary,
+              stdout: stdoutLines,
+              stderr: stderrLines
+            }
+          }
+        }
+      } catch (recoveryError) {
+        console.error('[RASM Worker] Recovery failed:', recoveryError)
+      }
+    }
+
     return {
       success: false,
       error: e instanceof Error ? e.message : String(e),
