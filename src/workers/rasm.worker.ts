@@ -25,70 +25,75 @@ interface RasmModule {
   HEAPU8: Uint8Array
 }
 
-let rasmModule: RasmModule | null = null
-let rasmReady = false
-let initPromise: Promise<void> | null = null
+// Cached resources
+let wasmBinary: ArrayBuffer | null = null
+let createRASM:
+  | ((config: Record<string, unknown>) => Promise<RasmModule>)
+  | null = null
 
 // Captured output during compilation
 let stdoutLines: string[] = []
 let stderrLines: string[] = []
 
-async function initRasm(): Promise<void> {
-  if (rasmModule) return
-  if (initPromise) return initPromise
+async function loadResources(): Promise<void> {
+  if (wasmBinary && createRASM) return
 
-  initPromise = (async () => {
-    console.log('[RASM Worker] Fetching WASM...')
-    const wasmResponse = await fetch(RASM_WASM_URL)
-    const wasmBinary = await wasmResponse.arrayBuffer()
-    console.log('[RASM Worker] WASM fetched, size:', wasmBinary.byteLength)
+  console.log('[RASM Worker] Fetching WASM...')
+  const wasmResponse = await fetch(RASM_WASM_URL)
+  wasmBinary = await wasmResponse.arrayBuffer()
+  console.log('[RASM Worker] WASM fetched, size:', wasmBinary.byteLength)
 
-    console.log('[RASM Worker] Fetching rasm.js...')
-    const rasmJsResponse = await fetch(RASM_JS_URL)
-    const rasmJsCode = await rasmJsResponse.text()
-    console.log('[RASM Worker] rasm.js fetched, length:', rasmJsCode.length)
+  console.log('[RASM Worker] Fetching rasm.js...')
+  const rasmJsResponse = await fetch(RASM_JS_URL)
+  const rasmJsCode = await rasmJsResponse.text()
+  console.log('[RASM Worker] rasm.js fetched, length:', rasmJsCode.length)
 
-    console.log('[RASM Worker] Executing rasm.js to get factory...')
-    // biome-ignore lint/security/noGlobalEval: Required to load WASM module dynamically
-    const indirectEval = eval
-    indirectEval(rasmJsCode)
+  console.log('[RASM Worker] Executing rasm.js to get factory...')
+  // biome-ignore lint/security/noGlobalEval: Required to load WASM module dynamically
+  const indirectEval = eval
+  indirectEval(rasmJsCode)
 
-    const createRASM = (self as unknown as Record<string, unknown>)
-      .createRASM as (config: Record<string, unknown>) => Promise<RasmModule>
+  createRASM = (self as unknown as Record<string, unknown>).createRASM as (
+    config: Record<string, unknown>
+  ) => Promise<RasmModule>
 
-    if (!createRASM || typeof createRASM !== 'function') {
-      throw new Error('createRASM factory not found after loading rasm.js')
-    }
+  if (!createRASM || typeof createRASM !== 'function') {
+    throw new Error('createRASM factory not found after loading rasm.js')
+  }
+}
 
-    console.log('[RASM Worker] Calling createRASM factory...')
+// Create a fresh RASM module for each compilation to avoid state issues
+async function createFreshRasmModule(): Promise<RasmModule> {
+  if (!wasmBinary || !createRASM) {
+    await loadResources()
+  }
 
-    rasmModule = await createRASM({
-      wasmBinary: wasmBinary,
-      wasmMemory: new WebAssembly.Memory({
-        initial: 1024, // 64MB (1024 pages * 64KB)
-        maximum: 2048 // 128MB max
-      }),
-      print: (text: string) => {
-        stdoutLines.push(text)
-        console.log('[RASM]', text)
-      },
-      printErr: (text: string) => {
-        stderrLines.push(text)
-        console.error('[RASM Error]', text)
-      },
-      locateFile: (path: string) => {
-        if (path.endsWith('.wasm')) {
-          return RASM_WASM_URL
-        }
-        return path
+  console.log('[RASM Worker] Creating fresh RASM module...')
+
+  const module = await createRASM!({
+    wasmBinary: wasmBinary!.slice(0), // Clone the binary
+    wasmMemory: new WebAssembly.Memory({
+      initial: 1024, // 64MB (1024 pages * 64KB)
+      maximum: 2048 // 128MB max
+    }),
+    print: (text: string) => {
+      stdoutLines.push(text)
+      console.log('[RASM]', text)
+    },
+    printErr: (text: string) => {
+      stderrLines.push(text)
+      console.error('[RASM Error]', text)
+    },
+    locateFile: (path: string) => {
+      if (path.endsWith('.wasm')) {
+        return RASM_WASM_URL
       }
-    })
+      return path
+    }
+  })
 
-    rasmReady = true
-    console.log('[RASM Worker] RASM initialized successfully')
-  })()
-
-  return initPromise
+  console.log('[RASM Worker] Fresh RASM module created')
+  return module
 }
 
 function prepareDskSource(source: string): string {
@@ -118,21 +123,17 @@ interface CompileResult {
   stderr: string[]
 }
 
-function compile(source: string, outputFormat: 'sna' | 'dsk'): CompileResult {
+async function compile(
+  source: string,
+  outputFormat: 'sna' | 'dsk'
+): Promise<CompileResult> {
   // Reset output capture
   stdoutLines = []
   stderrLines = []
 
-  if (!rasmModule) {
-    return {
-      success: false,
-      error: 'RASM not initialized',
-      stdout: [],
-      stderr: []
-    }
-  }
-
   try {
+    // Create a fresh module for each compilation
+    const rasmModule = await createFreshRasmModule()
     const FS = rasmModule.FS
 
     const finalSource =
@@ -148,13 +149,6 @@ function compile(source: string, outputFormat: 'sna' | 'dsk'): CompileResult {
     console.log('[RASM Worker] Running RASM with args:', args)
     const exitCode = rasmModule.callMain(args)
     console.log('[RASM Worker] RASM exit code:', exitCode)
-
-    // Clean up source file
-    try {
-      FS.unlink(sourceFile)
-    } catch {
-      // Ignore cleanup errors
-    }
 
     if (exitCode !== 0) {
       return {
@@ -180,7 +174,6 @@ function compile(source: string, outputFormat: 'sna' | 'dsk'): CompileResult {
         'size:',
         binary.length
       )
-      FS.unlink(outputFile)
     } catch (e) {
       console.error('[RASM Worker] Failed to read output:', e)
       const files = FS.readdir('/')
@@ -195,7 +188,6 @@ function compile(source: string, outputFormat: 'sna' | 'dsk'): CompileResult {
           const path = name.startsWith('/') ? name : `/${name}`
           binary = FS.readFile(path) as Uint8Array
           console.log('[RASM Worker] Found at alternate path:', path)
-          FS.unlink(path)
           return {
             success: true,
             binary,
@@ -233,7 +225,7 @@ self.onmessage = async (e: MessageEvent) => {
 
   if (type === 'init') {
     try {
-      await initRasm()
+      await loadResources()
       self.postMessage({ type: 'init', id, success: true })
     } catch (error) {
       console.error('[RASM Worker] Init error:', error)
@@ -245,44 +237,39 @@ self.onmessage = async (e: MessageEvent) => {
       })
     }
   } else if (type === 'compile') {
-    if (!rasmReady) {
-      try {
-        await initRasm()
-      } catch (error) {
-        console.error('[RASM Worker] Compile init error:', error)
+    try {
+      const result = await compile(source, outputFormat)
+      if (result.success && result.binary) {
+        self.postMessage(
+          {
+            type: 'compile',
+            id,
+            success: true,
+            binary: result.binary,
+            stdout: result.stdout,
+            stderr: result.stderr
+          },
+          { transfer: [result.binary.buffer] }
+        )
+      } else {
         self.postMessage({
           type: 'compile',
           id,
           success: false,
-          error: `Failed to initialize RASM: ${error instanceof Error ? error.message : String(error)}`,
-          stdout: [],
-          stderr: []
-        })
-        return
-      }
-    }
-
-    const result = compile(source, outputFormat)
-    if (result.success && result.binary) {
-      self.postMessage(
-        {
-          type: 'compile',
-          id,
-          success: true,
-          binary: result.binary,
+          error: result.error,
           stdout: result.stdout,
           stderr: result.stderr
-        },
-        { transfer: [result.binary.buffer] }
-      )
-    } else {
+        })
+      }
+    } catch (error) {
+      console.error('[RASM Worker] Compile error:', error)
       self.postMessage({
         type: 'compile',
         id,
         success: false,
-        error: result.error,
-        stdout: result.stdout,
-        stderr: result.stderr
+        error: `Compilation failed: ${error instanceof Error ? error.message : String(error)}`,
+        stdout: stdoutLines,
+        stderr: stderrLines
       })
     }
   }
