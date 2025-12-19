@@ -3,8 +3,13 @@
 
 declare const self: DedicatedWorkerGlobalScope
 
-const RASM_WASM_URL = '/cdn/rasm.wasm'
-const RASM_JS_URL = '/cdn/rasm.js'
+// In workers, we can't use import.meta.env, so check location
+const IS_DEV =
+  self.location.hostname === 'localhost' ||
+  self.location.hostname === '127.0.0.1'
+const CDN_BASE = IS_DEV ? 'https://cpcec-web.iiivan.org' : '/cdn'
+const RASM_WASM_URL = `${CDN_BASE}/rasm.wasm`
+const RASM_JS_URL = `${CDN_BASE}/rasm.js`
 
 interface RasmModule {
   callMain: (args: string[]) => number
@@ -59,6 +64,10 @@ async function initRasm(): Promise<void> {
 
     rasmModule = await createRASM({
       wasmBinary: wasmBinary,
+      wasmMemory: new WebAssembly.Memory({
+        initial: 1024, // 64MB (1024 pages * 64KB)
+        maximum: 2048 // 128MB max
+      }),
       print: (text: string) => {
         stdoutLines.push(text)
         console.log('[RASM]', text)
