@@ -51,8 +51,8 @@
 }
 
 .icon {
-  padding: var(--spacing-sm);
-  font-size: var(--font-size-md);
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-sm);
   background: none;
   color: var(--color-accent);
   border: none;

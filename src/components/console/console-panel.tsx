@@ -1,5 +1,6 @@
 import Ansi from 'ansi-to-react'
 import { useAtomValue, useSetAtom } from 'jotai'
+import { useEffect, useRef } from 'react'
 import Button from '@/components/ui/button/button'
 import { clearConsoleAtom, consoleMessagesAtom, goToLineAtom } from '@/store'
 import styles from './console-panel.module.css'
@@ -8,6 +9,15 @@ export function ConsolePanel() {
   const messages = useAtomValue(consoleMessagesAtom)
   const clearConsole = useSetAtom(clearConsoleAtom)
   const setGoToLine = useSetAtom(goToLineAtom)
+  const messagesRef = useRef<HTMLDivElement>(null)
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll when messages change
+  useEffect(() => {
+    const container = messagesRef.current
+    if (container) {
+      container.scrollTop = container.scrollHeight
+    }
+  }, [messages.length])
 
   const handleMessageClick = (line: number | undefined) => {
     if (line !== undefined) {
@@ -23,7 +33,7 @@ export function ConsolePanel() {
           ✕
         </Button>
       </div>
-      <div className={styles.messages}>
+      <div className={styles.messages} ref={messagesRef}>
         {messages.map((msg) => {
           const isClickable = msg.line !== undefined
           const baseClassName = `${styles.message} ${styles[msg.type]} ${isClickable ? styles.clickable : ''}`
