@@ -21,29 +21,32 @@ export function EmulatorCanvas() {
     }
   }, [initialize, isReady])
 
-  // Intercept ALL keyboard events and block them from CPCEC when not focused
+  // Block keyboard events from reaching CPCEC (which listens on window)
+  // We use bubble phase so the event reaches the target first
   useEffect(() => {
     const blockKeyboardForCPCEC = (e: KeyboardEvent) => {
-      // If emulator doesn't have focus, stop the event completely
-      if (!emulatorHasFocus) {
-        // Don't block if target is the emulator canvas wrapper itself
-        if (containerRef.current?.contains(e.target as Node)) {
-          return
-        }
-        // Stop propagation and prevent CPCEC from seeing this event
-        e.stopImmediatePropagation()
+      // If emulator has focus, let CPCEC handle it
+      if (emulatorHasFocus) {
+        return
       }
+
+      // Block the event from bubbling up to window where CPCEC listens
+      e.stopPropagation()
     }
 
-    // Add at capture phase with highest priority
-    document.addEventListener('keydown', blockKeyboardForCPCEC, true)
-    document.addEventListener('keyup', blockKeyboardForCPCEC, true)
-    document.addEventListener('keypress', blockKeyboardForCPCEC, true)
+    // Use bubble phase (false) - event reaches target first, then we stop it
+    document.body.addEventListener('keydown', blockKeyboardForCPCEC, false)
+    document.body.addEventListener('keyup', blockKeyboardForCPCEC, false)
+    document.body.addEventListener('keypress', blockKeyboardForCPCEC, false)
 
     return () => {
-      document.removeEventListener('keydown', blockKeyboardForCPCEC, true)
-      document.removeEventListener('keyup', blockKeyboardForCPCEC, true)
-      document.removeEventListener('keypress', blockKeyboardForCPCEC, true)
+      document.body.removeEventListener('keydown', blockKeyboardForCPCEC, false)
+      document.body.removeEventListener('keyup', blockKeyboardForCPCEC, false)
+      document.body.removeEventListener(
+        'keypress',
+        blockKeyboardForCPCEC,
+        false
+      )
     }
   }, [])
 

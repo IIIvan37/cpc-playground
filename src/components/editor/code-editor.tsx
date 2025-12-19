@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
 import styles from './code-editor.module.css'
 
-const LINE_HEIGHT = 21 // 14px font-size * 1.5 line-height
-const PADDING = 16 // var(--spacing-md) = 1rem = 16px
+const LINE_HEIGHT = 21
+const PADDING = 16
 
 export function CodeEditor() {
   const [code, setCode] = useAtom(codeAtom)
@@ -27,17 +27,34 @@ export function CodeEditor() {
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Tab') {
         e.preventDefault()
-        const target = e.target as HTMLTextAreaElement
-        const start = target.selectionStart
-        const end = target.selectionEnd
-        const newValue = `${code.substring(0, start)}    ${code.substring(end)}`
-        setCode(newValue)
-        requestAnimationFrame(() => {
-          target.selectionStart = target.selectionEnd = start + 4
-        })
+        const textarea = e.currentTarget
+        const value = textarea.value
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        // Multi-line selection ?
+        if (start !== end && value.slice(start, end).includes('\n')) {
+          // Indent all selected lines
+          const before = value.substring(0, start)
+          const selected = value.substring(start, end)
+          const after = value.substring(end)
+          // Indent each line in selection
+          const indented = selected.replace(/^/gm, '    ')
+          setCode(before + indented + after)
+          setTimeout(() => {
+            textarea.selectionStart = start
+            textarea.selectionEnd = end + (indented.length - selected.length)
+          }, 0)
+        } else {
+          // Single line: insert spaces
+          const newValue = `${value.substring(0, start)}    ${value.substring(end)}`
+          setCode(newValue)
+          setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd = start + 4
+          }, 0)
+        }
       }
     },
-    [code, setCode]
+    [setCode]
   )
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
@@ -53,20 +70,15 @@ export function CodeEditor() {
     if (goToLine !== null && textareaRef.current) {
       const textarea = textareaRef.current
 
-      // Calculate character position for the target line
       let charPosition = 0
       for (let i = 0; i < goToLine - 1 && i < lines.length; i++) {
-        charPosition += lines[i].length + 1 // +1 for newline
+        charPosition += lines[i].length + 1
       }
 
-      // Focus and set cursor position
       textarea.focus()
       textarea.setSelectionRange(charPosition, charPosition)
-
-      // Scroll to make the line visible
       textarea.scrollTop = Math.max(0, (goToLine - 5) * LINE_HEIGHT)
 
-      // Clear the goToLine atom
       setGoToLine(null)
     }
   }, [goToLine, lines, setGoToLine])
@@ -97,7 +109,6 @@ export function CodeEditor() {
           })}
         </div>
         <div className={styles.editorContent}>
-          {/* Error highlight overlays container */}
           <div className={styles.errorHighlights}>
             {errorLines.map((lineNum) => (
               <div
