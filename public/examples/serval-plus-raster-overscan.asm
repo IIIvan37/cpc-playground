@@ -1,6 +1,7 @@
 BUILDSNA
 BANKSET 0
 SNASET CPC_TYPE, 4; CPC 6128 Plus
+SNASET CRTC_TYPE, 3
 
 ; include '../common/plus.h.asm' [EXPANDED]
 ; ======================================================================
