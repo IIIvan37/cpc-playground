@@ -52,7 +52,6 @@ pnpm build
 
 - **RASM** by Roudoudou - [rasm.music.world](http://rasm.music.world)
 - **CPCEC** by CNGsoft - [cngsoft.no-ip.org](http://cngsoft.no-ip.org/cpcec.htm)
-- **Serval** raster library by Music & PixSaur
 
 ## License
 

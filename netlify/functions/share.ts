@@ -27,14 +27,14 @@ export interface ShareData {
   expiresAt: number
 }
 
-export default async (request: Request, context: Context) => {
+export default async (request: Request, _context: Context) => {
   // Handle preflight first (no store needed)
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
 
-  // Get store - in Netlify Functions, this should auto-detect credentials
-  const store = getStore(STORE_NAME)
+  // Get store with STRONG consistency to ensure immediate availability
+  const store = getStore({ name: STORE_NAME, consistency: 'strong' })
 
   // POST - Create a new share
   if (request.method === 'POST') {
@@ -68,10 +68,6 @@ export default async (request: Request, context: Context) => {
 
       await store.setJSON(id, data)
 
-      // Debug: verify it was saved
-      const verify = await store.get(id)
-      console.log('Saved ID:', id, 'Verify exists:', !!verify)
-
       return new Response(JSON.stringify({ id }), {
         status: 201,
         headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -104,9 +100,7 @@ export default async (request: Request, context: Context) => {
     }
 
     try {
-      console.log('Looking for ID:', id)
       const data = (await store.get(id, { type: 'json' })) as ShareData | null
-      console.log('Found data:', !!data)
 
       if (!data) {
         return new Response(JSON.stringify({ error: 'Share not found' }), {
