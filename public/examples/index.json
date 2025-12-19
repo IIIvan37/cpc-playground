@@ -3,5 +3,9 @@
   {
     "name": "Serval Classic Raster Overscan",
     "file": "serval-classic-raster-overscan.asm"
+  },
+  {
+    "name": "Serval Plus Raster Overscan",
+    "file": "serval-plus-raster-overscan.asm"
   }
 ]
