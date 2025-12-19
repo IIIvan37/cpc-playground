@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# CPC Playground
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web-based Amstrad CPC development environment with integrated assembler and emulator.
 
-Currently, two official plugins are available:
+🚀 **Live demo**: [cpc-playground.iiivan.org](https://cpc-playground.iiivan.org)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Code Editor** - Write Z80 assembly code with line numbers and error highlighting
+- **RASM Assembler** - Compile your code to SNA snapshots using [RASM](http://rasm.music.world) (WebAssembly)
+- **CPCEC Emulator** - Run your programs instantly in the [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) emulator (WebAssembly)
+- **CPC Plus Support** - Full support for CPC Plus hardware features (sprites, enhanced palette, DMA...)
+- **Examples** - Load ready-to-run examples including classic CPC and Plus demos
+- **Console Output** - View assembler output, errors with clickable line references
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quick Start
 
-## Expanding the ESLint configuration
+1. Write your Z80 assembly code in the editor
+2. Click **Run** (or press the shortcut) to compile and execute
+3. The emulator shows your program running
+4. Click on the emulator canvas to capture keyboard input
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Examples
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+The playground includes several examples:
+- **Hello World** - Basic text output
+- **Serval Classic Raster Overscan** - Raster effects on classic CPC
+- **Serval Plus Raster Overscan** - Raster effects using CPC Plus hardware
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- React + TypeScript + Vite
+- [RASM](http://rasm.music.world) - Z80 cross-assembler (compiled to WebAssembly)
+- [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) - Amstrad CPC emulator (compiled to WebAssembly)
+- Jotai for state management
+- Deployed on Netlify
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start dev server
+pnpm dev
+
+# Build for production
+pnpm build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Credits
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **RASM** by Roudoudou - [rasm.music.world](http://rasm.music.world)
+- **CPCEC** by CNGsoft - [cngsoft.no-ip.org](http://cngsoft.no-ip.org/cpcec.htm)
+- **Serval** raster library by Music & PixSaur
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## License
+
+This project is licensed under the **GNU General Public License v3.0** (GPL-3.0), as it incorporates CPCEC which is distributed under GPL-3.0.
+
+See [LICENSE](LICENSE) for details.
