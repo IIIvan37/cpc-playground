@@ -1,0 +1,63 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--color-background);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  font-size: var(--font-size-heading);
+  font-weight: bold;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 10px var(--color-accent);
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-disabled-text);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  overflow: hidden;
+}
+
+.panel {
+  flex: 1;
+  min-width: 0;
+  transition: flex 0.3s ease;
+}
+
+.panel[data-hidden="true"] {
+  flex: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.editorPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.emulatorPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer {
+  padding: 0 var(--spacing-md) var(--spacing-md);
+}

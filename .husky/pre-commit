@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Ensure Node version from .nvmrc (strict) and pnpm via Corepack
+if [ -z "$NVM_DIR" ]; then
+  export NVM_DIR="$HOME/.nvm"
+fi
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh"
+  nvm use >/dev/null 2>&1 || true
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  if command -v corepack >/dev/null 2>&1; then
+    corepack enable >/dev/null 2>&1 || true
+    corepack prepare pnpm@10.11.0 --activate >/dev/null 2>&1 || true
+  fi
+fi
+
+echo "🔍 Running TypeScript checks..."
+npx tsc --noEmit
+
+echo "🔍 Running biome checks..."
+npx @biomejs/biome check . --write
+
+# Add any files that were auto-fixed by biome
+git add -u
+
+echo "✅ Pre-commit checks passed!"

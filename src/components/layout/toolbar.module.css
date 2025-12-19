@@ -1,0 +1,21 @@
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  color: var(--color-disabled-text);
+  text-transform: uppercase;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background-color: var(--color-border);
+  margin: 0 var(--spacing-sm);
+}
