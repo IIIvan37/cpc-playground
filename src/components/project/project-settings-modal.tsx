@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
 import {
   addDependencyToProjectAtom,
@@ -18,7 +18,7 @@ interface ProjectSettingsModalProps {
 }
 
 export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
-  const [currentProject, setCurrentProject] = useAtom(currentProjectAtom);
+  const currentProject = useAtomValue(currentProjectAtom);
   const projects = useAtomValue(projectsAtom);
   const updateProject = useSetAtom(updateProjectAtom);
   const addTag = useSetAtom(addTagToProjectAtom);
@@ -35,7 +35,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     "private" | "public" | "shared"
   >(currentProject?.visibility || "private");
   const [isLibrary, setIsLibrary] = useState(
-    currentProject?.is_library || false
+    currentProject?.isLibrary || false
   );
 
   const [newTag, setNewTag] = useState("");
@@ -49,13 +49,11 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     setLoading(true);
     try {
       await updateProject({
-        id: currentProject.id,
-        updates: {
-          name,
-          description,
-          visibility,
-          is_library: isLibrary,
-        },
+        projectId: currentProject.id,
+        name,
+        description,
+        visibility,
+        isLibrary: isLibrary,
       });
       await fetchProjects();
     } catch (error) {
@@ -194,7 +192,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
   // Filter available dependencies (libraries not already added)
   const availableDependencies = projects.filter(
     (p) =>
-      p.is_library &&
+      p.isLibrary &&
       p.id !== currentProject.id &&
       !currentProject.dependencies?.some((d) => d.id === p.id)
   );
@@ -208,6 +206,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>Project Settings</h2>
           <button
+            type="button"
             className={styles.closeButton}
             onClick={onClose}
             aria-label="Close"
@@ -283,13 +282,13 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
               {currentProject.shares && currentProject.shares.length > 0 ? (
                 <div className={styles.sharesList}>
                   {currentProject.shares.map((share) => (
-                    <div key={share.user_id} className={styles.shareItem}>
+                    <div key={share.userId} className={styles.shareItem}>
                       <span className={styles.shareUsername}>
-                        {share.username || share.user_id}
+                        {share.userId}
                       </span>
                       <button
                         className={styles.shareRemove}
-                        onClick={() => handleRemoveShare(share.user_id)}
+                        onClick={() => handleRemoveShare(share.userId)}
                         disabled={loading}
                         aria-label="Remove user"
                       >
@@ -378,11 +377,6 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                 <div key={dep.id} className={styles.dependencyItem}>
                   <div className={styles.dependencyInfo}>
                     <div className={styles.dependencyName}>{dep.name}</div>
-                    {dep.description && (
-                      <div className={styles.dependencyDescription}>
-                        {dep.description}
-                      </div>
-                    )}
                   </div>
                   <button
                     className={styles.dependencyRemove}

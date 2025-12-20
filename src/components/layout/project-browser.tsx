@@ -186,7 +186,7 @@ export function ProjectBrowser() {
                     Shared
                   </span>
                 )}
-                {project.is_library && (
+                {project.isLibrary && (
                   <span className={`${styles.badge} ${styles.badgeLibrary}`}>
                     Lib
                   </span>

@@ -252,16 +252,21 @@ export const updateProjectAtom = atom(
     {
       projectId,
       name,
-      description
-    }: { projectId: string; name?: string; description?: string }
+      description,
+      visibility,
+      isLibrary
+    }: { projectId: string; name?: string; description?: string; visibility?: ProjectVisibility; isLibrary?: boolean }
   ) => {
     try {
+      const updates: any = {}
+      if (name !== undefined) updates.name = name
+      if (description !== undefined) updates.description = description
+      if (visibility !== undefined) updates.visibility = visibility
+      if (isLibrary !== undefined) updates.is_library = isLibrary
+
       const { data, error } = await supabase
         .from('projects')
-        .update({
-          name,
-          description
-        })
+        .update(updates)
         .eq('id', projectId)
         .select()
         .single()
@@ -278,6 +283,8 @@ export const updateProjectAtom = atom(
                 ...p,
                 name: data.name,
                 description: data.description,
+                visibility: data.visibility as ProjectVisibility,
+                isLibrary: data.is_library,
                 updatedAt: data.updated_at
               }
             : p
