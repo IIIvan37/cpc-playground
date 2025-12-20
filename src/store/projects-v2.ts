@@ -384,12 +384,19 @@ export const deleteProjectAtom = atom(
 
       if (error) throw error
 
-      // Update local state
+      // Update local state - remove the project and update dependencies of other projects
       const projects = get(projectsAtom)
-      set(
-        projectsAtom,
-        projects.filter((p) => p.id !== projectId)
-      )
+      const updatedProjects = projects
+        .filter((p) => p.id !== projectId)
+        .map((p) => ({
+          ...p,
+          // Remove the deleted project from dependencies of other projects
+          dependencies: p.dependencies.filter((d) => d.id !== projectId)
+        }))
+      set(projectsAtom, updatedProjects)
+
+      // Clear dependency files cache since it may reference the deleted project
+      set(dependencyFilesAtom, [])
 
       if (get(currentProjectIdAtom) === projectId) {
         set(currentProjectIdAtom, null)
