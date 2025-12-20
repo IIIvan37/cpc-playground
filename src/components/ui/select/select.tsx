@@ -1,6 +1,7 @@
 import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons'
 import * as RadixSelect from '@radix-ui/react-select'
 import type { ReactNode } from 'react'
+
 import styles from './select.module.css'
 
 type Props = {

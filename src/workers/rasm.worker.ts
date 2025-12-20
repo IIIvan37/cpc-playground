@@ -122,6 +122,12 @@ function prepareSnaSource(source: string): string {
   return result
 }
 
+interface ProjectFile {
+  name: string
+  content: string
+  projectName?: string // Optional project name for namespacing
+}
+
 interface CompileResult {
   success: boolean
   binary?: Uint8Array
@@ -132,7 +138,8 @@ interface CompileResult {
 
 async function compile(
   source: string,
-  outputFormat: 'sna' | 'dsk'
+  outputFormat: 'sna' | 'dsk',
+  additionalFiles?: ProjectFile[]
 ): Promise<CompileResult> {
   // Reset output capture
   stdoutLines = []
@@ -146,6 +153,19 @@ async function compile(
     // Create a fresh module for each compilation
     const rasmModule = await createFreshRasmModule()
     FS = rasmModule.FS
+
+    // Write all additional files to the virtual filesystem
+    if (additionalFiles && additionalFiles.length > 0) {
+      for (const file of additionalFiles) {
+        // If file has a projectName, write it in a subdirectory
+        const filePath = file.projectName
+          ? `/${file.projectName}/${file.name}`
+          : `/${file.name}`
+
+        FS.writeFile(filePath, file.content)
+        console.log('[RASM Worker] Wrote additional file:', filePath)
+      }
+    }
 
     const finalSource =
       outputFormat === 'sna'
@@ -264,7 +284,7 @@ async function compile(
 
 // Message handler
 self.onmessage = async (e: MessageEvent) => {
-  const { type, id, source, outputFormat } = e.data
+  const { type, id, source, outputFormat, additionalFiles } = e.data
 
   if (type === 'init') {
     try {
@@ -281,7 +301,7 @@ self.onmessage = async (e: MessageEvent) => {
     }
   } else if (type === 'compile') {
     try {
-      const result = await compile(source, outputFormat)
+      const result = await compile(source, outputFormat, additionalFiles)
       if (result.success && result.binary) {
         self.postMessage(
           {

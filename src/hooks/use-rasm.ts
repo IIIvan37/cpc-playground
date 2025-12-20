@@ -29,6 +29,12 @@ interface CompileResponse {
   stderr?: string[]
 }
 
+interface ProjectFile {
+  name: string
+  content: string
+  projectName?: string // Optional project name for namespacing
+}
+
 export function useRasm() {
   const setCompilationStatus = useSetAtom(compilationStatusAtom)
   const setCompilationError = useSetAtom(compilationErrorAtom)
@@ -66,7 +72,8 @@ export function useRasm() {
   const compile = useCallback(
     async (
       source: string,
-      outputFormat: OutputFormat = 'sna'
+      outputFormat: OutputFormat = 'sna',
+      additionalFiles?: ProjectFile[]
     ): Promise<Uint8Array | null> => {
       setCompilationStatus('compiling')
       setCompilationError(null)
@@ -82,7 +89,13 @@ export function useRasm() {
 
         const result = await new Promise<CompileResponse>((resolve) => {
           pendingRef.current.set(id, resolve)
-          w.postMessage({ type: 'compile', id, source, outputFormat })
+          w.postMessage({
+            type: 'compile',
+            id,
+            source,
+            outputFormat,
+            additionalFiles
+          })
         })
 
         // Display stdout lines
