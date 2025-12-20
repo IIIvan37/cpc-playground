@@ -1,4 +1,6 @@
 import {
+  ChevronDownIcon,
+  ChevronRightIcon,
   FileIcon,
   FilePlusIcon,
   PlusIcon,
@@ -22,6 +24,8 @@ import {
   currentProjectIdAtom,
   deleteFileAtom,
   deleteProjectAtom,
+  dependencyFilesAtom,
+  fetchDependencyFilesAtom,
   fetchProjectsAtom,
   projectsAtom,
   setMainFileAtom,
@@ -37,6 +41,8 @@ export function ProjectBrowser() {
   const [currentFileId, setCurrentFileId] = useAtom(currentFileIdAtom)
   const _currentFile = useAtomValue(currentFileAtom)
   const [_code, setCode] = useAtom(codeAtom)
+  const dependencyFiles = useAtomValue(dependencyFilesAtom)
+  const fetchDependencyFiles = useSetAtom(fetchDependencyFilesAtom)
 
   const fetchProjects = useSetAtom(fetchProjectsAtom)
   const createProject = useSetAtom(createProjectAtom)
@@ -52,6 +58,7 @@ export function ProjectBrowser() {
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
   const [newFileName, setNewFileName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [expandedDeps, setExpandedDeps] = useState<Set<string>>(new Set())
 
   // Load projects on mount
   useEffect(() => {
@@ -60,9 +67,39 @@ export function ProjectBrowser() {
     }
   }, [user, fetchProjects])
 
+  // Load dependency files when project changes
+  useEffect(() => {
+    if (currentProjectId) {
+      fetchDependencyFiles(currentProjectId)
+    }
+  }, [currentProjectId, fetchDependencyFiles])
+
   // Don't show anything for non-authenticated users
   if (!user && !authLoading) {
     return null
+  }
+
+  const toggleDependency = (depId: string) => {
+    setExpandedDeps((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(depId)) {
+        newSet.delete(depId)
+      } else {
+        newSet.add(depId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectDependencyFile = (file: {
+    id: string
+    content: string
+    projectId: string
+  }) => {
+    // Set the code to view the file (read-only)
+    setCode(file.content)
+    // Clear selection since it's a dependency file
+    setCurrentFileId(null)
   }
 
   const handleCreateProject = async () => {
@@ -278,6 +315,45 @@ export function ProjectBrowser() {
               </div>
             ))}
           </div>
+
+          {/* Dependencies as subfolders */}
+          {dependencyFiles.length > 0 && (
+            <div className={styles.dependencies}>
+              <div className={styles.dependenciesHeader}>
+                <span>Dependencies</span>
+              </div>
+              {dependencyFiles.map((dep) => (
+                <div key={dep.id} className={styles.dependency}>
+                  <div
+                    className={styles.dependencyFolder}
+                    onClick={() => toggleDependency(dep.id)}
+                  >
+                    {expandedDeps.has(dep.id) ? (
+                      <ChevronDownIcon />
+                    ) : (
+                      <ChevronRightIcon />
+                    )}
+                    <span className={styles.dependencyName}>/{dep.name}</span>
+                    <span className={styles.readOnly}>(read-only)</span>
+                  </div>
+                  {expandedDeps.has(dep.id) && (
+                    <div className={styles.dependencyFiles}>
+                      {dep.files.map((file) => (
+                        <div
+                          key={file.id}
+                          className={`${styles.file} ${styles.dependencyFile}`}
+                          onClick={() => handleSelectDependencyFile(file)}
+                        >
+                          <FileIcon />
+                          <span className={styles.fileName}>{file.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
 

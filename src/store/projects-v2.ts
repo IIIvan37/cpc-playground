@@ -48,10 +48,19 @@ export interface Project {
   updatedAt: string
 }
 
+// Extended dependency with files for display
+export interface DependencyWithFiles {
+  id: string
+  name: string
+  isLibrary: boolean
+  files: ProjectFile[]
+}
+
 // Local state atoms
 export const projectsAtom = atom<Project[]>([])
 export const currentProjectIdAtom = atom<string | null>(null)
 export const currentFileIdAtom = atom<string | null>(null)
+export const dependencyFilesAtom = atom<DependencyWithFiles[]>([])
 
 // Derived atoms
 export const currentProjectAtom = atom((get) => {
@@ -70,6 +79,59 @@ export const mainFileAtom = atom((get) => {
   const project = get(currentProjectAtom)
   return project?.files.find((f) => f.isMain) ?? null
 })
+
+// Fetch dependency files for the current project
+export const fetchDependencyFilesAtom = atom(
+  null,
+  async (get, set, projectId: string) => {
+    try {
+      const currentProject = get(projectsAtom).find((p) => p.id === projectId)
+      if (!currentProject?.dependencies?.length) {
+        set(dependencyFilesAtom, [])
+        return
+      }
+
+      const dependencyIds = currentProject.dependencies.map((d) => d.id)
+
+      const { data, error } = await supabase
+        .from('projects')
+        .select(
+          `
+          id,
+          name,
+          is_library,
+          project_files (*)
+        `
+        )
+        .in('id', dependencyIds)
+
+      if (error) throw error
+
+      const deps: DependencyWithFiles[] =
+        data?.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          isLibrary: p.is_library,
+          files:
+            p.project_files?.map((f: any) => ({
+              id: f.id,
+              projectId: f.project_id,
+              name: f.name,
+              content: f.content,
+              isMain: f.is_main,
+              order: f.order,
+              createdAt: f.created_at,
+              updatedAt: f.updated_at
+            })) ?? []
+        })) ?? []
+
+      set(dependencyFilesAtom, deps)
+    } catch (error) {
+      console.error('Error fetching dependency files:', error)
+      set(dependencyFilesAtom, [])
+    }
+  }
+)
 
 // Actions
 

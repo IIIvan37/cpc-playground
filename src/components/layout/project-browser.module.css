@@ -206,3 +206,71 @@
   border-color: rgb(139, 92, 246);
   color: rgb(167, 139, 250);
 }
+
+/* Dependencies Section */
+.dependencies {
+  border-top: 1px solid var(--border);
+  margin-top: 0.5rem;
+}
+
+.dependenciesHeader {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
+
+.dependency {
+  border-bottom: 1px solid var(--border);
+}
+
+.dependencyFolder {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dependencyFolder:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dependencyFolder svg {
+  width: 14px;
+  height: 14px;
+  color: var(--muted-foreground);
+}
+
+.dependencyName {
+  font-size: 0.875rem;
+  color: var(--color-accent, #a8b5a8);
+  font-family: var(--font-mono, monospace);
+}
+
+.readOnly {
+  font-size: 0.625rem;
+  color: var(--muted-foreground);
+  margin-left: auto;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.dependencyFiles {
+  padding-left: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dependencyFile {
+  opacity: 0.8;
+  padding-left: 1.5rem !important;
+}
+
+.dependencyFile:hover {
+  opacity: 1;
+}
