@@ -88,7 +88,7 @@ export class AuthService {
    */
   async signInWithGithub(): Promise<AuthResponse> {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: window.location.origin
