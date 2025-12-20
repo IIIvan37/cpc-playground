@@ -1,1 +1,1 @@
-export { Select, SelectItem } from './select'
+export * from './select'

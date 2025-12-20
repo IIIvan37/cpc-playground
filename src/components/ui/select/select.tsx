@@ -1,6 +1,7 @@
 import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons'
 import * as RadixSelect from '@radix-ui/react-select'
 import type { ReactNode } from 'react'
+
 import styles from './select.module.css'
 
 type Props = {
@@ -8,15 +9,13 @@ type Props = {
   readonly onValueChange: (value: string) => void
   readonly children: ReactNode
   readonly disabled?: boolean
-  readonly placeholder?: string
 }
 
 export function Select({
   value,
   onValueChange,
   children,
-  disabled = false,
-  placeholder
+  disabled = false
 }: Props) {
   return (
     <RadixSelect.Root
@@ -25,7 +24,7 @@ export function Select({
       disabled={disabled}
     >
       <RadixSelect.Trigger className={styles.trigger}>
-        <RadixSelect.Value placeholder={placeholder} />
+        <RadixSelect.Value />
         <RadixSelect.Icon className={styles.icon}>
           <ChevronDownIcon />
         </RadixSelect.Icon>

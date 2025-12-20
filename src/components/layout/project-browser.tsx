@@ -4,13 +4,14 @@ import {
   PlusIcon,
   StarFilledIcon,
   StarIcon,
-  TrashIcon
-} from '@radix-ui/react-icons'
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { useEffect, useState } from 'react'
-import Button from '@/components/ui/button/button'
-import { useAuth } from '@/hooks'
-import { codeAtom } from '@/store/editor'
+  TrashIcon,
+} from "@radix-ui/react-icons";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
+import Button from "@/components/ui/button/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks";
+import { codeAtom } from "@/store/editor";
 import {
   createFileAtom,
   createProjectAtom,
@@ -23,127 +24,127 @@ import {
   fetchProjectsAtom,
   projectsAtom,
   setMainFileAtom,
-  updateFileAtom
-} from '@/store/projects-v2'
-import styles from './project-browser.module.css'
+  updateFileAtom,
+} from "@/store/projects-v2";
+import styles from "./project-browser.module.css";
 
 export function ProjectBrowser() {
-  const { user, loading: authLoading } = useAuth()
-  const projects = useAtomValue(projectsAtom)
-  const [currentProjectId, setCurrentProjectId] = useAtom(currentProjectIdAtom)
-  const currentProject = useAtomValue(currentProjectAtom)
-  const [currentFileId, setCurrentFileId] = useAtom(currentFileIdAtom)
-  const _currentFile = useAtomValue(currentFileAtom)
-  const [_code, setCode] = useAtom(codeAtom)
+  const { user, loading: authLoading } = useAuth();
+  const projects = useAtomValue(projectsAtom);
+  const [currentProjectId, setCurrentProjectId] = useAtom(currentProjectIdAtom);
+  const currentProject = useAtomValue(currentProjectAtom);
+  const [currentFileId, setCurrentFileId] = useAtom(currentFileIdAtom);
+  const _currentFile = useAtomValue(currentFileAtom);
+  const [_code, setCode] = useAtom(codeAtom);
 
-  const fetchProjects = useSetAtom(fetchProjectsAtom)
-  const createProject = useSetAtom(createProjectAtom)
-  const deleteProject = useSetAtom(deleteProjectAtom)
-  const createFile = useSetAtom(createFileAtom)
-  const _updateFile = useSetAtom(updateFileAtom)
-  const deleteFile = useSetAtom(deleteFileAtom)
-  const setMainFile = useSetAtom(setMainFileAtom)
+  const fetchProjects = useSetAtom(fetchProjectsAtom);
+  const createProject = useSetAtom(createProjectAtom);
+  const deleteProject = useSetAtom(deleteProjectAtom);
+  const createFile = useSetAtom(createFileAtom);
+  const _updateFile = useSetAtom(updateFileAtom);
+  const deleteFile = useSetAtom(deleteFileAtom);
+  const setMainFile = useSetAtom(setMainFileAtom);
 
-  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false)
-  const [showNewFileDialog, setShowNewFileDialog] = useState(false)
-  const [newProjectName, setNewProjectName] = useState('')
-  const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
-  const [newFileName, setNewFileName] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showNewFileDialog, setShowNewFileDialog] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false);
+  const [newFileName, setNewFileName] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Load projects on mount
   useEffect(() => {
     if (user) {
-      fetchProjects()
+      fetchProjects();
     }
-  }, [user, fetchProjects])
+  }, [user, fetchProjects]);
 
   // Don't show anything for non-authenticated users
   if (!user && !authLoading) {
-    return null
+    return null;
   }
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim()) return
-    setLoading(true)
+    if (!newProjectName.trim()) return;
+    setLoading(true);
     try {
       await createProject({
         name: newProjectName.trim(),
-        isLibrary: newProjectIsLibrary
-      })
-      setShowNewProjectDialog(false)
-      setNewProjectName('')
-      setNewProjectIsLibrary(false)
+        isLibrary: newProjectIsLibrary,
+      });
+      setShowNewProjectDialog(false);
+      setNewProjectName("");
+      setNewProjectIsLibrary(false);
     } catch (error) {
-      console.error('Failed to create project:', error)
+      console.error("Failed to create project:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSelectProject = (projectId: string) => {
-    setCurrentProjectId(projectId)
-    const project = projects.find((p) => p.id === projectId)
+    setCurrentProjectId(projectId);
+    const project = projects.find((p) => p.id === projectId);
     if (project?.files.length) {
-      const mainFile = project.files.find((f) => f.isMain) || project.files[0]
-      setCurrentFileId(mainFile.id)
-      setCode(mainFile.content)
+      const mainFile = project.files.find((f) => f.isMain) || project.files[0];
+      setCurrentFileId(mainFile.id);
+      setCode(mainFile.content);
     }
-  }
+  };
 
   const handleSelectFile = (fileId: string) => {
-    setCurrentFileId(fileId)
-    const file = currentProject?.files.find((f) => f.id === fileId)
+    setCurrentFileId(fileId);
+    const file = currentProject?.files.find((f) => f.id === fileId);
     if (file) {
-      setCode(file.content)
+      setCode(file.content);
     }
-  }
+  };
 
   const handleCreateFile = async () => {
-    if (!currentProjectId || !newFileName.trim()) return
-    setLoading(true)
+    if (!currentProjectId || !newFileName.trim()) return;
+    setLoading(true);
     try {
       const file = await createFile({
         projectId: currentProjectId,
-        name: newFileName.trim()
-      })
-      setShowNewFileDialog(false)
-      setNewFileName('')
-      setCode(file.content)
+        name: newFileName.trim(),
+      });
+      setShowNewFileDialog(false);
+      setNewFileName("");
+      setCode(file.content);
     } catch (error) {
-      console.error('Failed to create file:', error)
+      console.error("Failed to create file:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteFile = async (fileId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!confirm('Delete this file?')) return
+    e.stopPropagation();
+    if (!confirm("Delete this file?")) return;
     try {
-      await deleteFile(fileId)
+      await deleteFile(fileId);
     } catch (error) {
-      console.error('Failed to delete file:', error)
+      console.error("Failed to delete file:", error);
     }
-  }
+  };
 
   const handleSetMainFile = async (fileId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation();
     try {
-      await setMainFile(fileId)
+      await setMainFile(fileId);
     } catch (error) {
-      console.error('Failed to set main file:', error)
+      console.error("Failed to set main file:", error);
     }
-  }
+  };
 
   const handleDeleteProject = async () => {
-    if (!currentProjectId || !confirm('Delete this project?')) return
+    if (!currentProjectId || !confirm("Delete this project?")) return;
     try {
-      await deleteProject(currentProjectId)
+      await deleteProject(currentProjectId);
     } catch (error) {
-      console.error('Failed to delete project:', error)
+      console.error("Failed to delete project:", error);
     }
-  }
+  };
 
   // Show cloud projects only for authenticated users
   // Non-authenticated users still have the old localStorage system (ProgramManager)
@@ -153,10 +154,10 @@ export function ProjectBrowser() {
       <div className={styles.header}>
         <h3>Projects</h3>
         <Button
-          variant='ghost'
-          size='sm'
+          variant="ghost"
+          size="sm"
           onClick={() => setShowNewProjectDialog(true)}
-          title='New Project'
+          title="New Project"
         >
           <PlusIcon />
         </Button>
@@ -167,26 +168,26 @@ export function ProjectBrowser() {
           <div
             key={project.id}
             className={`${styles.project} ${
-              project.id === currentProjectId ? styles.active : ''
+              project.id === currentProjectId ? styles.active : ""
             }`}
             onClick={() => handleSelectProject(project.id)}
-            role='button'
+            role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                handleSelectProject(project.id)
+              if (e.key === "Enter" || e.key === " ") {
+                handleSelectProject(project.id);
               }
             }}
           >
             <div className={styles.projectMeta}>
               <div className={styles.projectName}>
                 <span>{project.name}</span>
-                {project.visibility === 'public' && (
+                {project.visibility === "public" && (
                   <span className={`${styles.badge} ${styles.badgePublic}`}>
                     Public
                   </span>
                 )}
-                {project.visibility === 'shared' && (
+                {project.visibility === "shared" && (
                   <span className={`${styles.badge} ${styles.badgeShared}`}>
                     Shared
                   </span>
@@ -209,13 +210,13 @@ export function ProjectBrowser() {
             </div>
             {project.id === currentProjectId && (
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={(e) => {
-                  e.stopPropagation()
-                  handleDeleteProject()
+                  e.stopPropagation();
+                  handleDeleteProject();
                 }}
-                title='Delete Project'
+                title="Delete Project"
               >
                 <TrashIcon />
               </Button>
@@ -229,10 +230,10 @@ export function ProjectBrowser() {
           <div className={styles.header}>
             <h3>Files</h3>
             <Button
-              variant='ghost'
-              size='sm'
+              variant="ghost"
+              size="sm"
               onClick={() => setShowNewFileDialog(true)}
-              title='New File'
+              title="New File"
             >
               <FilePlusIcon />
             </Button>
@@ -243,7 +244,7 @@ export function ProjectBrowser() {
               <div
                 key={file.id}
                 className={`${styles.file} ${
-                  file.id === currentFileId ? styles.active : ''
+                  file.id === currentFileId ? styles.active : ""
                 }`}
                 onClick={() => handleSelectFile(file.id)}
               >
@@ -252,24 +253,24 @@ export function ProjectBrowser() {
                 {file.isMain ? (
                   <StarFilledIcon
                     className={styles.mainStar}
-                    title='Main file'
+                    title="Main file"
                   />
                 ) : (
                   <button
-                    type='button'
+                    type="button"
                     className={styles.iconButton}
                     onClick={(e) => handleSetMainFile(file.id, e)}
-                    title='Set as main file'
+                    title="Set as main file"
                   >
                     <StarIcon />
                   </button>
                 )}
                 {!file.isMain && (
                   <button
-                    type='button'
+                    type="button"
                     className={styles.iconButton}
                     onClick={(e) => handleDeleteFile(file.id, e)}
-                    title='Delete file'
+                    title="Delete file"
                   >
                     <TrashIcon />
                   </button>
@@ -288,24 +289,24 @@ export function ProjectBrowser() {
         >
           <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
             <h3>New Project</h3>
-            <input
-              type='text'
-              placeholder='Project name'
+            <Input
+              type="text"
+              placeholder="Project name"
               value={newProjectName}
               onChange={(e) => setNewProjectName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+              onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
             />
             <label
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginTop: '1rem',
-                cursor: 'pointer'
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginTop: "1rem",
+                cursor: "pointer",
               }}
             >
               <input
-                type='checkbox'
+                type="checkbox"
                 checked={newProjectIsLibrary}
                 onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
               />
@@ -315,7 +316,7 @@ export function ProjectBrowser() {
             </label>
             <div className={styles.dialogActions}>
               <Button
-                variant='outline'
+                variant="outline"
                 onClick={() => setShowNewProjectDialog(false)}
               >
                 Cancel
@@ -339,16 +340,16 @@ export function ProjectBrowser() {
         >
           <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
             <h3>New File</h3>
-            <input
-              type='text'
-              placeholder='File name (e.g., sprite.asm)'
+            <Input
+              type="text"
+              placeholder="File name (e.g., sprite.asm)"
               value={newFileName}
               onChange={(e) => setNewFileName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateFile()}
+              onKeyDown={(e) => e.key === "Enter" && handleCreateFile()}
             />
             <div className={styles.dialogActions}>
               <Button
-                variant='outline'
+                variant="outline"
                 onClick={() => setShowNewFileDialog(false)}
               >
                 Cancel
@@ -364,5 +365,5 @@ export function ProjectBrowser() {
         </div>
       )}
     </div>
-  )
+  );
 }

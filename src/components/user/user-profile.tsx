@@ -1,54 +1,55 @@
-import { useAtomValue } from 'jotai'
-import { useState } from 'react'
-import { userAtom } from '../../hooks/use-auth'
-import { useUserProfile } from '../../hooks/use-user-profile'
-import { supabase } from '../../lib/supabase'
-import styles from './user-profile.module.css'
+import { useAtomValue } from "jotai";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { userAtom } from "../../hooks/use-auth";
+import { useUserProfile } from "../../hooks/use-user-profile";
+import { supabase } from "../../lib/supabase";
+import styles from "./user-profile.module.css";
 
 export function UserProfile() {
-  const user = useAtomValue(userAtom)
-  const { profile, loading, updateUsername } = useUserProfile()
-  const [showModal, setShowModal] = useState(false)
-  const [newUsername, setNewUsername] = useState('')
-  const [saving, setSaving] = useState(false)
+  const user = useAtomValue(userAtom);
+  const { profile, loading, updateUsername } = useUserProfile();
+  const [showModal, setShowModal] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  if (!user) return null
+  if (!user) return null;
 
   const handleOpenModal = () => {
-    setNewUsername(profile?.username || '')
-    setShowModal(true)
-  }
+    setNewUsername(profile?.username || "");
+    setShowModal(true);
+  };
 
   const handleSaveUsername = async () => {
-    if (!newUsername.trim()) return
-    setSaving(true)
+    if (!newUsername.trim()) return;
+    setSaving(true);
     try {
-      await updateUsername(newUsername.trim())
-      setShowModal(false)
+      await updateUsername(newUsername.trim());
+      setShowModal(false);
     } catch (error) {
-      console.error('Error updating username:', error)
-      alert('Error updating username')
+      console.error("Error updating username:", error);
+      alert("Error updating username");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleSignOut = async () => {
-    if (confirm('Are you sure you want to sign out?')) {
-      await supabase.auth.signOut()
+    if (confirm("Are you sure you want to sign out?")) {
+      await supabase.auth.signOut();
     }
-  }
+  };
 
   return (
     <>
       <button
-        type='button'
+        type="button"
         className={styles.profileButton}
         onClick={handleOpenModal}
       >
         <span>👤</span>
         <span className={styles.username}>
-          {loading ? '...' : profile?.username || 'User'}
+          {loading ? "..." : profile?.username || "User"}
         </span>
       </button>
 
@@ -61,10 +62,10 @@ export function UserProfile() {
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>User Profile</h2>
               <button
-                type='button'
+                type="button"
                 className={styles.closeButton}
                 onClick={() => setShowModal(false)}
-                aria-label='Close'
+                aria-label="Close"
               >
                 ×
               </button>
@@ -84,13 +85,12 @@ export function UserProfile() {
             </div>
 
             <div className={styles.section}>
-              <label className={styles.label}>Username</label>
-              <input
+              <Input
+                label='Username'
                 type='text'
-                className={styles.input}
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                placeholder='Enter username'
+                placeholder="Enter username"
               />
               <div className={styles.helpText}>
                 Username must be 3-30 characters and can only contain letters,
@@ -100,14 +100,14 @@ export function UserProfile() {
 
             <div className={styles.actions}>
               <button
-                type='button'
+                type="button"
                 onClick={handleSaveUsername}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save Username'}
+                {saving ? "Saving..." : "Save Username"}
               </button>
               <button
-                type='button'
+                type="button"
                 className={styles.signOutButton}
                 onClick={handleSignOut}
                 disabled={saving}
@@ -119,5 +119,5 @@ export function UserProfile() {
         </div>
       )}
     </>
-  )
+  );
 }
