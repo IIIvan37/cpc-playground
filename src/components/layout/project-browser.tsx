@@ -173,7 +173,35 @@ export function ProjectBrowser() {
               }
             }}
           >
-            <div className={styles.projectName}>{project.name}</div>
+            <div className={styles.projectMeta}>
+              <div className={styles.projectName}>
+                <span>{project.name}</span>
+                {project.visibility === "public" && (
+                  <span className={`${styles.badge} ${styles.badgePublic}`}>
+                    Public
+                  </span>
+                )}
+                {project.visibility === "shared" && (
+                  <span className={`${styles.badge} ${styles.badgeShared}`}>
+                    Shared
+                  </span>
+                )}
+                {project.is_library && (
+                  <span className={`${styles.badge} ${styles.badgeLibrary}`}>
+                    Lib
+                  </span>
+                )}
+              </div>
+              {project.tags && project.tags.length > 0 && (
+                <div className={styles.projectTags}>
+                  {project.tags.map((tag) => (
+                    <span key={tag.id} className={styles.tag}>
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
             {project.id === currentProjectId && (
               <Button
                 variant="ghost"

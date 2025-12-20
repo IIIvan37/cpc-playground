@@ -1,4 +1,4 @@
-import { FileIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import { FileIcon, PlusIcon, TrashIcon, GearIcon } from '@radix-ui/react-icons'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/button/button'
@@ -11,6 +11,8 @@ import {
   savedProgramsAtom,
   saveProgramAtom
 } from '@/store'
+import { currentProjectAtom, currentFileAtom } from '@/store/projects-v2'
+import { ProjectSettingsModal } from '@/components/project/project-settings-modal'
 import styles from './program-manager.module.css'
 
 export function ProgramManager() {
@@ -23,10 +25,12 @@ export function ProgramManager() {
 
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [programName, setProgramName] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const currentProgram = savedPrograms.find((p) => p.id === currentProgramId)
+  const currentProject = useAtomValue(currentProjectAtom)
 
   // Focus input when dialog opens
   useEffect(() => {
@@ -129,6 +133,15 @@ start:
           >
             <TrashIcon />
           </Button>
+          {currentProject && (
+            <Button
+              variant='icon'
+              onClick={() => setShowSettings(true)}
+              title='Project Settings'
+            >
+              <GearIcon />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -201,6 +214,10 @@ start:
             </div>
           </div>
         </div>
+      )}
+
+      {showSettings && currentProject && (
+        <ProjectSettingsModal onClose={() => setShowSettings(false)} />
       )}
     </>
   )

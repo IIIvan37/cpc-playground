@@ -1,22 +1,14 @@
-import { PersonIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { AuthModal } from '@/components/auth'
 import { ExamplesMenu } from '@/components/examples'
+import { UserProfile } from '@/components/user/user-profile'
 import Button from '@/components/ui/button/button'
 import { useAuth } from '@/hooks'
 import styles from './app-header.module.css'
 
 export function AppHeader() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
-
-  const handleAuthClick = () => {
-    if (user) {
-      signOut()
-    } else {
-      setShowAuthModal(true)
-    }
-  }
 
   return (
     <header className={styles.header}>
@@ -26,15 +18,18 @@ export function AppHeader() {
       </div>
 
       <div className={styles.actions}>
-        <Button
-          variant='outline'
-          size='sm'
-          onClick={handleAuthClick}
-          title={user ? 'Sign out' : 'Sign in'}
-        >
-          <PersonIcon />
-          {user ? user.email?.split('@')[0] : 'Sign In'}
-        </Button>
+        {user ? (
+          <UserProfile />
+        ) : (
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setShowAuthModal(true)}
+            title='Sign in'
+          >
+            Sign In
+          </Button>
+        )}
         <ExamplesMenu />
         <a
           href='https://github.com/IIIvan37/cpc-playground'
