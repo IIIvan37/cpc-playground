@@ -54,13 +54,16 @@ export function useUserProfile() {
   const updateUsername = async (newUsername: string) => {
     if (!user) throw new Error('Not authenticated')
 
+    // Normalize username to lowercase
+    const normalizedUsername = newUsername.toLowerCase().trim()
+
     // Validate username format (3-30 chars, lowercase letters, numbers, underscores, hyphens)
-    if (newUsername.length < 3 || newUsername.length > 30) {
+    if (normalizedUsername.length < 3 || normalizedUsername.length > 30) {
       throw new Error('Username must be between 3 and 30 characters')
     }
-    if (!/^[a-z0-9_-]+$/.test(newUsername)) {
+    if (!/^[a-z0-9_-]+$/.test(normalizedUsername)) {
       throw new Error(
-        'Username can only contain lowercase letters, numbers, underscores and hyphens'
+        'Username can only contain letters, numbers, underscores and hyphens'
       )
     }
 
@@ -68,7 +71,7 @@ export function useUserProfile() {
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          username: newUsername,
+          username: normalizedUsername,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -79,7 +82,9 @@ export function useUserProfile() {
         throw new Error(error.message || 'Failed to update username')
       }
 
-      setProfile((prev) => (prev ? { ...prev, username: newUsername } : null))
+      setProfile((prev) =>
+        prev ? { ...prev, username: normalizedUsername } : null
+      )
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to update username')
     }
