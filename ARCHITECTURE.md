@@ -1,36 +1,97 @@
-# Architecture Refactoring
+# Architecture Refactoring - Clean Architecture
 
 ## Objectif
 
-Transformer le code POC en une architecture maintenable et testable avec une séparation claire des responsabilités.
+Transformer le code POC en une architecture maintenable et testable suivant les principes de **Clean Architecture** (Uncle Bob) / **Hexagonal Architecture** (Ports & Adapters).
 
 ## Principes
 
-1. **Separation of Concerns** : Séparer la logique métier (services) de la gestion d'état (stores) et de l'UI (components)
-2. **Testabilité** : Chaque service doit avoir une suite de tests complète
-3. **Type Safety** : Types TypeScript centralisés et générés depuis Supabase
-4. **Single Source of Truth** : Éviter la duplication de code et de logique
+1. **Independence of Frameworks** : Le domain ne dépend d'aucun framework (React, Supabase, Jotai)
+2. **Testability** : Logique métier 100% testable sans mock d'infrastructure
+3. **Separation of Concerns** : Domain, Use Cases, Infrastructure, Presentation
+4. **Dependency Rule** : Les dépendances pointent vers l'intérieur (Domain au centre)
 
-## Structure
+## Architecture en couches
 
 ```
-src/
-├── lib/                    # Configuration et utilitaires globaux
-│   ├── supabase.ts        # Client Supabase configuré
-│   └── constants.ts       # Constantes globales
+┌─────────────────────────────────────────────────┐
+│   domain/                 # 🎯 CORE - Aucune dépendance externe
+│   ├── entities/          # Entités métier (Project, File, User)
+│   │   ├── project.entity.ts
+│   │   ├── file.entity.ts
+│   │   └── user.entity.ts
+│   │
+│   ├── value-objects/     # Value Objects immuables
+│   │   ├── project-name.vo.ts
+│   │   ├── visibility.vo.ts
+│   │   └── file-content.vo.ts
+│   │
+│   ├── repositories/      # Interfaces (Ports)
+│   │   ├── project.repository.interface.ts
+│   │   ├── file.repository.interface.ts
+│   │   ├── auth.repository.interface.ts
+│   │   └── tag.repository.interface.ts
+│   │
+│   ├── services/          # Services de domaine (logique métier pure)
+│   │   └── project-validation.service.ts
+│   │
+│   └── errors/            # Erreurs métier
+│       ├── domain.error.ts
+│       ├── validation.error.ts
+│       └── not-found.error.ts
 │
-├── types/                  # Types TypeScript centralisés
-│   ├── database.types.ts  # Types générés depuis Supabase (à terme auto-généré)
-│   ├── auth.types.ts      # Types pour l'authentification
-│   └── project.types.ts   # Types pour les projets/fichiers
+├── use-cases/             # 📋 Application Business Rules
+│   ├── projects/
+│   │   ├── create-project.use-case.ts
+│   │   ├── update-project.use-case.ts
+│   │   ├── delete-project.use-case.ts
+│   │   ├── fetch-projects.use-case.ts
+│   │   ├── share-project.use-case.ts
+│   │   └── __tests__/
+│   │       ├── create-project.use-case.test.ts
+│   │       └── update-project.use-case.test.ts
+│   │
+│   ├── files/
+│   │   ├── create-file.use-case.ts
+│   │   ├── update-file.use-case.ts
+│   │   └── __tests__/
+│   │
+│   └── auth/
+│       ├── sign-in.use-case.ts
+│       ├── sign-up.use-case.ts
+│       └── __tests__/
 │
-├── services/               # Couche service (logique métier)
-│   ├── auth.service.ts    # ✅ DONE - Gestion authentification
-│   ├── projects.service.ts # TODO - CRUD projets
-│   ├── files.service.ts   # TODO - CRUD fichiers
-│   ├── tags.service.ts    # TODO - Gestion tags
-│   └── __tests__/         # Tests unitaires des services
-│       └── auth.service.test.ts # ✅ DONE - 16 tests
+├── infrastructure/        # 🔌 Adapters (implémentations techniques)
+│   ├── repositories/     # Implémentation des interfaces du domain
+│   │   ├── supabase-project.repository.ts
+│   │   ├── supabase-file.repository.ts
+│   │   ├── supabase-auth.repository.ts
+│   │   └── __tests__/   # Tests d'intégration ou avec mock Supabase
+│   │
+│   ├── auth/            # Adaptateur auth
+│   │   └── supabase-auth.adapter.ts
+│   │
+│   └── config/          # Configuration Supabase
+│       └── supabase.client.ts
+│
+├── presentation/         # 🎨 UI Layer
+│   ├── components/      # Composants React
+│   ├── hooks/          # Hooks React (appellent use-cases)
+│   │   ├── use-create-project.ts
+│   │   └── use-projects-list.ts
+│   ├── store/          # État global (Jotai)
+│   └── pages/
+│
+└── shared/              # Code partagé (types, utils)
+    ├── types/
+    └── utils/
+├── services/               # Couche logique métier (AUCUNE dépendance Supabase)
+│   ├── auth.service.ts    # TODO - Refactor pour utiliser repository
+│   ├── projects.service.ts # TODO - Orchestration, validation, logique métier
+│   ├── files.service.ts   # TODO - Logique métier fichiers
+│   ├── tags.service.ts    # TODO - Logique métier tags
+│   └── __tests__/         # Tests unitaires avec mock repositories
+│       └── projects.service.test.ts # Tests de la logique pure
 │
 ├── store/                  # État global (Jotai atoms)
 │   ├── editor.ts          # État éditeur (code, erreurs, etc.)
@@ -153,34 +214,135 @@ src/
    }
    
    // hooks/projects/use-projects.ts
-   export function useProjects() {
-     const [projects] = useAtom(projectsAtom)
-     const fetchProjects = useSetAtom(fetchProjectsAtom)
-     // ...
-   }
-   ```
+   export function  : Repository + Service
 
-## Pattern à suivre
+### Architecture en couches
 
-### 1. Service Layer
+```
+UI (Components)
+    ↓ utilise
+Hooks (useProjects)
+    ↓ utilise
+Services (projectsService) ← Logique métier PURE
+    ↓ utilise
+Repositories (projectsRepository) ← Accès données (Supabase)
+    ↓ utilise
+Supabase Client
+```
 
-Chaque service :
+### 1. Repository Layer (Accès données)
+
+Chaque repository :
 - Est une classe singleton
-- Contient toute la logique Supabase pour son domaine
-- Retourne des types typés (pas `any`)
-- Gère les erreurs de manière cohérente
-- N'a pas de dépendance sur React ou Jotai
+- Contient UNIQUEMENT les calls Supabase (pas de logique métier)
+- Retourne des types typés
+- Gère les erreurs de base (throw)
+- Mapping DB ↔ Domain types
 
 **Exemple :**
 ```typescript
-class ProjectsService {
-  async createProject(input: CreateProjectInput): Promise<Project> {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({ ...input })
-        .select()
-        .single()
+// repositories/projects.repository.ts
+class ProjectsRepository {
+  async findAll(userId: string): Promise<Project[]> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', userId)
+    
+    if (error) throw error
+    return data.map(this.mapToProject)
+  }
+  
+  async create(input: ProjectDbInput): Promise<Project> {
+    const { data, error } = await supabase
+    3. Tests
+
+#### Tests de Repositories
+- Mockent Supabase (couche infrastructure)
+- Testent le mapping et les queries
+- Ou tests d'intégration avec vraie DB
+
+```typescript
+// repositories/__tests__/projects.repository.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { projectsRepository } from '../projects.repository'
+
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockResolvedValue({ data: mockData, error: null })
+    }))
+  }
+}))
+
+describe('ProjectsRepository', () => {
+  it('should call supabase with correct query', async () => {
+    // Test infrastructure
+  })
+})
+```
+
+#### Tests de Services
+- **Mockent les repositories** (pas Supabase !)
+- Testent la logique métier pure
+- Validation, transformation, orchestration
+
+```typescript
+// services/__tests__/projects.service.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { ProjectsService } from '../projects.service'
+
+// Mock du repository (pas Supabase)
+const mockRepository = {
+  findAll: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn()
+}
+
+describe('ProjectsService', () => {
+  let service: ProjectsService
+  
+  beforeEach(() => {
+    service = new ProjectsService(mockRepository)
+    vi.clearAllMocks()
+  })
+  
+  describe('createProject', () => {
+    it('should validate project name length', async () => {
+      // Test logique métier
+      await expect(
+        service.createProject({ name: 'ab' })
+      ).rejects.toThrow('at least 3 characters')
+      
+      expect(mockRepository.create).not.toHaveBeenCalled()
+    })
+    
+    it('should generate slug from name', async () => {
+      mockRepository.create.mockResolvedValue({ id: '1', name: 'Test' })
+      
+      await service.createProject({ name: 'My Project' })
+      
+      expect(mockRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ slug: 'my-project' })
+      )ut.name || input.name.length < 3) {
+      throw new Error('Project name must be at least 3 characters')
+    }
+    
+    // Transformation métier
+    const projectData = {
+      ...input,
+      name: input.name.trim(),
+      slug: this.generateSlug(input.name)
+    }
+    
+    // Délégation au repository
+    return await this.repo.create(projectData)
+  }
+  
+  private generateSlug(name: string): string {
+    // Logique métier pure
+    return name.toLowerCase().replace(/\s+/g, '-')   .single()
       
       if (error) throw error
       return this.mapToProject(data)
@@ -209,20 +371,188 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ProjectsService } from '../projects.service'
 
 vi.mock('@/lib/supabase', () => ({
+   Tests Strategy
+
+### Tests de Domain (Entities + Value Objects)
+- Tests unitaires purs
+- Aucun mock nécessaire
+- Tests de la logique métier
+
+```typescript
+// domain/value-objects/__tests__/project-name.vo.test.ts
+import { describe, it, expect } from 'vitest'
+import { ProjectName } from '../project-name.vo'
+import { ValidationError } from '@/domain/errors/validation.error'
+
+describe('ProjectName', () => {
+  it('should create valid project name', () => {
+    const name = ProjectName.create('Valid Name')
+    expect(name.value).toBe('Valid Name')
+  })
+
+  it('should trim whitespace', () => {
+    const name = ProjectName.create('  Name  ')
+    expect(name.value).toBe('Name')
+  })
+
+  it('should reject name too short', () => {
+    expect(() => ProjectName.create('ab')).toThrow(ValidationError)
+    expect(() => ProjectName.create('ab')).toThrow('at least 3 characters')
+  })
+
+  it('should reject name too long', () => {
+    const longName = 'a'.repeat(101)
+    expect(() => ProjectName.create(longName)).toThrow(ValidationError)
+  })
+})
+```
+
+### Tests de Use Cases
+- Mockent les interfaces de repositories
+- Testent l'orchestration
+- 100% isolés de l'infrastructure
+
+```typescript
+// use-cases/projects/__tests__/create-project.use-case.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { CreateProjectUseCase } from '../create-project.use-case'
+import type { IProjectRepository } from '@/domain/repositories/project.repository.interface'
+import type { IAuthRepository } from '@/domain/repositories/auth.repository.interface'
+import { Project } from '@/domain/entities/project.entity'
+
+describe('CreateProjectUseCase', () => {
+  let useCase:Domain Layer (Foundation)
+1. ✅ Créer structure de dossiers
+2. ⏳ Définir entités (Project, File, User)
+3. ⏳ Créer value objects (ProjectName, Visibility, FileContent)
+4. ⏳ Définir interfaces de repositories (ports)
+5. ⏳ Créer erreurs métier custom
+6. ⏳ Tests unitaires du domain (100% coverage)
+
+### Phase 2 : Infrastructure Layer
+1. ⏳ Créer repositories Supabase (implémentent interfaces)
+2. ⏳ Créer mappers (DB ↔ Domain)
+3. ⏳ Tests d'infrastructure (mock Supabase ou intégration)
+
+### Phase 3 : Use Cases Layer
+1. ⏳ Create/Update/Delete project use-cases
+2. ⏳ Share/Unshare project use-cases
+3. ⏳ Files use-cases
+4. ⏳ Auth use-cases
+5. ⏳ Tests unitaires use-cases (mock repositories)
+
+###Avantages de Clean Architecture
+
+### 1. Testabilité maximale
+- Domain : 100% testable sans aucun mock
+- Use Cases : Testables avec mocks d'interfaces
+- Infrastructure : Testable séparément
+
+### 2. Indépendance des frameworks
+- Domain ne connaît pas React, Supabase, Jotai
+- Changement de BDD ? Seule l'infrastructure change
+- Changement de UI ? Seule la presentation change
+
+### 3. Règle de dépendance respectée
+```
+Domain (aucune dépendance)
+   ↑
+Use Cases (dépend du domain)
+   ↑
+Infrastructure (implémente les interfaces du domain)
+   ↑
+Presentation (utilise use-cases)
+```
+
+### 4. Logique métier centrale et protégée
+- Validation dans value objects
+- Règles métier dans entités
+- Orchestration dans use-cases
+- Infrastructure isolée     name: 'Test Project',
+        userId: 'user-123'
+      })
+    )
+    expect(project).toBeInstanceOf(Project)
+  })
+
+  it('should validate project name via value object', async () => {
+    mockAuthRepo.getCurrentUserId.mockResolvedValue('user-123')
+
+    // Act & Assert
+    await expect(
+      useCase.execute({ name: 'ab', visibility: 'private' })
+    ).rejects.toThrow('at least 3 characters')
+
+    expect(mockProjectRepo.save).not.toHaveBeenCalled()
+  })
+
+  it('should use default visibility if not provided', async () => {
+    mockAuthRepo.getCurrentUserId.mockResolvedValue('user-123')
+    mockProjectRepo.save.mockImplementation(async (project) => project)
+
+    const project = await useCase.execute({ name: 'Test' })
+
+    expect(project.visibility).toBe('private')
+  })
+})
+```
+
+### Tests de Repositories (Infrastructure)
+- Mockent Supabase (ou tests d'intégration)
+- Testent le mapping DB ↔ Domain
+- Testent les queries SQL
+
+```typescript
+// infrastructure/repositories/__tests__/supabase-project.repository.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { SupabaseProjectRepository } from '../supabase-project.repository'
+import { Project } from '@/domain/entities/project.entity'
+
+vi.mock('@/infrastructure/config/supabase.client', () => ({
   supabase: {
     from: vi.fn(() => ({
-      insert: vi.fn(),
-      select: vi.fn(),
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
       single: vi.fn()
     }))
   }
 }))
 
-describe('ProjectsService', () => {
-  let service: ProjectsService
-  
+describe('SupabaseProjectRepository', () => {
+  let repository: SupabaseProjectRepository
+
   beforeEach(() => {
-    service = new ProjectsService()
+    repository = new SupabaseProjectRepository()
+    vi.clearAllMocks()
+  })
+
+  it('should map database row to domain entity', async () => {
+    const mockData = {
+      id: 'project-1',
+      user_id: 'user-123',
+      name: 'Test',
+      visibility: 'private',
+      // ...
+    }
+
+    // Setup mock
+    const mockQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: mockData, error: null })
+    }
+    
+    supabase.from.mockReturnValue(mockQuery)
+
+    // Act
+    const project = await repository.findById('project-1')
+
+    // Assert
+    expect(project).toBeInstanceOf(Project)
+    expect(project?.name).toBe('Test')
+  })
+})
+```  service = new ProjectsService()
     vi.clearAllMocks()
   })
   
