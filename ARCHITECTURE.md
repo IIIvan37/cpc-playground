@@ -44,6 +44,12 @@ src/
 │
 └── components/             # Composants React
     ├── auth/              # Composants authentification
+    │   └── auth-modal/
+    │       ├── auth-modal.tsx           # Logique (hooks, état)
+    │       ├── auth-modal.spec.tsx      # Tests logique
+    │       ├── auth-modal.view.tsx      # Présentation pure
+    │       ├── auth-modal.view.spec.tsx # Tests présentation
+    │       └── auth-modal.module.css    # Styles
     ├── project/           # Composants projets
     ├── editor/            # Éditeur de code
     └── ui/                # Composants UI réutilisables
@@ -302,10 +308,10 @@ export function useProjectCreate() {
 
 ### Naming
 - Services : `*.service.ts` (singleton lowercase)
-- Tests : `*.test.ts`
+- Tests : `*.test.ts` (services), `*.spec.tsx` (components)
 - Types : `*.types.ts`
 - Hooks : `use-*.ts`
-- Composants : PascalCase
+- Composants : PascalCase + dossier par composant
 
 ### Imports
 ```typescript
@@ -326,6 +332,263 @@ try {
   throw error // Laisser le caller gérer
 }
 ```
+
+## Pattern Composants
+
+### Structure par composant
+
+Chaque composant suit le pattern **Smart/Dumb** avec séparation présentation/logique :
+
+```
+components/
+└── feature-name/
+    └── component-name/
+        ├── component-name.tsx           # Controller (logique)
+        ├── component-name.spec.tsx      # Tests du controller
+        ├── component-name.view.tsx      # View (présentation pure)
+        ├── component-name.view.spec.tsx # Tests de la view
+        └── component-name.module.css    # Styles
+```
+
+### Controller (*.tsx)
+
+Le fichier principal contient la logique :
+- Gestion d'état (useState, useAtom)
+- Appels aux hooks personnalisés
+- Gestion des événements
+- Aucun JSX de présentation (délégué à `.view.tsx`)
+
+**Exemple :**
+```typescript
+// auth-modal.tsx
+import { useState } from 'react'
+import { useAuth } from '@/hooks/auth'
+import { AuthModalView } from './auth-modal.view'
+
+export interface AuthModalProps {
+  onClose: () => void
+}
+
+export function AuthModal({ onClose }: AuthModalProps) {
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const { signIn, signUp, loading } = useAuth()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    
+    const result = mode === 'signin' 
+      ? await signIn(email, password)
+      : await signUp(email, password)
+    
+    if (result.error) {
+      setError(result.error.message)
+    } else {
+      onClose()
+    }
+  }
+
+  const handleToggleMode = () => {
+    setMode(mode === 'signin' ? 'signup' : 'signin')
+    setError(null)
+  }
+
+  return (
+    <AuthModalView
+      mode={mode}
+      email={email}
+      password={password}
+      error={error}
+      loading={loading}
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onSubmit={handleSubmit}
+      onToggleMode={handleToggleMode}
+      onClose={onClose}
+    />
+  )
+}
+```
+
+### View (*.view.tsx)
+
+Le fichier view contient uniquement la présentation :
+- JSX pur
+- Props typées (toutes les données viennent du controller)
+- Aucune logique (pas de useState, useEffect, etc.)
+- Facile à tester avec Storybook
+
+**Exemple :**
+```typescript
+// auth-modal.view.tsx
+import { Modal } from '@/components/ui/modal'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import styles from './auth-modal.module.css'
+
+export interface AuthModalViewProps {
+  mode: 'signin' | 'signup'
+  email: string
+  password: string
+  error: string | null
+  loading: boolean
+  onEmailChange: (value: string) => void
+  onPasswordChange: (value: string) => void
+  onSubmit: (e: React.FormEvent) => void
+  onToggleMode: () => void
+  onClose: () => void
+}
+
+export function AuthModalView({
+  mode,
+  email,
+  password,
+  error,
+  loading,
+  onEmailChange,
+  onPasswordChange,
+  onSubmit,
+  onToggleMode,
+  onClose
+}: AuthModalViewProps) {
+  return (
+    <Modal
+      open={true}
+      onClose={onClose}
+      title={mode === 'signin' ? 'Sign In' : 'Sign Up'}
+    >
+      <form onSubmit={onSubmit} className={styles.form}>
+        {error && <div className={styles.error}>{error}</div>}
+        
+        <Input
+          label='Email'
+          type='email'
+          value={email}
+          onChange={(e) => onEmailChange(e.target.value)}
+          disabled={loading}
+        />
+        
+        <Input
+          label='Password'
+          type='password'
+          value={password}
+          onChange={(e) => onPasswordChange(e.target.value)}
+          disabled={loading}
+        />
+        
+        <Button type='submit' disabled={loading}>
+          {loading ? 'Loading...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+        </Button>
+        
+        <button
+          type='button'
+          onClick={onToggleMode}
+          className={styles.toggle}
+        >
+          {mode === 'signin' ? 'Create account' : 'Already have an account?'}
+        </button>
+      </form>
+    </Modal>
+  )
+}
+```
+
+### Tests Controller (*.spec.tsx)
+
+Teste la logique :
+- Gestion d'état
+- Appels aux services/hooks
+- Gestion d'erreurs
+- Mock des dépendances
+
+**Exemple :**
+```typescript
+// auth-modal.spec.tsx
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { AuthModal } from './auth-modal'
+
+vi.mock('@/hooks/auth', () => ({
+  useAuth: () => ({
+    signIn: vi.fn().mockResolvedValue({ error: null }),
+    signUp: vi.fn().mockResolvedValue({ error: null }),
+    loading: false
+  })
+}))
+
+describe('AuthModal', () => {
+  it('should switch between signin and signup modes', () => {
+    render(<AuthModal onClose={() => {}} />)
+    
+    expect(screen.getByText('Sign In')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Create account'))
+    expect(screen.getByText('Sign Up')).toBeInTheDocument()
+  })
+  
+  it('should display error message on failed signin', async () => {
+    // Test error handling
+  })
+})
+```
+
+### Tests View (*.view.spec.tsx)
+
+Teste la présentation :
+- Rendu des props
+- Interactions utilisateur (clics, changements)
+- Accessibilité
+- Snapshots
+
+**Exemple :**
+```typescript
+// auth-modal.view.spec.tsx
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { AuthModalView } from './auth-modal.view'
+
+describe('AuthModalView', () => {
+  const defaultProps = {
+    mode: 'signin' as const,
+    email: '',
+    password: '',
+    error: null,
+    loading: false,
+    onEmailChange: vi.fn(),
+    onPasswordChange: vi.fn(),
+    onSubmit: vi.fn(),
+    onToggleMode: vi.fn(),
+    onClose: vi.fn()
+  }
+  
+  it('should render signin form', () => {
+    render(<AuthModalView {...defaultProps} />)
+    expect(screen.getByText('Sign In')).toBeInTheDocument()
+  })
+  
+  it('should call onEmailChange when email input changes', () => {
+    render(<AuthModalView {...defaultProps} />)
+    const input = screen.getByLabelText('Email')
+    fireEvent.change(input, { target: { value: 'test@example.com' } })
+    expect(defaultProps.onEmailChange).toHaveBeenCalledWith('test@example.com')
+  })
+  
+  it('should display error message', () => {
+    render(<AuthModalView {...defaultProps} error='Invalid credentials' />)
+    expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
+  })
+})
+```
+
+### Avantages du pattern
+
+1. **Testabilité** : View pure = tests simples sans mocks
+2. **Réutilisabilité** : View peut être réutilisée avec différentes logiques
+3. **Storybook** : View peut être documentée facilement
+4. **Séparation claire** : Logique vs présentation
+5. **Maintenance** : Modifications UI n'affectent pas la logique
 
 ## Commandes
 
