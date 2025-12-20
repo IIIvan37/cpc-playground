@@ -65,7 +65,8 @@ export function ProjectBrowser() {
     }
   }, [user, fetchProjects])
 
-  // Load dependency files when project changes
+  // Load dependency files when project changes or dependencies are updated
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to reload when dependencies change
   useEffect(() => {
     if (currentProjectId) {
       setLoadingDeps(true)
@@ -73,7 +74,7 @@ export function ProjectBrowser() {
         setLoadingDeps(false)
       )
     }
-  }, [currentProjectId, fetchDependencyFiles])
+  }, [currentProjectId, currentProject?.dependencies, fetchDependencyFiles])
 
   // Don't show anything for non-authenticated users
   if (!user && !authLoading) {
