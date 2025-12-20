@@ -99,7 +99,12 @@ export function Toolbar() {
 
         <Button
           onClick={handleCompileAndRun}
-          disabled={!isReady || isCompiling}
+          disabled={!isReady || isCompiling || currentProject?.isLibrary}
+          title={
+            currentProject?.isLibrary
+              ? 'Library projects cannot be assembled or run'
+              : undefined
+          }
         >
           <PlayIcon />
           <span>{isCompiling ? 'Compiling...' : 'Run'}</span>

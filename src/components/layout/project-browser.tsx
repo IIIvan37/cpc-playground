@@ -47,6 +47,7 @@ export function ProjectBrowser() {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false)
   const [showNewFileDialog, setShowNewFileDialog] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
+  const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
   const [newFileName, setNewFileName] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -66,9 +67,13 @@ export function ProjectBrowser() {
     if (!newProjectName.trim()) return
     setLoading(true)
     try {
-      await createProject({ name: newProjectName.trim() })
+      await createProject({
+        name: newProjectName.trim(),
+        isLibrary: newProjectIsLibrary
+      })
       setShowNewProjectDialog(false)
       setNewProjectName('')
+      setNewProjectIsLibrary(false)
     } catch (error) {
       console.error('Failed to create project:', error)
     } finally {
@@ -290,6 +295,24 @@ export function ProjectBrowser() {
               onChange={(e) => setNewProjectName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
             />
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginTop: '1rem',
+                cursor: 'pointer'
+              }}
+            >
+              <input
+                type='checkbox'
+                checked={newProjectIsLibrary}
+                onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
+              />
+              <span>
+                Library/Utility project (no entry point, cannot be assembled)
+              </span>
+            </label>
             <div className={styles.dialogActions}>
               <Button
                 variant='outline'

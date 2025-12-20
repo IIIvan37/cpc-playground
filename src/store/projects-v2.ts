@@ -157,7 +157,11 @@ export const createProjectAtom = atom(
   async (
     get,
     set,
-    { name, description }: { name: string; description?: string }
+    {
+      name,
+      description,
+      isLibrary
+    }: { name: string; description?: string; isLibrary?: boolean }
   ) => {
     try {
       // Create project
@@ -165,7 +169,8 @@ export const createProjectAtom = atom(
         .from('projects')
         .insert({
           name,
-          description: description ?? null
+          description: description ?? null,
+          is_library: isLibrary ?? false
         })
         .select()
         .single()
@@ -215,6 +220,8 @@ message:
         userId: project.user_id,
         name: project.name,
         description: project.description,
+        visibility: project.visibility,
+        isLibrary: project.is_library,
         files: [
           {
             id: file.id,
