@@ -11,7 +11,7 @@ import {
   savedProgramsAtom,
   saveProgramAtom
 } from '@/store'
-import { currentProjectAtom, currentFileAtom } from '@/store/projects-v2'
+import { currentProjectAtom } from '@/store/projects-v2'
 import { ProjectSettingsModal } from '@/components/project/project-settings-modal'
 import styles from './program-manager.module.css'
 

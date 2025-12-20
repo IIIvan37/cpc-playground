@@ -39,6 +39,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      project_dependencies: {
+        Row: {
+          created_at: string
+          dependency_id: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          dependency_id: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          dependency_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_dependencies_dependency_id_fkey"
+            columns: ["dependency_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_dependencies_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           content: string
@@ -80,30 +113,131 @@ export type Database = {
           },
         ]
       }
+      project_shares: {
+        Row: {
+          created_at: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_shares_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_tags: {
+        Row: {
+          project_id: string
+          tag_id: string
+        }
+        Insert: {
+          project_id: string
+          tag_id: string
+        }
+        Update: {
+          project_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tags_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
           description: string | null
           id: string
+          is_library: boolean
           name: string
           updated_at: string
           user_id: string
+          visibility: Database["public"]["Enums"]["project_visibility"]
         }
         Insert: {
           created_at?: string
           description?: string | null
           id?: string
+          is_library?: boolean
           name: string
           updated_at?: string
           user_id?: string
+          visibility?: Database["public"]["Enums"]["project_visibility"]
         }
         Update: {
           created_at?: string
           description?: string | null
           id?: string
+          is_library?: boolean
           name?: string
           updated_at?: string
           user_id?: string
+          visibility?: Database["public"]["Enums"]["project_visibility"]
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string
         }
         Relationships: []
       }
@@ -115,7 +249,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      project_visibility: "private" | "public" | "shared"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -245,6 +379,8 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      project_visibility: ["private", "public", "shared"],
+    },
   },
 } as const
