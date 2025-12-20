@@ -124,20 +124,8 @@
   font-weight: 600;
 }
 
-.dialog input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: var(--foreground);
+.dialogInput {
   margin-bottom: 1rem;
-}
-
-.dialog input:focus {
-  outline: none;
-  border-color: var(--primary);
 }
 
 .dialogActions {

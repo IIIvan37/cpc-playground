@@ -366,6 +366,7 @@ export function ProjectBrowser() {
           <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
             <h3>New Project</h3>
             <Input
+              className={styles.dialogInput}
               type='text'
               placeholder='Project name'
               value={newProjectName}
@@ -405,6 +406,7 @@ export function ProjectBrowser() {
           <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
             <h3>New File</h3>
             <Input
+              className={styles.dialogInput}
               type='text'
               placeholder='File name (e.g., sprite.asm)'
               value={newFileName}
