@@ -1,7 +1,15 @@
+import { useState } from 'react'
+import { AuthModal } from '@/components/auth'
 import { ExamplesMenu } from '@/components/examples'
+import Button from '@/components/ui/button/button'
+import { UserProfile } from '@/components/user/user-profile'
+import { useAuth } from '@/hooks'
 import styles from './app-header.module.css'
 
 export function AppHeader() {
+  const { user } = useAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
+
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
@@ -10,6 +18,18 @@ export function AppHeader() {
       </div>
 
       <div className={styles.actions}>
+        {user ? (
+          <UserProfile />
+        ) : (
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setShowAuthModal(true)}
+            title='Sign in'
+          >
+            Sign In
+          </Button>
+        )}
         <ExamplesMenu />
         <a
           href='https://github.com/IIIvan37/cpc-playground'
@@ -30,6 +50,8 @@ export function AppHeader() {
           </svg>
         </a>
       </div>
+
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </header>
   )
 }

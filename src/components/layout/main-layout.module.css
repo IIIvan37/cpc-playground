@@ -10,15 +10,20 @@
 .main {
   flex: 1;
   display: flex;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-md) var(--spacing-lg);
+  gap: 0;
   overflow: hidden;
+}
+
+.sidebar {
+  flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .panel {
   flex: 1;
   min-width: 0;
   transition: flex 0.3s ease;
+  padding: var(--spacing-md) var(--spacing-lg);
 }
 
 .panel[data-hidden="true"] {

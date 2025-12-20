@@ -82,7 +82,7 @@ export function EmulatorCanvas() {
       if (e.shiftKey && e.code && e.code.startsWith('Digit')) {
         e.preventDefault()
         e.stopPropagation()
-        const fnNum = parseInt(e.code.charAt(5)) // 'Digit0' -> 0, etc.
+        const fnNum = parseInt(e.code.charAt(5), 10) // 'Digit0' -> 0, etc.
         if (Module._em_press_fn) {
           Module._em_press_fn(fnNum)
         }
@@ -103,8 +103,8 @@ export function EmulatorCanvas() {
       }
 
       // Handle Shift+number key release for CPC function keys
-      if (e.code && e.code.startsWith('Digit')) {
-        const fnNum = parseInt(e.code.charAt(5))
+      if (e.code?.startsWith('Digit')) {
+        const fnNum = parseInt(e.code.charAt(5), 10)
         if (Module._em_release_fn) {
           Module._em_release_fn(fnNum)
         }
