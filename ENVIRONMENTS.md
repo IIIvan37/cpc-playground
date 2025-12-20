@@ -1,18 +1,18 @@
 # Multi-Environment Setup Guide
 
-Ce projet supporte 3 environnements distincts, chacun avec son propre projet Supabase et sa configuration GitHub OAuth.
+Ce projet supporte 3 environnements, tous basés sur Supabase Docker en local sauf la production.
 
 ## Environnements
 
-| Environnement | Commande | Fichier env | Usage |
-|--------------|----------|-------------|-------|
-| **Local** | `pnpm dev` | `.env.local` | Développement local avec Supabase local |
-| **Test** | `pnpm dev:test` | `.env.test` | Tests et staging |
-| **Production** | `pnpm dev:prod` | `.env.production` | Production |
+| Environnement | Commande | Fichier env | Supabase | Usage |
+|--------------|----------|-------------|----------|-------|
+| **Local** | `pnpm dev` | `.env.local` | Docker local | Développement |
+| **Test** | `pnpm test` | `.env.test` | Docker local | Tests d'intégration |
+| **Production** | Netlify | Variables Netlify | Cloud | Production |
 
 ## Configuration
 
-### 1. Environnement Local
+### 1. Environnement Local (Développement)
 
 Utilise Supabase en local via Docker.
 
@@ -24,99 +24,69 @@ supabase start
 cp .env.local.example .env.local
 
 # Les valeurs par défaut fonctionnent avec supabase start
+# Lancer le dev server
+pnpm dev
 ```
 
-**GitHub OAuth pour local:**
-- Créer une OAuth App sur GitHub: https://github.com/settings/developers
-- Homepage URL: `http://localhost:5173`
-- Authorization callback URL: `http://127.0.0.1:54321/auth/v1/callback`
-- Configurer dans Supabase Dashboard local: http://127.0.0.1:54323/project/default/auth/providers
+### 2. Environnement Test (Tests d'intégration)
 
-### 2. Environnement Test
-
-Créer un projet Supabase séparé pour les tests.
+Utilise aussi Supabase Docker. Les tests peuvent reset la DB entre chaque test.
 
 ```bash
+# S'assurer que Supabase local tourne
+supabase start
+
 # Copier le fichier exemple
 cp .env.test.example .env.test
 
-# Remplir avec les vraies valeurs du projet test
+# Lancer les tests
+pnpm test
 ```
 
-**Setup Supabase Test:**
-1. Créer un nouveau projet sur https://supabase.com/dashboard
-2. Copier l'URL et la clé anon dans `.env.test`
-3. Appliquer les migrations: `supabase db push --linked`
-
-**GitHub OAuth pour test:**
-- Créer une OAuth App dédiée au test
-- Homepage URL: `https://test.your-domain.com` (ou Netlify preview URL)
-- Authorization callback URL: `https://YOUR_TEST_PROJECT.supabase.co/auth/v1/callback`
-- Configurer dans le Dashboard Supabase du projet test
+**Pour les tests d'intégration:**
+- Utiliser `supabase db reset` pour repartir d'une base propre
+- Ou créer des fixtures/seeds spécifiques aux tests
 
 ### 3. Environnement Production
 
-```bash
-# Copier le fichier exemple
-cp .env.production.example .env.production
+Nécessite un projet Supabase Cloud.
 
-# Remplir avec les vraies valeurs du projet production
-```
+**Setup Supabase Cloud:**
+1. Créer un projet sur https://supabase.com/dashboard
+2. Lier le projet: `supabase link --project-ref YOUR_PROJECT_REF`
+3. Appliquer les migrations: `supabase db push`
 
 **GitHub OAuth pour production:**
-- Créer une OAuth App dédiée à la production
-- Homepage URL: `https://your-domain.com`
-- Authorization callback URL: `https://YOUR_PROD_PROJECT.supabase.co/auth/v1/callback`
-- Configurer dans le Dashboard Supabase du projet production
+1. Créer une OAuth App sur https://github.com/settings/developers
+   - Homepage URL: `https://your-domain.netlify.app`
+   - Authorization callback URL: `https://YOUR_PROJECT.supabase.co/auth/v1/callback`
+2. Configurer dans Supabase Dashboard > Authentication > Providers > GitHub
 
-## Déploiement Netlify
-
-### Variables d'environnement
-
+**Déploiement Netlify:**
 Dans Netlify Dashboard > Site settings > Environment variables:
-
-**Production (main branch):**
 ```
-VITE_SUPABASE_URL=https://YOUR_PROD_PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=your_prod_anon_key
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key
 VITE_APP_ENV=production
 ```
-
-**Preview/Staging (autres branches):**
-Utiliser les "Deploy contexts" pour définir des variables différentes pour les branches de preview.
-
-### Build Commands
-
-- Production: `pnpm build:prod`
-- Preview: `pnpm build:test`
 
 ## Structure des fichiers
 
 ```
-.env.example           # Template général (committé)
-.env.local.example     # Template local (committé)
-.env.test.example      # Template test (committé)
-.env.production.example # Template production (committé)
+.env.example              # Documentation (committé)
+.env.local.example        # Template local (committé)
+.env.test.example         # Template test (committé)
+.env.production.example   # Template production (committé)
 
-.env.local             # Valeurs local (ignoré par git)
-.env.test              # Valeurs test (ignoré par git)
-.env.production        # Valeurs production (ignoré par git)
+.env.local                # Valeurs local (ignoré)
+.env.test                 # Valeurs test (ignoré)
+.env.production           # Valeurs production (ignoré - utilisé uniquement pour dev:prod)
 ```
 
-## Vérifier l'environnement actif
+## Résumé
 
-L'environnement actif est disponible via `import.meta.env.VITE_APP_ENV`:
-
-```typescript
-console.log('Current environment:', import.meta.env.VITE_APP_ENV)
-// 'local', 'test', ou 'production'
-```
-
-## Checklist pour chaque environnement
-
-- [ ] Projet Supabase créé
-- [ ] Migrations appliquées
-- [ ] GitHub OAuth App créée
-- [ ] OAuth configuré dans Supabase
-- [ ] Fichier .env rempli
-- [ ] Test de connexion GitHub
+| | Local | Test | Production |
+|---|-------|------|------------|
+| **Supabase** | Docker | Docker | Cloud |
+| **GitHub OAuth** | Non requis | Non requis | Requis |
+| **Où configurer** | `.env.local` | `.env.test` | Netlify Dashboard |
