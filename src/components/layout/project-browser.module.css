@@ -268,7 +268,10 @@
 
 .dependencyFile {
   opacity: 0.8;
-  padding-left: 1.5rem !important;
+}
+
+.dependencyFile.file {
+  padding-left: 1.5rem;
 }
 
 .dependencyFile:hover {
