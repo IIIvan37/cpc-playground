@@ -50,6 +50,8 @@
 .file.active {
   background: var(--primary);
   color: var(--primary-foreground);
+  border-left: 3px solid #10b981;
+  font-weight: 600;
 }
 
 .projectName,
@@ -299,4 +301,13 @@
   font-size: 0.75rem;
   color: rgba(255, 193, 7, 0.7);
   margin-top: 0.25rem;
+}
+
+.dependenciesLoading {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  font-style: italic;
+  text-align: center;
+  opacity: 0.7;
 }

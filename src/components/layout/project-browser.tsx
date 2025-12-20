@@ -55,6 +55,7 @@ export function ProjectBrowser() {
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
   const [newFileName, setNewFileName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingDeps, setLoadingDeps] = useState(false)
   const [expandedDeps, setExpandedDeps] = useState<Set<string>>(new Set())
 
   // Load projects on mount
@@ -67,7 +68,10 @@ export function ProjectBrowser() {
   // Load dependency files when project changes
   useEffect(() => {
     if (currentProjectId) {
-      fetchDependencyFiles(currentProjectId)
+      setLoadingDeps(true)
+      fetchDependencyFiles(currentProjectId).finally(() =>
+        setLoadingDeps(false)
+      )
     }
   }, [currentProjectId, fetchDependencyFiles])
 
@@ -332,7 +336,12 @@ export function ProjectBrowser() {
           </div>
 
           {/* Dependencies as subfolders */}
-          {dependencyFiles.length > 0 && (
+          {loadingDeps && (
+            <div className={styles.dependenciesLoading}>
+              Loading dependencies...
+            </div>
+          )}
+          {!loadingDeps && dependencyFiles.length > 0 && (
             <div className={styles.dependencies}>
               <div className={styles.dependenciesHeader}>
                 <span>Dependencies</span>
