@@ -123,29 +123,24 @@ export function ProjectBrowser() {
     if (project?.files.length) {
       const mainFile = project.files.find((f) => f.isMain) || project.files[0]
       setCurrentFileId(mainFile.id)
-      setCode(mainFile.content)
     }
   }
 
   const handleSelectFile = (fileId: string) => {
     setCurrentFileId(fileId)
-    const file = currentProject?.files.find((f) => f.id === fileId)
-    if (file) {
-      setCode(file.content)
-    }
   }
 
   const handleCreateFile = async () => {
     if (!currentProjectId || !newFileName.trim()) return
     setLoading(true)
     try {
-      const file = await createFile({
+      await createFile({
         projectId: currentProjectId,
         name: newFileName.trim()
       })
       setShowNewFileDialog(false)
       setNewFileName('')
-      setCode(file.content)
+      // Le nouveau fichier est déjà sélectionné et son contenu vide chargé par createFileAtom
     } catch (error) {
       console.error('Failed to create file:', error)
     } finally {
@@ -197,6 +192,29 @@ export function ProjectBrowser() {
           <PlusIcon />
         </Button>
       </div>
+
+      {/* Scratch mode indicator */}
+      {!currentProjectId && (
+        <div className={styles.scratchMode}>
+          <div className={styles.scratchModeContent}>
+            <FileIcon />
+            <div>
+              <div className={styles.scratchModeTitle}>Scratch Mode</div>
+              <div className={styles.scratchModeHint}>
+                Code not saved to any project
+              </div>
+            </div>
+          </div>
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={() => setShowNewProjectDialog(true)}
+            title='Create a project to save your work'
+          >
+            Save to Project
+          </Button>
+        </div>
+      )}
 
       <div className={styles.projectList}>
         {projects.map((project) => (
