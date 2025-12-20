@@ -221,8 +221,14 @@ export const createProjectAtom = atom(
     {
       name,
       description,
-      isLibrary
-    }: { name: string; description?: string; isLibrary?: boolean }
+      isLibrary,
+      initialContent
+    }: {
+      name: string
+      description?: string
+      isLibrary?: boolean
+      initialContent?: string
+    }
   ) => {
     try {
       // Create project
@@ -240,8 +246,10 @@ export const createProjectAtom = atom(
 
       // Create default file - different for library vs regular project
       const fileName = isLibrary ? 'lib.asm' : 'main.asm'
-      const fileContent = isLibrary
-        ? `; ${name} - Library
+      const fileContent =
+        initialContent ??
+        (isLibrary
+          ? `; ${name} - Library
 ; This file can be included in other projects
 
 ; Example macro
@@ -253,7 +261,7 @@ export const createProjectAtom = atom(
 ; my_routine:
 ;     ret
 `
-        : `; ${name}
+          : `; ${name}
 org #4000
 
 start:
@@ -275,7 +283,7 @@ print_string:
 
 message:
     db "Hello from ${name}!", 0
-`
+`)
 
       const { data: file, error: fileError } = await supabase
         .from('project_files')
