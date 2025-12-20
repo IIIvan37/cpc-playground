@@ -9,13 +9,15 @@ type Props = {
   readonly onValueChange: (value: string) => void
   readonly children: ReactNode
   readonly disabled?: boolean
+  readonly placeholder?: string
 }
 
 export function Select({
   value,
   onValueChange,
   children,
-  disabled = false
+  disabled = false,
+  placeholder
 }: Props) {
   return (
     <RadixSelect.Root
@@ -24,7 +26,7 @@ export function Select({
       disabled={disabled}
     >
       <RadixSelect.Trigger className={styles.trigger}>
-        <RadixSelect.Value />
+        <RadixSelect.Value placeholder={placeholder} />
         <RadixSelect.Icon className={styles.icon}>
           <ChevronDownIcon />
         </RadixSelect.Icon>

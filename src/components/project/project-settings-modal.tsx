@@ -400,8 +400,8 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
               <Select
                 value={selectedDependency}
                 onValueChange={(value) => setSelectedDependency(value)}
+                placeholder='Select a library...'
               >
-                <SelectItem value=''>Select a library...</SelectItem>
                 {availableDependencies.map((proj) => (
                   <SelectItem key={proj.id} value={proj.id}>
                     {proj.name}
