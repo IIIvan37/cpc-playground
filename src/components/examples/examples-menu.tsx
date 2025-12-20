@@ -2,6 +2,7 @@ import { useSetAtom } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { Select, SelectItem } from '@/components/ui/select'
 import { codeAtom } from '@/store'
+import { currentFileIdAtom, currentProjectIdAtom } from '@/store/projects-v2'
 
 interface Example {
   name: string
@@ -12,6 +13,8 @@ export function ExamplesMenu() {
   const [examples, setExamples] = useState<Example[]>([])
   const [selectedValue, setSelectedValue] = useState('')
   const setCode = useSetAtom(codeAtom)
+  const setCurrentFileId = useSetAtom(currentFileIdAtom)
+  const setCurrentProjectId = useSetAtom(currentProjectIdAtom)
 
   useEffect(() => {
     fetch('/examples/index.json')
@@ -29,12 +32,14 @@ export function ExamplesMenu() {
         const response = await fetch(`/examples/${example.file}`)
         const code = await response.text()
         setCode(code)
+        setCurrentProjectId(null) // Désélectionner le projet
+        setCurrentFileId(null) // Désélectionner le fichier
         setSelectedValue(value)
       } catch (error) {
         console.error('Failed to load example:', error)
       }
     },
-    [examples, setCode]
+    [examples, setCode, setCurrentProjectId, setCurrentFileId]
   )
 
   if (examples.length === 0) {

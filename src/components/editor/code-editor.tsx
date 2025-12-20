@@ -1,6 +1,7 @@
 import { useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
+import { currentFileAtom } from '@/store/projects-v2'
 import styles from './code-editor.module.css'
 
 const LINE_HEIGHT = 21
@@ -10,9 +11,17 @@ export function CodeEditor() {
   const [code, setCode] = useAtom(codeAtom)
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
   const errorLines = useAtomValue(errorLinesAtom)
+  const currentFile = useAtomValue(currentFileAtom)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
+
+  // Synchronize code with current file when it changes
+  useEffect(() => {
+    if (currentFile) {
+      setCode(currentFile.content)
+    }
+  }, [currentFile, setCode])
 
   const lines = code.split('\n')
 
@@ -88,8 +97,10 @@ export function CodeEditor() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <span className={styles.title}>Z80 Assembly</span>
-        <span className={styles.hint}>RASM Syntax</span>
+        <span className={styles.title}>{currentFile?.name ?? 'Scratch'}</span>
+        <span className={styles.hint}>
+          {currentFile ? 'Project File' : 'Unsaved • RASM Syntax'}
+        </span>
       </div>
       <div className={styles.editorWrapper}>
         <div
