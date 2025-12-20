@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react'
 import Button from '@/components/ui/button/button'
 import Checkbox from '@/components/ui/checkbox/checkbox'
 import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
 import { useAuth } from '@/hooks'
 import { codeAtom } from '@/store/editor'
 import {
@@ -358,78 +359,72 @@ export function ProjectBrowser() {
       )}
 
       {/* New Project Dialog */}
-      {showNewProjectDialog && (
-        <div
-          className={styles.overlay}
-          onClick={() => setShowNewProjectDialog(false)}
-        >
-          <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
-            <h3>New Project</h3>
-            <Input
-              className={styles.dialogInput}
-              type='text'
-              placeholder='Project name'
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-            />
-            <Checkbox
-              label='Library/Utility project (no entry point, cannot be assembled)'
-              checked={newProjectIsLibrary}
-              onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
-              style={{ marginTop: '1rem' }}
-            />
-            <div className={styles.dialogActions}>
-              <Button
-                variant='outline'
-                onClick={() => setShowNewProjectDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateProject}
-                disabled={loading || !newProjectName.trim()}
-              >
-                Create
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showNewProjectDialog}
+        onClose={() => setShowNewProjectDialog(false)}
+        title='New Project'
+        actions={
+          <>
+            <Button
+              variant='outline'
+              onClick={() => setShowNewProjectDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateProject}
+              disabled={loading || !newProjectName.trim()}
+            >
+              Create
+            </Button>
+          </>
+        }
+      >
+        <Input
+          type='text'
+          placeholder='Project name'
+          value={newProjectName}
+          onChange={(e) => setNewProjectName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+        />
+        <Checkbox
+          label='Library/Utility project (no entry point, cannot be assembled)'
+          checked={newProjectIsLibrary}
+          onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
+          style={{ marginTop: '1rem' }}
+        />
+      </Modal>
 
       {/* New File Dialog */}
-      {showNewFileDialog && (
-        <div
-          className={styles.overlay}
-          onClick={() => setShowNewFileDialog(false)}
-        >
-          <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
-            <h3>New File</h3>
-            <Input
-              className={styles.dialogInput}
-              type='text'
-              placeholder='File name (e.g., sprite.asm)'
-              value={newFileName}
-              onChange={(e) => setNewFileName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateFile()}
-            />
-            <div className={styles.dialogActions}>
-              <Button
-                variant='outline'
-                onClick={() => setShowNewFileDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateFile}
-                disabled={loading || !newFileName.trim()}
-              >
-                Create
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showNewFileDialog}
+        onClose={() => setShowNewFileDialog(false)}
+        title='New File'
+        actions={
+          <>
+            <Button
+              variant='outline'
+              onClick={() => setShowNewFileDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateFile}
+              disabled={loading || !newFileName.trim()}
+            >
+              Create
+            </Button>
+          </>
+        }
+      >
+        <Input
+          type='text'
+          placeholder='File name (e.g., sprite.asm)'
+          value={newFileName}
+          onChange={(e) => setNewFileName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleCreateFile()}
+        />
+      </Modal>
     </div>
   )
 }

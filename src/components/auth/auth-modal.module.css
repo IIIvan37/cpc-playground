@@ -13,12 +13,9 @@
 }
 
 .modal {
-  background: var(--color-background, #1a1a1a);
-  border: 1px solid var(--color-foreground, #333);
   border-radius: 8px;
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
 

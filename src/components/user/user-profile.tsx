@@ -2,6 +2,7 @@ import { useAtomValue } from 'jotai'
 import { useState } from 'react'
 import Button from '@/components/ui/button/button'
 import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
 import { userAtom } from '../../hooks/use-auth'
 import { useUserProfile } from '../../hooks/use-user-profile'
 import { supabase } from '../../lib/supabase'
@@ -55,69 +56,57 @@ export function UserProfile() {
         </span>
       </Button>
 
-      {showModal && (
-        <div className={styles.overlay} onClick={() => setShowModal(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>User Profile</h2>
-              <Button
-                type='button'
-                variant='icon'
-                className={styles.closeButton}
-                onClick={() => setShowModal(false)}
-                aria-label='Close'
-              >
-                ×
-              </Button>
-            </div>
-
-            <div className={styles.info}>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Email</span>
-                <span className={styles.infoValue}>{user.email}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>User ID</span>
-                <span className={styles.infoValue}>
-                  {user.id.substring(0, 8)}...
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.section}>
-              <Input
-                label='Username'
-                type='text'
-                value={newUsername}
-                onChange={(e) => setNewUsername(e.target.value)}
-                placeholder='Enter username'
-              />
-              <div className={styles.helpText}>
-                Username must be 3-30 characters and can only contain letters,
-                numbers, hyphens and underscores
-              </div>
-            </div>
-
-            <div className={styles.actions}>
-              <Button
-                type='button'
-                onClick={handleSaveUsername}
-                disabled={saving}
-              >
-                {saving ? 'Saving...' : 'Save Username'}
-              </Button>
-              <Button
-                type='button'
-                variant='secondary'
-                onClick={handleSignOut}
-                disabled={saving}
-              >
-                Sign Out
-              </Button>
-            </div>
+      <Modal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        title='User Profile'
+        actions={
+          <>
+            <Button
+              type='button'
+              onClick={handleSaveUsername}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Username'}
+            </Button>
+            <Button
+              type='button'
+              variant='secondary'
+              onClick={handleSignOut}
+              disabled={saving}
+            >
+              Sign Out
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.info}>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Email</span>
+            <span className={styles.infoValue}>{user.email}</span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>User ID</span>
+            <span className={styles.infoValue}>
+              {user.id.substring(0, 8)}...
+            </span>
           </div>
         </div>
-      )}
+
+        <div className={styles.section}>
+          <Input
+            label='Username'
+            type='text'
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            placeholder='Enter username'
+          />
+          <div className={styles.helpText}>
+            Username must be 3-30 characters and can only contain letters,
+            numbers, hyphens and underscores
+          </div>
+        </div>
+      </Modal>
     </>
   )
 }
