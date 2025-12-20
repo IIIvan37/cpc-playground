@@ -42,54 +42,57 @@ export type CreateProjectOutput = {
   project: Project
 }
 
-export class CreateProjectUseCase {
-  constructor(private readonly projectsRepository: IProjectsRepository) {}
-
-  async execute(input: CreateProjectInput): Promise<CreateProjectOutput> {
-    // Create value objects from primitive inputs
-    const projectName: ProjectName = createProjectName(input.name)
-    const visibility: VisibilityType = input.visibility
-      ? Visibility[input.visibility.toUpperCase() as keyof typeof Visibility]
-      : Visibility.PRIVATE
-
-    // Create project files if provided
-    const files: ProjectFile[] = []
-    if (input.files && input.files.length > 0) {
-      for (const [index, fileInput] of input.files.entries()) {
-        const fileName: FileName = createFileName(fileInput.name)
-        const fileContent: FileContent = createFileContent(fileInput.content)
-
-        const file = createProjectFile({
-          projectId: '', // Will be set after project creation
-          name: fileName,
-          content: fileContent,
-          isMain: fileInput.isMain ?? index === 0,
-          order: index
-        })
-
-        files.push(file)
-      }
-    }
-
-    // Create project entity
-    const project = createProject({
-      userId: input.userId,
-      name: projectName,
-      description: input.description ?? null,
-      visibility,
-      isLibrary: input.isLibrary ?? false,
-      files
-    })
-
-    // Persist via repository
-    const createdProject = await this.projectsRepository.create(project)
-
-    return { project: createdProject }
-  }
+export type CreateProjectUseCase = {
+  execute(input: CreateProjectInput): Promise<CreateProjectOutput>
 }
 
+/**
+ * Factory function that creates CreateProjectUseCase
+ */
 export function createCreateProjectUseCase(
   projectsRepository: IProjectsRepository
 ): CreateProjectUseCase {
-  return new CreateProjectUseCase(projectsRepository)
+  return {
+    async execute(input: CreateProjectInput): Promise<CreateProjectOutput> {
+      // Create value objects from primitive inputs
+      const projectName: ProjectName = createProjectName(input.name)
+      const visibility: VisibilityType = input.visibility
+        ? Visibility[input.visibility.toUpperCase() as keyof typeof Visibility]
+        : Visibility.PRIVATE
+
+      // Create project files if provided
+      const files: ProjectFile[] = []
+      if (input.files && input.files.length > 0) {
+        for (const [index, fileInput] of input.files.entries()) {
+          const fileName: FileName = createFileName(fileInput.name)
+          const fileContent: FileContent = createFileContent(fileInput.content)
+
+          const file = createProjectFile({
+            projectId: '', // Will be set after project creation
+            name: fileName,
+            content: fileContent,
+            isMain: fileInput.isMain ?? index === 0,
+            order: index
+          })
+
+          files.push(file)
+        }
+      }
+
+      // Create project entity
+      const project = createProject({
+        userId: input.userId,
+        name: projectName,
+        description: input.description ?? null,
+        visibility,
+        isLibrary: input.isLibrary ?? false,
+        files
+      })
+
+      // Persist via repository
+      const createdProject = await projectsRepository.create(project)
+
+      return { project: createdProject }
+    }
+  }
 }

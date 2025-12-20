@@ -10,81 +10,435 @@ Transformer le code POC en une architecture maintenable et testable suivant les 
 2. **Testability** : Logique métier 100% testable sans mock d'infrastructure
 3. **Separation of Concerns** : Domain, Use Cases, Infrastructure, Presentation
 4. **Dependency Rule** : Les dépendances pointent vers l'intérieur (Domain au centre)
+5. **TypeScript Idiomatic** : Privilégier les **factory functions** plutôt que les classes
+6. **Testing Best Practices** : Minimiser les mocks, utiliser des **in-memory repositories**
 
 ## Architecture en couches
 
 ```
 ┌─────────────────────────────────────────────────┐
 │   domain/                 # 🎯 CORE - Aucune dépendance externe
-│   ├── entities/          # Entités métier (Project, File, User)
+│   ├── entities/          # Entités métier (factory functions)
 │   │   ├── project.entity.ts
-│   │   ├── file.entity.ts
-│   │   └── user.entity.ts
+│   │   ├── project-file.entity.ts
+│   │   └── project-share.entity.ts
 │   │
-│   ├── value-objects/     # Value Objects immuables
+│   ├── value-objects/     # Value Objects immuables (factory functions)
 │   │   ├── project-name.vo.ts
 │   │   ├── visibility.vo.ts
-│   │   └── file-content.vo.ts
+│   │   ├── file-name.vo.ts
+│   │   ├── file-content.vo.ts
+│   │   └── share-code.vo.ts
 │   │
 │   ├── repositories/      # Interfaces (Ports)
-│   │   ├── project.repository.interface.ts
-│   │   ├── file.repository.interface.ts
-│   │   ├── auth.repository.interface.ts
-│   │   └── tag.repository.interface.ts
-│   │
-│   ├── services/          # Services de domaine (logique métier pure)
-│   │   └── project-validation.service.ts
+│   │   ├── projects.repository.interface.ts
+│   │   └── files.repository.interface.ts
 │   │
 │   └── errors/            # Erreurs métier
-│       ├── domain.error.ts
-│       ├── validation.error.ts
-│       └── not-found.error.ts
+│       └── domain.error.ts
 │
-├── use-cases/             # 📋 Application Business Rules
-│   ├── projects/
-│   │   ├── create-project.use-case.ts
-│   │   ├── update-project.use-case.ts
-│   │   ├── delete-project.use-case.ts
-│   │   ├── fetch-projects.use-case.ts
-│   │   ├── share-project.use-case.ts
-│   │   └── __tests__/
-│   │       ├── create-project.use-case.test.ts
-│   │       └── update-project.use-case.test.ts
-│   │
-│   ├── files/
-│   │   ├── create-file.use-case.ts
-│   │   ├── update-file.use-case.ts
-│   │   └── __tests__/
-│   │
-│   └── auth/
-│       ├── sign-in.use-case.ts
-│       ├── sign-up.use-case.ts
+├── use-cases/             # 📋 Application Business Rules (factory functions)
+│   └── projects/
+│       ├── create-project.use-case.ts
+│       ├── update-project.use-case.ts
+│       ├── delete-project.use-case.ts
+│       ├── get-projects.use-case.ts
+│       ├── get-project.use-case.ts
 │       └── __tests__/
+│           ├── create-project.use-case.test.ts
+│           ├── update-project.use-case.test.ts
+│           ├── delete-project.use-case.test.ts
+│           ├── get-projects.use-case.test.ts
+│           └── get-project.use-case.test.ts
 │
-├── infrastructure/        # 🔌 Adapters (implémentations techniques)
-│   ├── repositories/     # Implémentation des interfaces du domain
-│   │   ├── supabase-project.repository.ts
-│   │   ├── supabase-file.repository.ts
-│   │   ├── supabase-auth.repository.ts
-│   │   └── __tests__/   # Tests d'intégration ou avec mock Supabase
-│   │
-│   ├── auth/            # Adaptateur auth
-│   │   └── supabase-auth.adapter.ts
-│   │
-│   └── config/          # Configuration Supabase
-│       └── supabase.client.ts
+├── infrastructure/        # 🔌 Adapters (factory functions)
+│   └── repositories/
+│       ├── supabase-projects.repository.ts
+│       └── __tests__/
+│           └── in-memory-projects.repository.ts  # Pour les tests
 │
-├── presentation/         # 🎨 UI Layer
-│   ├── components/      # Composants React
-│   ├── hooks/          # Hooks React (appellent use-cases)
-│   │   ├── use-create-project.ts
-│   │   └── use-projects-list.ts
-│   ├── store/          # État global (Jotai)
-│   └── pages/
-│
-└── shared/              # Code partagé (types, utils)
-    ├── types/
-    └── utils/
+└── presentation/         # 🎨 UI Layer
+    ├── components/      # Composants React
+    ├── hooks/          # Hooks React (appellent use-cases)
+    └── store/          # État global (Jotai)
+```
+
+## Pattern TypeScript : Factory Functions
+
+### ⚠️ RÈGLE : PAS DE CLASSES dans domain/use-cases/infrastructure
+
+TypeScript n'est pas Java. Nous privilégions les **factory functions** qui retournent des objets littéraux.
+
+**❌ Mauvais (OOP / Java-style) :**
+```typescript
+// ❌ NE PAS FAIRE
+export class CreateProjectUseCase {
+  constructor(private readonly repository: IProjectsRepository) {}
+  
+  async execute(input: CreateProjectInput): Promise<CreateProjectOutput> {
+    // ...
+  }
+}
+
+export function createCreateProjectUseCase(repo: IProjectsRepository) {
+  return new CreateProjectUseCase(repo)
+}
+```
+
+**✅ Bon (Functional / TypeScript-idiomatic) :**
+```typescript
+// ✅ FAIRE
+export type CreateProjectUseCase = {
+  execute(input: CreateProjectInput): Promise<CreateProjectOutput>
+}
+
+export function createCreateProjectUseCase(
+  projectsRepository: IProjectsRepository
+): CreateProjectUseCase {
+  return {
+    async execute(input: CreateProjectInput) {
+      // Les dépendances sont capturées par closure
+      const project = await projectsRepository.create(/* ... */)
+      return { project }
+    }
+  }
+}
+```
+
+### Avantages des Factory Functions
+
+1. **Plus idiomatique TypeScript** : Pas de `this`, pas de `constructor`, pas de `class`
+2. **Closures naturelles** : Les dépendances sont capturées automatiquement
+3. **Composition facile** : Retourne des objets littéraux
+4. **Testabilité** : Injection de dépendances simple
+5. **Bundle size** : Code plus léger (pas de classes)
+
+### Application du pattern
+
+#### Value Objects (Factory Functions)
+```typescript
+// domain/value-objects/project-name.vo.ts
+const ProjectNameBrand = Symbol('ProjectName')
+
+export type ProjectName = {
+  readonly value: string
+  readonly [ProjectNameBrand]: true
+}
+
+export function createProjectName(name: string): ProjectName {
+  const trimmed = name.trim()
+  
+  if (trimmed.length < 3) {
+    throw new ValidationError('Project name must be at least 3 characters')
+  }
+  
+  if (trimmed.length > 100) {
+    throw new ValidationError('Project name must be at most 100 characters')
+  }
+  
+  return Object.freeze({
+    value: trimmed,
+    [ProjectNameBrand]: true as const
+  })
+}
+```
+
+#### Entities (Factory Functions)
+```typescript
+// domain/entities/project.entity.ts
+export type Project = {
+  readonly id: string
+  readonly userId: string
+  readonly name: ProjectName
+  readonly visibility: Visibility
+  readonly files: readonly ProjectFile[]
+  readonly createdAt: Date
+  readonly updatedAt: Date
+}
+
+export function createProject(params: {
+  id: string
+  userId: string
+  name: ProjectName
+  visibility: Visibility
+  files?: ProjectFile[]
+  createdAt?: Date
+  updatedAt?: Date
+}): Project {
+  return Object.freeze({
+    id: params.id,
+    userId: params.userId,
+    name: params.name,
+    visibility: params.visibility,
+    files: Object.freeze(params.files ?? []),
+    createdAt: params.createdAt ?? new Date(),
+    updatedAt: params.updatedAt ?? new Date()
+  })
+}
+```
+
+#### Use Cases (Factory Functions)
+```typescript
+// use-cases/projects/create-project.use-case.ts
+export type CreateProjectInput = {
+  userId: string
+  name: string
+  visibility?: 'public' | 'private'
+  files?: Array<{ name: string; content: string; isMain: boolean }>
+}
+
+export type CreateProjectOutput = {
+  project: Project
+}
+
+export type CreateProjectUseCase = {
+  execute(input: CreateProjectInput): Promise<CreateProjectOutput>
+}
+
+export function createCreateProjectUseCase(
+  projectsRepository: IProjectsRepository
+): CreateProjectUseCase {
+  return {
+    async execute(input: CreateProjectInput): Promise<CreateProjectOutput> {
+      // Validation via value objects
+      const name = createProjectName(input.name)
+      const visibility = input.visibility === 'public' 
+        ? Visibility.PUBLIC 
+        : Visibility.PRIVATE
+      
+      // Business logic
+      const project = createProject({
+        id: crypto.randomUUID(),
+        userId: input.userId,
+        name,
+        visibility,
+        files: input.files?.map(/* ... */) ?? []
+      })
+      
+      // Persistence
+      const savedProject = await projectsRepository.create(project)
+      
+      return { project: savedProject }
+    }
+  }
+}
+```
+
+#### Repositories (Factory Functions)
+```typescript
+// infrastructure/repositories/supabase-projects.repository.ts
+export function createSupabaseProjectsRepository(): IProjectsRepository {
+  return {
+    async findAll(userId: string): Promise<Project[]> {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', userId)
+      
+      if (error) throw error
+      return data.map(mapToProject)
+    },
+    
+    async create(project: Project): Promise<Project> {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert(mapToDatabase(project))
+        .select()
+        .single()
+      
+      if (error) throw error
+      return mapToProject(data)
+    },
+    
+    // ... autres méthodes
+  }
+}
+```
+
+## Testing Best Practices
+
+### ⚠️ RÈGLE : Minimiser les mocks
+
+**Principe** : Ne mocker que ce qui est **vraiment externe** (base de données, API HTTP, système de fichiers).
+
+### Hiérarchie de préférence pour les tests
+
+1. **Pas de mock du tout** (Domain layer - entités, value objects)
+2. **In-memory implementations** (Use cases - in-memory repository)
+3. **Mocks minimaux** (Infrastructure - mock Supabase client)
+
+### Tests de Domain (Pas de mock)
+
+Les tests du domain layer sont **purs** - aucun mock nécessaire.
+
+```typescript
+// domain/value-objects/__tests__/project-name.vo.test.ts
+import { describe, expect, it } from 'vitest'
+import { createProjectName } from '../project-name.vo'
+import { ValidationError } from '@/domain/errors/domain.error'
+
+describe('ProjectName', () => {
+  it('should create valid project name', () => {
+    const name = createProjectName('Valid Name')
+    expect(name.value).toBe('Valid Name')
+  })
+
+  it('should reject name too short', () => {
+    expect(() => createProjectName('ab')).toThrow(ValidationError)
+  })
+})
+```
+
+### Tests de Use Cases (In-Memory Repository)
+
+**❌ Mauvais : Utiliser des mocks Vitest**
+```typescript
+// ❌ NE PAS FAIRE
+const mockRepository: IProjectsRepository = {
+  findAll: vi.fn().mockResolvedValue([]),
+  findById: vi.fn().mockResolvedValue(null),
+  create: vi.fn(),
+  update: vi.fn(),
+  delete: vi.fn(),
+  // ... 10 autres méthodes à mocker
+}
+```
+
+**✅ Bon : Utiliser un In-Memory Repository**
+```typescript
+// ✅ FAIRE
+import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
+
+describe('DeleteProjectUseCase', () => {
+  it('should delete project when user is owner', async () => {
+    // Arrange
+    const repository = createInMemoryProjectsRepository()
+    
+    const project = createProject({
+      id: '123',
+      userId: 'user-1',
+      name: createProjectName('My Project'),
+      visibility: Visibility.PRIVATE
+    })
+    
+    await repository.create(project)
+    
+    const useCase = createDeleteProjectUseCase(repository)
+    
+    // Act
+    const result = await useCase.execute({
+      projectId: '123',
+      userId: 'user-1'
+    })
+    
+    // Assert
+    expect(result.success).toBe(true)
+    
+    // Vérification réelle que le projet a été supprimé
+    const deletedProject = await repository.findById('123')
+    expect(deletedProject).toBeNull()
+  })
+})
+```
+
+### In-Memory Repository Pattern
+
+Créer un repository en mémoire **réutilisable** pour tous les tests :
+
+```typescript
+// infrastructure/repositories/__tests__/in-memory-projects.repository.ts
+import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { Project } from '@/domain/entities/project.entity'
+
+/**
+ * In-memory implementation of IProjectsRepository for testing.
+ * Provides realistic repository behavior without external dependencies.
+ */
+export function createInMemoryProjectsRepository(): IProjectsRepository {
+  const projects = new Map<string, Project>()
+  const shareCodeIndex = new Map<string, string>()
+
+  return {
+    async findAll(userId: string): Promise<Project[]> {
+      return Array.from(projects.values()).filter(
+        (project) => project.userId === userId
+      )
+    },
+
+    async findById(id: string): Promise<Project | null> {
+      return projects.get(id) ?? null
+    },
+
+    async create(project: Project): Promise<Project> {
+      projects.set(project.id, project)
+      return project
+    },
+
+    async update(project: Project): Promise<Project> {
+      if (!projects.has(project.id)) {
+        throw new Error(`Project with id ${project.id} not found`)
+      }
+      projects.set(project.id, project)
+      return project
+    },
+
+    async delete(id: string): Promise<void> {
+      projects.delete(id)
+    },
+
+    // ... autres méthodes
+  }
+}
+```
+
+### Avantages de l'In-Memory Repository
+
+1. **Plus proche du réel** : Teste vraiment la logique de persistance
+2. **Tests robustes** : Vérifie que les données sont réellement sauvegardées/supprimées
+3. **Réutilisable** : Même repository pour tous les tests
+4. **Pas de setup/teardown** : Chaque test a son propre repository indépendant
+5. **Tests expressifs** : On teste le comportement, pas l'implémentation
+6. **Maintenance** : Un seul endroit à mettre à jour si l'interface change
+
+### Tests de l'Infrastructure (Mock Supabase)
+
+Seule la couche infrastructure devrait mocker les dépendances externes :
+
+```typescript
+// infrastructure/repositories/__tests__/supabase-projects.repository.test.ts
+import { describe, expect, it, vi } from 'vitest'
+import { createSupabaseProjectsRepository } from '../supabase-projects.repository'
+
+vi.mock('@/infrastructure/config/supabase.client', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ 
+        data: { id: '1', name: 'Test' }, 
+        error: null 
+      })
+    }))
+  }
+}))
+
+describe('SupabaseProjectsRepository', () => {
+  it('should map database row to domain entity', async () => {
+    const repository = createSupabaseProjectsRepository()
+    const project = await repository.findById('1')
+    
+    expect(project).toBeDefined()
+    expect(project?.name.value).toBe('Test')
+  })
+})
+```
+
+### Règles de Mock
+
+1. **Domain layer** : ❌ Aucun mock (tests purs)
+2. **Use cases layer** : ✅ In-memory repositories (pas de mocks Vitest)
+3. **Infrastructure layer** : ✅ Mock des clients externes (Supabase, fetch)
+4. **Presentation layer** : ✅ Mock des use-cases et hooks
 ├── services/               # Couche logique métier (AUCUNE dépendance Supabase)
 │   ├── auth.service.ts    # TODO - Refactor pour utiliser repository
 │   ├── projects.service.ts # TODO - Orchestration, validation, logique métier
@@ -120,528 +474,151 @@ Transformer le code POC en une architecture maintenable et testable suivant les 
 
 ### ✅ Complété
 
-1. **lib/** - Configuration centralisée
-   - `supabase.ts` : Client avec auth PKCE, localStorage
-   - `constants.ts` : URLs CDN, validations
+1. **Domain Layer** - Architecture fonctionnelle pure
+   - ✅ Value Objects avec factory pattern (ProjectName, FileName, FileContent, Visibility, ShareCode)
+   - ✅ Entities avec factory pattern (Project, ProjectFile, ProjectShare, ProjectDependency)
+   - ✅ Repository Interfaces (IProjectsRepository, IFilesRepository)
+   - ✅ Domain Errors (ValidationError, NotFoundError, UnauthorizedError)
+   - ✅ **62 tests** passants - 100% couverture
 
-2. **types/** - Types centralisés
-   - `database.types.ts` : Schéma complet (7 tables)
-   - `auth.types.ts` : Types auth (credentials, responses)
-   - `project.types.ts` : Types projets/fichiers/tags
+2. **Use Cases Layer** - Factory functions
+   - ✅ CreateProjectUseCase (factory function)
+   - ✅ UpdateProjectUseCase (factory function)
+   - ✅ DeleteProjectUseCase (factory function)
+   - ✅ GetProjectsUseCase (factory function)
+   - ✅ GetProjectUseCase (factory function)
+   - ✅ **9 tests** passants avec in-memory repository
 
-3. **services/auth.service.ts** - Service authentification
-   - 9 méthodes : signIn, signUp, signOut, OAuth, profile CRUD
-   - Gestion d'erreurs complète
-   - Singleton pattern
+3. **Infrastructure Layer** - Factory functions
+   - ✅ SupabaseProjectsRepository (factory function)
+   - ✅ In-Memory Projects Repository (pour tests)
 
-4. **services/__tests__/auth.service.test.ts**
-   - 16 tests couvrant tous les scénarios
-   - Mocks Supabase
-   - Tests success/error cases
+4. **Pattern Validation**
+   - ✅ Aucune classe dans domain/use-cases/infrastructure
+   - ✅ Factory functions partout
+   - ✅ In-memory repository pour tests (pas de mocks Vitest)
+   - ✅ **139 tests** passants au total
 
 ### 🔄 En cours
 
-1. **store/projects-v2.ts** (1036 lignes)
-   - Contient toute la logique Supabase en dur
-   - À migrer vers services
+1. **Dependency Injection Container**
+   - À créer : Factory qui wire tous les use-cases avec les bons repositories
+   - Pattern : `createContainer() => { createProject, getProjects, ... }`
+
+2. **React Hooks Adapters**
+   - À créer : Hooks qui utilisent le container
+   - Pattern : `useCreateProject()` qui appelle `container.createProject.execute()`
 
 ### ❌ À faire
 
-1. **services/projects.service.ts**
-   ```typescript
-   class ProjectsService {
-     // CRUD operations
-     fetchProjects(): Promise<Project[]>
-     getProjectById(id: string): Promise<Project | null>
-     createProject(input: CreateProjectInput): Promise<Project>
-     updateProject(id: string, input: UpdateProjectInput): Promise<Project>
-     deleteProject(id: string): Promise<void>
-     
-     // Sharing
-     shareProject(projectId: string, username: string): Promise<void>
-     unshareProject(projectId: string, userId: string): Promise<void>
-     updateVisibility(projectId: string, visibility: ProjectVisibility): Promise<void>
-     
-     // Dependencies
-     fetchDependencyFiles(projectId: string): Promise<DependencyWithFiles[]>
-     addDependency(projectId: string, dependencyId: string): Promise<void>
-     removeDependency(projectId: string, dependencyId: string): Promise<void>
-   }
-   ```
+1. **Migrate Stores** - Simplifier les atoms Jotai pour utiliser les use-cases
+2. **Complete Domain** - Ajouter autres entités (Tags, Dependencies, etc.)
+3. **More Use Cases** - Share project, Add dependency, etc.
+4. **Files Use Cases** - Create/Update/Delete files
+5. **Integration Tests** - Tests E2E avec Supabase local## Dependency Injection Pattern
 
-2. **services/files.service.ts**
-   ```typescript
-   class FilesService {
-     fetchProjectFiles(projectId: string): Promise<ProjectFile[]>
-     createFile(input: CreateFileInput): Promise<ProjectFile>
-     updateFile(id: string, input: UpdateFileInput): Promise<ProjectFile>
-     deleteFile(id: string): Promise<void>
-     setMainFile(fileId: string): Promise<void>
-   }
-   ```
+### Container Factory
 
-3. **services/tags.service.ts**
-   ```typescript
-   class TagsService {
-     fetchTags(): Promise<Tag[]>
-     createTag(name: string): Promise<Tag>
-     addTagToProject(projectId: string, tagId: string): Promise<void>
-     removeTagFromProject(projectId: string, tagId: string): Promise<void>
-   }
-   ```
-
-4. **Tests complets pour chaque service**
-
-5. **Refactor stores** - Simplifier pour utiliser services
-   ```typescript
-   // store/projects.ts (nouveau, simplifié)
-   export const projectsAtom = atom<Project[]>([])
-   export const currentProjectIdAtom = atom<string | null>(null)
-   
-   // Actions deviennent des wrappers vers services
-   export const fetchProjectsAtom = atom(null, async (get, set) => {
-     const projects = await projectsService.fetchProjects()
-     set(projectsAtom, projects)
-   })
-   ```
-
-6. **Hooks par domaine**
-   ```typescript
-   // hooks/auth/use-auth.ts
-   export function useAuth() {
-     const [user, setUser] = useState<AuthUser | null>(null)
-     // Utilise authService
-   }
-   
-   // hooks/projects/use-projects.ts
-   export function  : Repository + Service
-
-### Architecture en couches
-
-```
-UI (Components)
-    ↓ utilise
-Hooks (useProjects)
-    ↓ utilise
-Services (projectsService) ← Logique métier PURE
-    ↓ utilise
-Repositories (projectsRepository) ← Accès données (Supabase)
-    ↓ utilise
-Supabase Client
-```
-
-### 1. Repository Layer (Accès données)
-
-Chaque repository :
-- Est une classe singleton
-- Contient UNIQUEMENT les calls Supabase (pas de logique métier)
-- Retourne des types typés
-- Gère les erreurs de base (throw)
-- Mapping DB ↔ Domain types
-
-**Exemple :**
-```typescript
-// repositories/projects.repository.ts
-class ProjectsRepository {
-  async findAll(userId: string): Promise<Project[]> {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('user_id', userId)
-    
-    if (error) throw error
-    return data.map(this.mapToProject)
-  }
-  
-  async create(input: ProjectDbInput): Promise<Project> {
-    const { data, error } = await supabase
-    3. Tests
-
-#### Tests de Repositories
-- Mockent Supabase (couche infrastructure)
-- Testent le mapping et les queries
-- Ou tests d'intégration avec vraie DB
+Le container wire tous les use-cases avec leurs dépendances :
 
 ```typescript
-// repositories/__tests__/projects.repository.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { projectsRepository } from '../projects.repository'
+// infrastructure/container.ts
+import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
+import { createCreateProjectUseCase } from '@/use-cases/projects/create-project.use-case'
+import { createGetProjectsUseCase } from '@/use-cases/projects/get-projects.use-case'
+// ... autres imports
 
-vi.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockResolvedValue({ data: mockData, error: null })
-    }))
-  }
-}))
-
-describe('ProjectsRepository', () => {
-  it('should call supabase with correct query', async () => {
-    // Test infrastructure
-  })
-})
-```
-
-#### Tests de Services
-- **Mockent les repositories** (pas Supabase !)
-- Testent la logique métier pure
-- Validation, transformation, orchestration
-
-```typescript
-// services/__tests__/projects.service.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ProjectsService } from '../projects.service'
-
-// Mock du repository (pas Supabase)
-const mockRepository = {
-  findAll: vi.fn(),
-  create: vi.fn(),
-  update: vi.fn()
+export type Container = {
+  // Projects use cases
+  createProject: CreateProjectUseCase
+  getProjects: GetProjectsUseCase
+  getProject: GetProjectUseCase
+  updateProject: UpdateProjectUseCase
+  deleteProject: DeleteProjectUseCase
 }
 
-describe('ProjectsService', () => {
-  let service: ProjectsService
+export function createContainer(): Container {
+  // Infrastructure
+  const projectsRepository = createSupabaseProjectsRepository()
   
-  beforeEach(() => {
-    service = new ProjectsService(mockRepository)
-    vi.clearAllMocks()
-  })
-  
-  describe('createProject', () => {
-    it('should validate project name length', async () => {
-      // Test logique métier
-      await expect(
-        service.createProject({ name: 'ab' })
-      ).rejects.toThrow('at least 3 characters')
-      
-      expect(mockRepository.create).not.toHaveBeenCalled()
-    })
-    
-    it('should generate slug from name', async () => {
-      mockRepository.create.mockResolvedValue({ id: '1', name: 'Test' })
-      
-      await service.createProject({ name: 'My Project' })
-      
-      expect(mockRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ slug: 'my-project' })
-      )ut.name || input.name.length < 3) {
-      throw new Error('Project name must be at least 3 characters')
-    }
-    
-    // Transformation métier
-    const projectData = {
-      ...input,
-      name: input.name.trim(),
-      slug: this.generateSlug(input.name)
-    }
-    
-    // Délégation au repository
-    return await this.repo.create(projectData)
-  }
-  
-  private generateSlug(name: string): string {
-    // Logique métier pure
-    return name.toLowerCase().replace(/\s+/g, '-')   .single()
-      
-      if (error) throw error
-      return this.mapToProject(data)
-    } catch (error) {
-      console.error('Error creating project:', error)
-      throw error
-    }
+  // Use cases (injection des dépendances)
+  return {
+    createProject: createCreateProjectUseCase(projectsRepository),
+    getProjects: createGetProjectsUseCase(projectsRepository),
+    getProject: createGetProjectUseCase(projectsRepository),
+    updateProject: createUpdateProjectUseCase(projectsRepository),
+    deleteProject: createDeleteProjectUseCase(projectsRepository)
   }
 }
 
-export const projectsService = new ProjectsService()
+// Singleton pour l'application
+export const container = createContainer()
 ```
 
-### 2. Tests
+### React Hook Adapter
 
-Chaque service doit avoir :
-- Un fichier de test `*.test.ts` dans `__tests__/`
-- Des mocks pour Supabase
-- Tests pour success cases
-- Tests pour error cases
-- Coverage > 80%
-
-**Exemple :**
-```typescript
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ProjectsService } from '../projects.service'
-
-vi.mock('@/lib/supabase', () => ({
-   Tests Strategy
-
-### Tests de Domain (Entities + Value Objects)
-- Tests unitaires purs
-- Aucun mock nécessaire
-- Tests de la logique métier
+Les hooks utilisent le container :
 
 ```typescript
-// domain/value-objects/__tests__/project-name.vo.test.ts
-import { describe, it, expect } from 'vitest'
-import { ProjectName } from '../project-name.vo'
-import { ValidationError } from '@/domain/errors/validation.error'
+// hooks/projects/use-create-project.ts
+import { useState } from 'react'
+import { container } from '@/infrastructure/container'
+import type { CreateProjectInput } from '@/use-cases/projects/create-project.use-case'
 
-describe('ProjectName', () => {
-  it('should create valid project name', () => {
-    const name = ProjectName.create('Valid Name')
-    expect(name.value).toBe('Valid Name')
-  })
-
-  it('should trim whitespace', () => {
-    const name = ProjectName.create('  Name  ')
-    expect(name.value).toBe('Name')
-  })
-
-  it('should reject name too short', () => {
-    expect(() => ProjectName.create('ab')).toThrow(ValidationError)
-    expect(() => ProjectName.create('ab')).toThrow('at least 3 characters')
-  })
-
-  it('should reject name too long', () => {
-    const longName = 'a'.repeat(101)
-    expect(() => ProjectName.create(longName)).toThrow(ValidationError)
-  })
-})
-```
-
-### Tests de Use Cases
-- Mockent les interfaces de repositories
-- Testent l'orchestration
-- 100% isolés de l'infrastructure
-
-```typescript
-// use-cases/projects/__tests__/create-project.use-case.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { CreateProjectUseCase } from '../create-project.use-case'
-import type { IProjectRepository } from '@/domain/repositories/project.repository.interface'
-import type { IAuthRepository } from '@/domain/repositories/auth.repository.interface'
-import { Project } from '@/domain/entities/project.entity'
-
-describe('CreateProjectUseCase', () => {
-  let useCase:Domain Layer (Foundation)
-1. ✅ Créer structure de dossiers
-2. ⏳ Définir entités (Project, File, User)
-3. ⏳ Créer value objects (ProjectName, Visibility, FileContent)
-4. ⏳ Définir interfaces de repositories (ports)
-5. ⏳ Créer erreurs métier custom
-6. ⏳ Tests unitaires du domain (100% coverage)
-
-### Phase 2 : Infrastructure Layer
-1. ⏳ Créer repositories Supabase (implémentent interfaces)
-2. ⏳ Créer mappers (DB ↔ Domain)
-3. ⏳ Tests d'infrastructure (mock Supabase ou intégration)
-
-### Phase 3 : Use Cases Layer
-1. ⏳ Create/Update/Delete project use-cases
-2. ⏳ Share/Unshare project use-cases
-3. ⏳ Files use-cases
-4. ⏳ Auth use-cases
-5. ⏳ Tests unitaires use-cases (mock repositories)
-
-###Avantages de Clean Architecture
-
-### 1. Testabilité maximale
-- Domain : 100% testable sans aucun mock
-- Use Cases : Testables avec mocks d'interfaces
-- Infrastructure : Testable séparément
-
-### 2. Indépendance des frameworks
-- Domain ne connaît pas React, Supabase, Jotai
-- Changement de BDD ? Seule l'infrastructure change
-- Changement de UI ? Seule la presentation change
-
-### 3. Règle de dépendance respectée
-```
-Domain (aucune dépendance)
-   ↑
-Use Cases (dépend du domain)
-   ↑
-Infrastructure (implémente les interfaces du domain)
-   ↑
-Presentation (utilise use-cases)
-```
-
-### 4. Logique métier centrale et protégée
-- Validation dans value objects
-- Règles métier dans entités
-- Orchestration dans use-cases
-- Infrastructure isolée     name: 'Test Project',
-        userId: 'user-123'
-      })
-    )
-    expect(project).toBeInstanceOf(Project)
-  })
-
-  it('should validate project name via value object', async () => {
-    mockAuthRepo.getCurrentUserId.mockResolvedValue('user-123')
-
-    // Act & Assert
-    await expect(
-      useCase.execute({ name: 'ab', visibility: 'private' })
-    ).rejects.toThrow('at least 3 characters')
-
-    expect(mockProjectRepo.save).not.toHaveBeenCalled()
-  })
-
-  it('should use default visibility if not provided', async () => {
-    mockAuthRepo.getCurrentUserId.mockResolvedValue('user-123')
-    mockProjectRepo.save.mockImplementation(async (project) => project)
-
-    const project = await useCase.execute({ name: 'Test' })
-
-    expect(project.visibility).toBe('private')
-  })
-})
-```
-
-### Tests de Repositories (Infrastructure)
-- Mockent Supabase (ou tests d'intégration)
-- Testent le mapping DB ↔ Domain
-- Testent les queries SQL
-
-```typescript
-// infrastructure/repositories/__tests__/supabase-project.repository.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { SupabaseProjectRepository } from '../supabase-project.repository'
-import { Project } from '@/domain/entities/project.entity'
-
-vi.mock('@/infrastructure/config/supabase.client', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      single: vi.fn()
-    }))
-  }
-}))
-
-describe('SupabaseProjectRepository', () => {
-  let repository: SupabaseProjectRepository
-
-  beforeEach(() => {
-    repository = new SupabaseProjectRepository()
-    vi.clearAllMocks()
-  })
-
-  it('should map database row to domain entity', async () => {
-    const mockData = {
-      id: 'project-1',
-      user_id: 'user-123',
-      name: 'Test',
-      visibility: 'private',
-      // ...
-    }
-
-    // Setup mock
-    const mockQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: mockData, error: null })
-    }
-    
-    supabase.from.mockReturnValue(mockQuery)
-
-    // Act
-    const project = await repository.findById('project-1')
-
-    // Assert
-    expect(project).toBeInstanceOf(Project)
-    expect(project?.name).toBe('Test')
-  })
-})
-```  service = new ProjectsService()
-    vi.clearAllMocks()
-  })
-  
-  describe('createProject', () => {
-    it('should create project successfully', async () => {
-      // ...
-    })
-  })
-})
-```
-
-### 3. Store Atoms
-
-Les stores deviennent minimalistes :
-- État simple (pas de logique)
-- Actions = wrappers vers services
-- Pas de calls Supabase directs
-
-```typescript
-// ❌ Avant (dans l'atom)
-export const createProjectAtom = atom(null, async (get, set, input) => {
-  const { data, error } = await supabase.from('projects').insert(...)
-  if (error) throw error
-  set(projectsAtom, [...get(projectsAtom), data])
-})
-
-// ✅ Après (utilise le service)
-export const createProjectAtom = atom(null, async (get, set, input) => {
-  const project = await projectsService.createProject(input)
-  set(projectsAtom, [...get(projectsAtom), project])
-})
-```
-
-### 4. Hooks
-
-Encapsuler la logique complexe dans des hooks :
-
-```typescript
-export function useProjectCreate() {
-  const createProject = useSetAtom(createProjectAtom)
+export function useCreateProject() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
-  const handleCreate = async (input: CreateProjectInput) => {
+
+  const create = async (input: CreateProjectInput) => {
     setLoading(true)
     setError(null)
+    
     try {
-      await createProject(input)
-    } catch (e) {
-      setError(e.message)
+      const result = await container.createProject.execute(input)
+      return result
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      throw err
     } finally {
       setLoading(false)
     }
   }
-  
-  return { handleCreate, loading, error }
+
+  return { create, loading, error }
 }
 ```
 
-## Plan d'exécution
+## Conventions de Code
 
-### Phase 1 : Services (actuel)
-1. ✅ auth.service.ts + tests
-2. ⏳ projects.service.ts + tests
-3. ⏳ files.service.ts + tests
-4. ⏳ tags.service.ts + tests
+### ⚠️ RÈGLES STRICTES
 
-### Phase 2 : Migration stores
-1. Créer nouveaux stores simplifiés
-2. Migrer progressivement les atoms
-3. Supprimer anciens stores
+1. **PAS DE CLASSES** dans domain/use-cases/infrastructure
+   - ❌ `class ProjectName { ... }`
+   - ✅ `function createProjectName(name: string): ProjectName { ... }`
 
-### Phase 3 : Hooks
-1. Créer hooks par domaine (auth/, projects/, emulator/)
-2. Migrer components vers nouveaux hooks
+2. **Factory Functions partout**
+   - Retourner des objets littéraux
+   - Utiliser les closures pour capturer les dépendances
+   - `Object.freeze()` pour l'immutabilité
 
-### Phase 4 : Cleanup
-1. Supprimer code legacy
-2. Documenter APIs
-3. Vérifier coverage tests > 80%
+3. **Minimiser les mocks dans les tests**
+   - Domain : ❌ Aucun mock
+   - Use Cases : ✅ In-memory repository (pas de `vi.fn()`)
+   - Infrastructure : ✅ Mock Supabase uniquement
 
-## Conventions
+4. **In-Memory Repository requis**
+   - Créer un in-memory repository pour chaque interface
+   - Placer dans `infrastructure/repositories/__tests__/`
+   - Réutiliser dans tous les tests de use-cases
 
 ### Naming
-- Services : `*.service.ts` (singleton lowercase)
-- Tests : `*.test.ts` (services), `*.spec.tsx` (components)
-- Types : `*.types.ts`
-- Hooks : `use-*.ts`
-- Composants : PascalCase + dossier par composant
+- Use Cases : `create-project.use-case.ts`
+- Entities : `project.entity.ts`
+- Value Objects : `project-name.vo.ts`
+- Repositories : `projects.repository.interface.ts` (interface), `supabase-projects.repository.ts` (impl)
+- Tests : `*.test.ts` (unit), `*.spec.tsx` (components)
+- Factory functions : `createProjectName`, `createProject`, `createCreateProjectUseCase`
 
 ### Imports
 ```typescript
@@ -655,7 +632,7 @@ import styles from './file.module.css'      // 4. Styles
 ### Error Handling
 ```typescript
 try {
-  const result = await service.method()
+  const result = await useCase.execute(input)
   return result
 } catch (error) {
   console.error('Context:', error)

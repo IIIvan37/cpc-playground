@@ -15,27 +15,30 @@ export type GetProjectOutput = {
   project: Project
 }
 
-export class GetProjectUseCase {
-  constructor(private readonly projectsRepository: IProjectsRepository) {}
-
-  async execute(input: GetProjectInput): Promise<GetProjectOutput> {
-    const project = await this.projectsRepository.findById(input.projectId)
-
-    if (!project) {
-      throw new NotFoundError(`Project ${input.projectId} not found`)
-    }
-
-    // Authorization check if userId is provided
-    if (input.userId && project.userId !== input.userId) {
-      throw new NotFoundError(`Project ${input.projectId} not found`)
-    }
-
-    return { project }
-  }
+export type GetProjectUseCase = {
+  execute(input: GetProjectInput): Promise<GetProjectOutput>
 }
 
+/**
+ * Factory function that creates GetProjectUseCase
+ */
 export function createGetProjectUseCase(
   projectsRepository: IProjectsRepository
 ): GetProjectUseCase {
-  return new GetProjectUseCase(projectsRepository)
+  return {
+    async execute(input: GetProjectInput): Promise<GetProjectOutput> {
+      const project = await projectsRepository.findById(input.projectId)
+
+      if (!project) {
+        throw new NotFoundError(`Project ${input.projectId} not found`)
+      }
+
+      // Authorization check if userId is provided
+      if (input.userId && project.userId !== input.userId) {
+        throw new NotFoundError(`Project ${input.projectId} not found`)
+      }
+
+      return { project }
+    }
+  }
 }

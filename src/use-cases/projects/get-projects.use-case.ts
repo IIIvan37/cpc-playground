@@ -14,21 +14,23 @@ export type GetProjectsOutput = {
   projects: readonly Project[]
 }
 
-export class GetProjectsUseCase {
-  constructor(private readonly projectsRepository: IProjectsRepository) {}
-
-  async execute(input: GetProjectsInput): Promise<GetProjectsOutput> {
-    const projects = await this.projectsRepository.findAll(input.userId)
-
-    return {
-      projects
-    }
-  }
+export type GetProjectsUseCase = {
+  execute(input: GetProjectsInput): Promise<GetProjectsOutput>
 }
 
-// Factory function (TypeScript idiomatic)
+/**
+ * Factory function that creates GetProjectsUseCase
+ */
 export function createGetProjectsUseCase(
   projectsRepository: IProjectsRepository
 ): GetProjectsUseCase {
-  return new GetProjectsUseCase(projectsRepository)
+  return {
+    async execute(input: GetProjectsInput): Promise<GetProjectsOutput> {
+      const projects = await projectsRepository.findAll(input.userId)
+
+      return {
+        projects
+      }
+    }
+  }
 }

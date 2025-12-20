@@ -1,0 +1,62 @@
+import { describe, expect, it } from 'vitest'
+import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
+import { createCreateProjectUseCase } from '../create-project.use-case'
+
+describe('CreateProjectUseCase', () => {
+  it('should create a project with valid input', async () => {
+    const repository = createInMemoryProjectsRepository()
+    const useCase = createCreateProjectUseCase(repository)
+
+    const result = await useCase.execute({
+      userId: 'user-1',
+      name: 'My Project'
+    })
+
+    expect(result.project.name.value).toBe('My Project')
+    expect(result.project.userId).toBe('user-1')
+
+    // Verify project was actually saved
+    const savedProject = await repository.findById(result.project.id)
+    expect(savedProject).not.toBeNull()
+    expect(savedProject?.name.value).toBe('My Project')
+  })
+
+  it('should create a project with files', async () => {
+    const repository = createInMemoryProjectsRepository()
+    const useCase = createCreateProjectUseCase(repository)
+
+    const result = await useCase.execute({
+      userId: 'user-1',
+      name: 'My Project',
+      files: [{ name: 'main.asm', content: 'LD A, 10', isMain: true }]
+    })
+
+    expect(result.project.files.length).toBe(1)
+    expect(result.project.files[0].name.value).toBe('main.asm')
+    expect(result.project.files[0].isMain).toBe(true)
+  })
+
+  it('should throw ValidationError for invalid project name', async () => {
+    const repository = createInMemoryProjectsRepository()
+    const useCase = createCreateProjectUseCase(repository)
+
+    await expect(
+      useCase.execute({
+        userId: 'user-1',
+        name: 'ab' // Too short
+      })
+    ).rejects.toThrow('at least 3 characters')
+  })
+
+  it('should set default visibility to private', async () => {
+    const repository = createInMemoryProjectsRepository()
+    const useCase = createCreateProjectUseCase(repository)
+
+    const result = await useCase.execute({
+      userId: 'user-1',
+      name: 'My Project'
+    })
+
+    expect(result.project.visibility.value).toBe('private')
+  })
+})

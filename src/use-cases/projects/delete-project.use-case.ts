@@ -14,35 +14,36 @@ export type DeleteProjectOutput = {
   success: boolean
 }
 
-export class DeleteProjectUseCase {
-  constructor(private readonly projectsRepository: IProjectsRepository) {}
-
-  async execute(input: DeleteProjectInput): Promise<DeleteProjectOutput> {
-    // Get existing project for authorization
-    const existingProject = await this.projectsRepository.findById(
-      input.projectId
-    )
-
-    if (!existingProject) {
-      throw new NotFoundError(`Project ${input.projectId} not found`)
-    }
-
-    // Authorization check
-    if (existingProject.userId !== input.userId) {
-      throw new UnauthorizedError(
-        'You are not authorized to delete this project'
-      )
-    }
-
-    // Delete
-    await this.projectsRepository.delete(input.projectId)
-
-    return { success: true }
-  }
+export type DeleteProjectUseCase = {
+  execute(input: DeleteProjectInput): Promise<DeleteProjectOutput>
 }
 
+/**
+ * Factory function that creates DeleteProjectUseCase
+ */
 export function createDeleteProjectUseCase(
   projectsRepository: IProjectsRepository
 ): DeleteProjectUseCase {
-  return new DeleteProjectUseCase(projectsRepository)
+  return {
+    async execute(input: DeleteProjectInput): Promise<DeleteProjectOutput> {
+      // Get existing project for authorization
+      const existingProject = await projectsRepository.findById(input.projectId)
+
+      if (!existingProject) {
+        throw new NotFoundError(`Project ${input.projectId} not found`)
+      }
+
+      // Authorization check
+      if (existingProject.userId !== input.userId) {
+        throw new UnauthorizedError(
+          'You are not authorized to delete this project'
+        )
+      }
+
+      // Delete
+      await projectsRepository.delete(input.projectId)
+
+      return { success: true }
+    }
+  }
 }
