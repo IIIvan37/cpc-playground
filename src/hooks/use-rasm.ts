@@ -32,6 +32,7 @@ interface CompileResponse {
 interface ProjectFile {
   name: string
   content: string
+  projectName?: string // Optional project name for namespacing
 }
 
 export function useRasm() {

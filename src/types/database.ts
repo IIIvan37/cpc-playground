@@ -1,12 +1,53 @@
+export type ProjectVisibility = 'private' | 'public' | 'shared'
+
 export interface Database {
   public: {
     Tables: {
+      user_profiles: {
+        Row: {
+          id: string
+          username: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          username: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          username?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      tags: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string
+        }
+      }
       projects: {
         Row: {
           id: string
           user_id: string
           name: string
           description: string | null
+          visibility: ProjectVisibility
+          is_library: boolean
           created_at: string
           updated_at: string
         }
@@ -15,6 +56,8 @@ export interface Database {
           user_id: string
           name: string
           description?: string | null
+          visibility?: ProjectVisibility
+          is_library?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -23,6 +66,8 @@ export interface Database {
           user_id?: string
           name?: string
           description?: string | null
+          visibility?: ProjectVisibility
+          is_library?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -57,6 +102,60 @@ export interface Database {
           order?: number
           created_at?: string
           updated_at?: string
+        }
+      }
+      project_shares: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string
+          created_at?: string
+        }
+      }
+      project_tags: {
+        Row: {
+          project_id: string
+          tag_id: string
+          created_at: string
+        }
+        Insert: {
+          project_id: string
+          tag_id: string
+          created_at?: string
+        }
+        Update: {
+          project_id?: string
+          tag_id?: string
+          created_at?: string
+        }
+      }
+      project_dependencies: {
+        Row: {
+          project_id: string
+          dependency_id: string
+          created_at: string
+        }
+        Insert: {
+          project_id: string
+          dependency_id: string
+          created_at?: string
+        }
+        Update: {
+          project_id?: string
+          dependency_id?: string
+          created_at?: string
         }
       }
     }

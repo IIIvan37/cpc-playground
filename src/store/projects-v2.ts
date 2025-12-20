@@ -1,7 +1,14 @@
 import { atom } from 'jotai'
 import { supabase } from '@/lib/supabase'
+import type { ProjectVisibility } from '@/types/database'
 
 // Types
+export interface Tag {
+  id: string
+  name: string
+  createdAt: string
+}
+
 export interface ProjectFile {
   id: string
   projectId: string
@@ -13,12 +20,30 @@ export interface ProjectFile {
   updatedAt: string
 }
 
+export interface ProjectShare {
+  id: string
+  projectId: string
+  userId: string
+  createdAt: string
+}
+
+export interface ProjectDependency {
+  id: string
+  name: string
+  isLibrary: boolean
+}
+
 export interface Project {
   id: string
   userId: string
   name: string
   description: string | null
+  visibility: ProjectVisibility
+  isLibrary: boolean
   files: ProjectFile[]
+  shares?: ProjectShare[]
+  tags?: Tag[]
+  dependencies?: ProjectDependency[]
   createdAt: string
   updatedAt: string
 }
@@ -56,7 +81,20 @@ export const fetchProjectsAtom = atom(null, async (_get, set) => {
       .select(
         `
         *,
-        project_files (*)
+        project_files (*),
+        project_shares (*),
+        project_tags (
+          tag_id,
+          tags (*)
+        ),
+        project_dependencies!project_dependencies_project_id_fkey (
+          dependency_id,
+          dependency:projects!project_dependencies_dependency_id_fkey (
+            id,
+            name,
+            is_library
+          )
+        )
       `
       )
       .order('updated_at', { ascending: false })
@@ -69,6 +107,8 @@ export const fetchProjectsAtom = atom(null, async (_get, set) => {
         userId: p.user_id,
         name: p.name,
         description: p.description,
+        visibility: p.visibility as ProjectVisibility,
+        isLibrary: p.is_library,
         files:
           p.project_files?.map((f: any) => ({
             id: f.id,
@@ -79,6 +119,25 @@ export const fetchProjectsAtom = atom(null, async (_get, set) => {
             order: f.order,
             createdAt: f.created_at,
             updatedAt: f.updated_at
+          })) ?? [],
+        shares:
+          p.project_shares?.map((s: any) => ({
+            id: s.id,
+            projectId: s.project_id,
+            userId: s.user_id,
+            createdAt: s.created_at
+          })) ?? [],
+        tags:
+          p.project_tags?.map((pt: any) => ({
+            id: pt.tags.id,
+            name: pt.tags.name,
+            createdAt: pt.tags.created_at
+          })) ?? [],
+        dependencies:
+          p.project_dependencies?.map((pd: any) => ({
+            id: pd.dependency.id,
+            name: pd.dependency.name,
+            isLibrary: pd.dependency.is_library
           })) ?? [],
         createdAt: p.created_at,
         updatedAt: p.updated_at
@@ -440,3 +499,419 @@ export const setMainFileAtom = atom(null, async (get, set, fileId: string) => {
     throw error
   }
 })
+
+// Update project visibility
+export const updateProjectVisibilityAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      projectId,
+      visibility
+    }: { projectId: string; visibility: ProjectVisibility }
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ visibility })
+        .eq('id', projectId)
+
+      if (error) throw error
+
+      // Update local state
+      set(
+        projectsAtom,
+        get(projectsAtom).map((p) =>
+          p.id === projectId ? { ...p, visibility } : p
+        )
+      )
+    } catch (error) {
+      console.error('Error updating project visibility:', error)
+      throw error
+    }
+  }
+)
+
+// Share project with a user
+export const shareProjectAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    { projectId, userEmail }: { projectId: string; userEmail: string }
+  ) => {
+    try {
+      // First, get the user ID from email
+      const { data: userData, error: userError } = await supabase
+        .from('auth.users')
+        .select('id')
+        .eq('email', userEmail)
+        .single()
+
+      if (userError) throw new Error('User not found')
+
+      const { data, error } = await supabase
+        .from('project_shares')
+        .insert({
+          project_id: projectId,
+          user_id: userData.id
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      const newShare: ProjectShare = {
+        id: data.id,
+        projectId: data.project_id,
+        userId: data.user_id,
+        createdAt: data.created_at
+      }
+
+      // Update local state
+      set(
+        projectsAtom,
+        get(projectsAtom).map((p) =>
+          p.id === projectId
+            ? { ...p, shares: [...(p.shares ?? []), newShare] }
+            : p
+        )
+      )
+    } catch (error) {
+      console.error('Error sharing project:', error)
+      throw error
+    }
+  }
+)
+
+// Unshare project (remove user access)
+export const unshareProjectAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    { projectId, shareId }: { projectId: string; shareId: string }
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('project_shares')
+        .delete()
+        .eq('id', shareId)
+
+      if (error) throw error
+
+      // Update local state
+      set(
+        projectsAtom,
+        get(projectsAtom).map((p) =>
+          p.id === projectId
+            ? { ...p, shares: p.shares?.filter((s) => s.id !== shareId) ?? [] }
+            : p
+        )
+      )
+    } catch (error) {
+      console.error('Error unsharing project:', error)
+      throw error
+    }
+  }
+)
+
+// Fetch all tags
+export const tagsAtom = atom<Tag[]>([])
+
+export const fetchTagsAtom = atom(null, async (_get, set) => {
+  try {
+    const { data, error } = await supabase
+      .from('tags')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (error) throw error
+
+    const tags: Tag[] =
+      data?.map((t) => ({
+        id: t.id,
+        name: t.name,
+        createdAt: t.created_at
+      })) ?? []
+
+    set(tagsAtom, tags)
+    return tags
+  } catch (error) {
+    console.error('Error fetching tags:', error)
+    throw error
+  }
+})
+
+// Create or get existing tag
+export const getOrCreateTagAtom = atom(
+  null,
+  async (get, set, tagName: string) => {
+    try {
+      // Normalize tag name
+      const normalizedName = tagName.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+
+      // Check if tag exists
+      const { data: existingTag } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('name', normalizedName)
+        .single()
+
+      if (existingTag) {
+        return {
+          id: existingTag.id,
+          name: existingTag.name,
+          createdAt: existingTag.created_at
+        }
+      }
+
+      // Create new tag
+      const { data, error } = await supabase
+        .from('tags')
+        .insert({ name: normalizedName })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      const newTag: Tag = {
+        id: data.id,
+        name: data.name,
+        createdAt: data.created_at
+      }
+
+      // Update tags atom
+      set(tagsAtom, [...get(tagsAtom), newTag])
+
+      return newTag
+    } catch (error) {
+      console.error('Error creating tag:', error)
+      throw error
+    }
+  }
+)
+
+// Add tag to project
+export const addTagToProjectAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    { projectId, tagName }: { projectId: string; tagName: string }
+  ) => {
+    try {
+      // Get or create the tag
+      const tag = await set(getOrCreateTagAtom, tagName)
+
+      // Add tag to project
+      const { error } = await supabase.from('project_tags').insert({
+        project_id: projectId,
+        tag_id: tag.id
+      })
+
+      if (error) {
+        // If error is duplicate, ignore it
+        if (!error.message.includes('duplicate')) {
+          throw error
+        }
+        return
+      }
+
+      // Update local state
+      set(
+        projectsAtom,
+        get(projectsAtom).map((p) =>
+          p.id === projectId ? { ...p, tags: [...(p.tags ?? []), tag] } : p
+        )
+      )
+    } catch (error) {
+      console.error('Error adding tag to project:', error)
+      throw error
+    }
+  }
+)
+
+// Remove tag from project
+export const removeTagFromProjectAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    { projectId, tagId }: { projectId: string; tagId: string }
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('project_tags')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('tag_id', tagId)
+
+      if (error) throw error
+
+      // Update local state
+      set(
+        projectsAtom,
+        get(projectsAtom).map((p) =>
+          p.id === projectId
+            ? { ...p, tags: p.tags?.filter((t) => t.id !== tagId) ?? [] }
+            : p
+        )
+      )
+    } catch (error) {
+      console.error('Error removing tag from project:', error)
+      throw error
+    }
+  }
+)
+
+// Add dependency to project
+export const addDependencyToProjectAtom = atom(
+  null,
+  async (get, set, { projectId, dependencyId }: { projectId: string; dependencyId: string }) => {
+    try {
+      // Prevent self-dependency
+      if (projectId === dependencyId) {
+        throw new Error('A project cannot depend on itself')
+      }
+
+      // Check if dependency exists
+      const { data: dependencyProject, error: fetchError } = await supabase
+        .from('projects')
+        .select('id, name, is_library')
+        .eq('id', dependencyId)
+        .single()
+
+      if (fetchError || !dependencyProject) {
+        throw new Error('Dependency project not found or not accessible')
+      }
+
+      // Add dependency
+      const { error } = await supabase
+        .from('project_dependencies')
+        .insert({
+          project_id: projectId,
+          dependency_id: dependencyId
+        })
+
+      if (error) {
+        // If error is duplicate, ignore it
+        if (!error.message.includes('duplicate')) {
+          throw error
+        }
+        return
+      }
+
+      const newDependency: ProjectDependency = {
+        id: dependencyProject.id,
+        name: dependencyProject.name,
+        isLibrary: dependencyProject.is_library
+      }
+
+      // Update local state
+      set(
+        projectsAtom,
+        get(projectsAtom).map((p) =>
+          p.id === projectId
+            ? { ...p, dependencies: [...(p.dependencies ?? []), newDependency] }
+            : p
+        )
+      )
+    } catch (error) {
+      console.error('Error adding dependency to project:', error)
+      throw error
+    }
+  }
+)
+
+// Remove dependency from project
+export const removeDependencyFromProjectAtom = atom(
+  null,
+  async (get, set, { projectId, dependencyId }: { projectId: string; dependencyId: string }) => {
+    try {
+      const { error } = await supabase
+        .from('project_dependencies')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('dependency_id', dependencyId)
+
+      if (error) throw error
+
+      // Update local state
+      set(
+        projectsAtom,
+        get(projectsAtom).map((p) =>
+          p.id === projectId
+            ? { ...p, dependencies: p.dependencies?.filter((d) => d.id !== dependencyId) ?? [] }
+            : p
+        )
+      )
+    } catch (error) {
+      console.error('Error removing dependency from project:', error)
+      throw error
+    }
+  }
+)
+
+// Fetch all files from project and its dependencies (recursive)
+export const fetchProjectWithDependenciesAtom = atom(
+  null,
+  async (_get, _set, projectId: string) => {
+    try {
+      const allFiles: (ProjectFile & { projectName: string })[] = []
+      const visitedProjects = new Set<string>()
+
+      async function fetchProjectFiles(id: string): Promise<void> {
+        if (visitedProjects.has(id)) return
+        visitedProjects.add(id)
+
+        // Fetch project with dependencies
+        const { data, error } = await supabase
+          .from('projects')
+          .select(
+            `
+            id,
+            name,
+            project_files (*),
+            project_dependencies!project_dependencies_project_id_fkey (
+              dependency_id
+            )
+          `
+          )
+          .eq('id', id)
+          .single()
+
+        if (error) throw error
+
+        // Add files from this project
+        const files = (data.project_files?.map((f: any) => ({
+            id: f.id,
+            projectId: f.project_id,
+            projectName: data.name, // Include project name
+            name: f.name,
+            content: f.content,
+            isMain: f.is_main,
+            order: f.order,
+            createdAt: f.created_at,
+            updatedAt: f.updated_at
+          })) ?? [])
+
+        allFiles.push(...files)
+
+        // Recursively fetch dependencies
+        if (data.project_dependencies) {
+          for (const dep of data.project_dependencies) {
+            await fetchProjectFiles(dep.dependency_id)
+          }
+        }
+      }
+
+      await fetchProjectFiles(projectId)
+      return allFiles
+    } catch (error) {
+      console.error('Error fetching project with dependencies:', error)
+      throw error
+    }
+  }
+)

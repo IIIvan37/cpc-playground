@@ -125,6 +125,7 @@ function prepareSnaSource(source: string): string {
 interface ProjectFile {
   name: string
   content: string
+  projectName?: string // Optional project name for namespacing
 }
 
 interface CompileResult {
@@ -156,8 +157,13 @@ async function compile(
     // Write all additional files to the virtual filesystem
     if (additionalFiles && additionalFiles.length > 0) {
       for (const file of additionalFiles) {
-        FS.writeFile(`/${file.name}`, file.content)
-        console.log('[RASM Worker] Wrote additional file:', file.name)
+        // If file has a projectName, write it in a subdirectory
+        const filePath = file.projectName 
+          ? `/${file.projectName}/${file.name}`
+          : `/${file.name}`
+        
+        FS.writeFile(filePath, file.content)
+        console.log('[RASM Worker] Wrote additional file:', filePath)
       }
     }
 
