@@ -12,6 +12,7 @@ import {
   type ViewMode,
   viewModeAtom
 } from '@/store'
+import { currentFileAtom, currentProjectAtom } from '@/store/projects-v2'
 import { ProgramManager } from './program-manager'
 import styles from './toolbar.module.css'
 
@@ -20,11 +21,25 @@ export function Toolbar() {
   const compilationStatus = useAtomValue(compilationStatusAtom)
   const [viewMode, setViewMode] = useAtom(viewModeAtom)
   const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
+  const currentProject = useAtomValue(currentProjectAtom)
+  const currentFile = useAtomValue(currentFileAtom)
   const { compile } = useRasm()
   const { isReady, loadSna, loadDsk, reset } = useEmulator()
 
   const handleCompileAndRun = async () => {
-    const binary = await compile(code, outputFormat)
+    // Collect additional files from the current project (excluding the current file being compiled)
+    let additionalFiles: { name: string; content: string }[] | undefined
+
+    if (currentProject && currentFile) {
+      additionalFiles = currentProject.files
+        .filter((f) => f.id !== currentFile.id) // Exclude the file being compiled
+        .map((f) => ({
+          name: f.name,
+          content: f.content
+        }))
+    }
+
+    const binary = await compile(code, outputFormat, additionalFiles)
     if (binary && isReady) {
       if (outputFormat === 'dsk') {
         loadDsk(binary)

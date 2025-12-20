@@ -73,3 +73,32 @@
   box-shadow: none;
   opacity: 1;
 }
+
+.outline {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-foreground);
+}
+
+.outline:hover {
+  background-color: var(--color-hover-secondary);
+}
+
+.ghost {
+  background: transparent;
+  border: none;
+  color: var(--color-foreground);
+}
+
+.ghost:hover {
+  background-color: var(--color-hover-secondary);
+}
+
+.small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+.fullWidth {
+  width: 100%;
+}
