@@ -38,7 +38,7 @@ export function ProjectBrowser() {
   const [currentProjectId, setCurrentProjectId] = useAtom(currentProjectIdAtom)
   const currentProject = useAtomValue(currentProjectAtom)
   const [currentFileId, setCurrentFileId] = useAtom(currentFileIdAtom)
-  const [, setCode] = useAtom(codeAtom)
+  const [code, setCode] = useAtom(codeAtom)
   const dependencyFiles = useAtomValue(dependencyFilesAtom)
   const fetchDependencyFiles = useSetAtom(fetchDependencyFilesAtom)
 
@@ -57,6 +57,7 @@ export function ProjectBrowser() {
   const [loading, setLoading] = useState(false)
   const [loadingDeps, setLoadingDeps] = useState(false)
   const [expandedDeps, setExpandedDeps] = useState<Set<string>>(new Set())
+  const [saveCurrentCode, setSaveCurrentCode] = useState(false)
 
   // Load projects on mount
   useEffect(() => {
@@ -65,7 +66,8 @@ export function ProjectBrowser() {
     }
   }, [user, fetchProjects])
 
-  // Load dependency files when project changes
+  // Load dependency files when project changes or dependencies are updated
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to reload when dependencies change
   useEffect(() => {
     if (currentProjectId) {
       setLoadingDeps(true)
@@ -73,7 +75,7 @@ export function ProjectBrowser() {
         setLoadingDeps(false)
       )
     }
-  }, [currentProjectId, fetchDependencyFiles])
+  }, [currentProjectId, currentProject?.dependencies, fetchDependencyFiles])
 
   // Don't show anything for non-authenticated users
   if (!user && !authLoading) {
@@ -109,16 +111,23 @@ export function ProjectBrowser() {
     try {
       await createProject({
         name: newProjectName.trim(),
-        isLibrary: newProjectIsLibrary
+        isLibrary: newProjectIsLibrary,
+        initialContent: saveCurrentCode ? code : undefined
       })
       setShowNewProjectDialog(false)
       setNewProjectName('')
       setNewProjectIsLibrary(false)
+      setSaveCurrentCode(false)
     } catch (error) {
       console.error('Failed to create project:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSaveToProject = () => {
+    setSaveCurrentCode(true)
+    setShowNewProjectDialog(true)
   }
 
   const handleSelectProject = (projectId: string) => {
@@ -212,7 +221,7 @@ export function ProjectBrowser() {
           <Button
             variant='ghost'
             size='sm'
-            onClick={() => setShowNewProjectDialog(true)}
+            onClick={handleSaveToProject}
             title='Create a project to save your work'
           >
             Save to Project
@@ -384,13 +393,19 @@ export function ProjectBrowser() {
       {/* New Project Dialog */}
       <Modal
         open={showNewProjectDialog}
-        onClose={() => setShowNewProjectDialog(false)}
+        onClose={() => {
+          setShowNewProjectDialog(false)
+          setSaveCurrentCode(false)
+        }}
         title='New Project'
         actions={
           <>
             <Button
               variant='outline'
-              onClick={() => setShowNewProjectDialog(false)}
+              onClick={() => {
+                setShowNewProjectDialog(false)
+                setSaveCurrentCode(false)
+              }}
             >
               Cancel
             </Button>
@@ -403,6 +418,20 @@ export function ProjectBrowser() {
           </>
         }
       >
+        {saveCurrentCode && (
+          <div
+            style={{
+              padding: '0.75rem',
+              marginBottom: '1rem',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.3)',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem'
+            }}
+          >
+            ✓ Current editor content will be saved to main.asm
+          </div>
+        )}
         <Input
           type='text'
           placeholder='Project name'
