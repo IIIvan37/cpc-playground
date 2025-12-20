@@ -1,24 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+// Mock the supabase module first, before importing anything
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+      signInWithOAuth: vi.fn(),
+      getSession: vi.fn(),
+      getUser: vi.fn(),
+      onAuthStateChange: vi.fn()
+    },
+    from: vi.fn()
+  }
+}))
+
+import { supabase } from '@/lib/supabase'
+// Now import after the mock is set up
 import { AuthService } from '../auth.service'
 
-// Mock Supabase client
-const mockSupabase = {
-  auth: {
-    signInWithPassword: vi.fn(),
-    signUp: vi.fn(),
-    signOut: vi.fn(),
-    signInWithOAuth: vi.fn(),
-    getSession: vi.fn(),
-    getUser: vi.fn(),
-    onAuthStateChange: vi.fn()
-  },
-  from: vi.fn()
-}
-
-// Mock the supabase module
-vi.mock('@/lib/supabase', () => ({
-  supabase: mockSupabase
-}))
+const mockSupabase = supabase as any
 
 describe('AuthService', () => {
   let authService: AuthService
