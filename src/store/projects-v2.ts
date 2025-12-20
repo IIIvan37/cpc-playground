@@ -1,3 +1,8 @@
+// TODO: DEPRECATED - Remove this file once all components are migrated to projects.ts
+// This store duplicates domain types (Project, ProjectFile, etc.) with simple types instead of value objects
+// It makes direct Supabase calls instead of using Clean Architecture use-cases
+// Migration status: 3/5 components migrated (program-manager, code-editor, examples-menu, project-browser in progress)
+// Remaining: toolbar.tsx, project-settings-modal.tsx
 // @ts-nocheck
 import { atom } from 'jotai'
 import { supabase } from '@/lib/supabase'

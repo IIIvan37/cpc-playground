@@ -355,3 +355,45 @@ export const deleteFileAtom = atom(
     }
   }
 )
+
+/**
+ * Set a file as the main file
+ */
+export const setMainFileAtom = atom(
+  null,
+  async (
+    _get,
+    set,
+    params: {
+      projectId: string
+      userId: string
+      fileId: string
+    }
+  ) => {
+    try {
+      await container.updateFile.execute({
+        ...params,
+        isMain: true
+      })
+
+      // Update project in the list
+      set(projectsAtom, (prev) =>
+        prev.map((p) => {
+          if (p.id === params.projectId) {
+            return {
+              ...p,
+              files: p.files.map((f) => ({
+                ...f,
+                isMain: f.id === params.fileId
+              }))
+            }
+          }
+          return p
+        })
+      )
+    } catch (error) {
+      console.error('Failed to set main file:', error)
+      throw error
+    }
+  }
+)

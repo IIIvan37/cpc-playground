@@ -8,7 +8,7 @@ import {
   StarIcon,
   TrashIcon
 } from '@radix-ui/react-icons'
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import Button from '@/components/ui/button/button'
 import Checkbox from '@/components/ui/checkbox/checkbox'
@@ -24,13 +24,15 @@ import {
   currentProjectIdAtom,
   deleteFileAtom,
   deleteProjectAtom,
-  dependencyFilesAtom,
-  fetchDependencyFilesAtom,
   fetchProjectsAtom,
   projectsAtom,
   setMainFileAtom
-} from '@/store/projects-v2'
+} from '@/store/projects'
 import styles from './project-browser.module.css'
+
+// TODO: Migrate dependency-related features once use-cases are implemented
+const dependencyFilesAtom = atom<any[]>([])
+const fetchDependencyFilesAtom = atom(null, async () => {})
 
 export function ProjectBrowser() {
   const { user, loading: authLoading } = useAuth()
@@ -62,7 +64,7 @@ export function ProjectBrowser() {
   // Load projects on mount
   useEffect(() => {
     if (user) {
-      fetchProjects()
+      fetchProjects(user.id)
     }
   }, [user, fetchProjects])
 
@@ -71,9 +73,7 @@ export function ProjectBrowser() {
   useEffect(() => {
     if (currentProjectId) {
       setLoadingDeps(true)
-      fetchDependencyFiles(currentProjectId).finally(() =>
-        setLoadingDeps(false)
-      )
+      fetchDependencyFiles().finally(() => setLoadingDeps(false))
     }
   }, [currentProjectId, currentProject?.dependencies, fetchDependencyFiles])
 
@@ -106,13 +106,22 @@ export function ProjectBrowser() {
   }
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim()) return
+    if (!newProjectName.trim() || !user) return
     setLoading(true)
     try {
       await createProject({
+        userId: user.id,
         name: newProjectName.trim(),
-        isLibrary: newProjectIsLibrary,
-        initialContent: saveCurrentCode ? code : undefined
+        visibility: 'private',
+        files: saveCurrentCode
+          ? [
+              {
+                name: newProjectIsLibrary ? 'lib.asm' : 'main.asm',
+                content: code,
+                isMain: true
+              }
+            ]
+          : undefined
       })
       setShowNewProjectDialog(false)
       setNewProjectName('')
@@ -144,11 +153,12 @@ export function ProjectBrowser() {
   }
 
   const handleCreateFile = async () => {
-    if (!currentProjectId || !newFileName.trim()) return
+    if (!currentProjectId || !newFileName.trim() || !user) return
     setLoading(true)
     try {
       await createFile({
         projectId: currentProjectId,
+        userId: user.id,
         name: newFileName.trim()
       })
       setShowNewFileDialog(false)
@@ -163,9 +173,13 @@ export function ProjectBrowser() {
 
   const handleDeleteFile = async (fileId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm('Delete this file?')) return
+    if (!confirm('Delete this file?') || !currentProjectId || !user) return
     try {
-      await deleteFile(fileId)
+      await deleteFile({
+        projectId: currentProjectId,
+        userId: user.id,
+        fileId
+      })
     } catch (error) {
       console.error('Failed to delete file:', error)
     }
@@ -173,17 +187,25 @@ export function ProjectBrowser() {
 
   const handleSetMainFile = async (fileId: string, e: React.MouseEvent) => {
     e.stopPropagation()
+    if (!currentProjectId || !user) return
     try {
-      await setMainFile(fileId)
+      await setMainFile({
+        projectId: currentProjectId,
+        userId: user.id,
+        fileId
+      })
     } catch (error) {
       console.error('Failed to set main file:', error)
     }
   }
 
   const handleDeleteProject = async () => {
-    if (!currentProjectId || !confirm('Delete this project?')) return
+    if (!currentProjectId || !confirm('Delete this project?') || !user) return
     try {
-      await deleteProject(currentProjectId)
+      await deleteProject({
+        projectId: currentProjectId,
+        userId: user.id
+      })
     } catch (error) {
       console.error('Failed to delete project:', error)
     }
@@ -247,13 +269,13 @@ export function ProjectBrowser() {
           >
             <div className={styles.projectMeta}>
               <div className={styles.projectName}>
-                <span>{project.name}</span>
-                {project.visibility === 'public' && (
+                <span>{project.name.value}</span>
+                {project.visibility.value === 'public' && (
                   <span className={`${styles.badge} ${styles.badgePublic}`}>
                     Public
                   </span>
                 )}
-                {project.visibility === 'shared' && (
+                {project.visibility.value === 'unlisted' && (
                   <span className={`${styles.badge} ${styles.badgeShared}`}>
                     Shared
                   </span>
@@ -267,8 +289,8 @@ export function ProjectBrowser() {
               {project.tags && project.tags.length > 0 && (
                 <div className={styles.projectTags}>
                   {project.tags.map((tag) => (
-                    <span key={tag.id} className={styles.tag}>
-                      {tag.name}
+                    <span key={tag} className={styles.tag}>
+                      {tag}
                     </span>
                   ))}
                 </div>
@@ -315,7 +337,7 @@ export function ProjectBrowser() {
                 onClick={() => handleSelectFile(file.id)}
               >
                 <FileIcon />
-                <span className={styles.fileName}>{file.name}</span>
+                <span className={styles.fileName}>{file.name.value}</span>
                 {file.isMain ? (
                   <StarFilledIcon className={styles.mainStar} />
                 ) : (
@@ -371,7 +393,7 @@ export function ProjectBrowser() {
                   </div>
                   {expandedDeps.has(dep.id) && (
                     <div className={styles.dependencyFiles}>
-                      {dep.files.map((file) => (
+                      {dep.files.map((file: any) => (
                         <div
                           key={file.id}
                           className={`${styles.file} ${styles.dependencyFile}`}
