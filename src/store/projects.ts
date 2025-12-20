@@ -48,7 +48,7 @@ export const fetchProjectsAtom = atom(
   async (_get, set, userId: string) => {
     try {
       const result = await container.getProjects.execute({ userId })
-      set(projectsAtom, result.projects)
+      set(projectsAtom, [...result.projects])
     } catch (error) {
       console.error('Failed to fetch projects:', error)
       throw error
@@ -143,7 +143,12 @@ export const updateProjectAtom = atom(
     }
   ) => {
     try {
-      const result = await container.updateProject.execute(params)
+      const { projectId, userId, ...updates } = params
+      const result = await container.updateProject.execute({
+        projectId,
+        userId,
+        updates
+      })
 
       // Update in projects list
       set(projectsAtom, (prev) =>
@@ -210,5 +215,143 @@ export const setCurrentFileAtom = atom(
   null,
   (_get, set, fileId: string | null) => {
     set(currentFileIdAtom, fileId)
+  }
+)
+
+// ============================================================================
+// File Action Atoms
+// ============================================================================
+
+/**
+ * Create a new file in a project
+ */
+export const createFileAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    params: {
+      projectId: string
+      userId: string
+      name: string
+      content?: string
+      isMain?: boolean
+    }
+  ) => {
+    try {
+      const result = await container.createFile.execute(params)
+
+      // Update project in the list with the new file
+      set(projectsAtom, (prev) =>
+        prev.map((p) => {
+          if (p.id === params.projectId) {
+            return { ...p, files: [...p.files, result.file] }
+          }
+          return p
+        })
+      )
+
+      // Set as current file if it's main or if no current file
+      const currentFileId = get(currentFileIdAtom)
+      if (result.file.isMain || !currentFileId) {
+        set(currentFileIdAtom, result.file.id)
+      }
+
+      return result.file
+    } catch (error) {
+      console.error('Failed to create file:', error)
+      throw error
+    }
+  }
+)
+
+/**
+ * Update a file
+ */
+export const updateFileAtom = atom(
+  null,
+  async (
+    _get,
+    set,
+    params: {
+      projectId: string
+      userId: string
+      fileId: string
+      name?: string
+      content?: string
+      isMain?: boolean
+    }
+  ) => {
+    try {
+      const result = await container.updateFile.execute(params)
+
+      // Update project in the list with the updated file
+      set(projectsAtom, (prev) =>
+        prev.map((p) => {
+          if (p.id === params.projectId) {
+            return {
+              ...p,
+              files: p.files.map((f) =>
+                f.id === result.file.id ? result.file : f
+              )
+            }
+          }
+          return p
+        })
+      )
+
+      return result.file
+    } catch (error) {
+      console.error('Failed to update file:', error)
+      throw error
+    }
+  }
+)
+
+/**
+ * Delete a file
+ */
+export const deleteFileAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    params: {
+      projectId: string
+      userId: string
+      fileId: string
+    }
+  ) => {
+    try {
+      await container.deleteFile.execute(params)
+
+      // Update project in the list, removing the file
+      set(projectsAtom, (prev) =>
+        prev.map((p) => {
+          if (p.id === params.projectId) {
+            return {
+              ...p,
+              files: p.files.filter((f) => f.id !== params.fileId)
+            }
+          }
+          return p
+        })
+      )
+
+      // Clear current file if it was deleted
+      const currentFileId = get(currentFileIdAtom)
+      if (currentFileId === params.fileId) {
+        // Set main file as current
+        const projects = get(projectsAtom)
+        const project = projects.find((p) => p.id === params.projectId)
+        const mainFile = project?.files.find((f) => f.isMain)
+        set(currentFileIdAtom, mainFile?.id ?? null)
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to delete file:', error)
+      throw error
+    }
   }
 )

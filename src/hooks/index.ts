@@ -1,5 +1,10 @@
 export { useAuth } from './use-auth'
 export { useEmulator } from './use-emulator'
+export {
+  useCreateFile,
+  useDeleteFile,
+  useUpdateFile
+} from './use-files'
 // Clean Architecture hooks
 export {
   useCreateProject,

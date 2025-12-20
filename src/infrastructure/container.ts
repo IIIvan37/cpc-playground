@@ -4,6 +4,16 @@
  */
 
 import type {
+  CreateFileUseCase,
+  DeleteFileUseCase,
+  UpdateFileUseCase
+} from '@/use-cases/files'
+import {
+  createCreateFileUseCase,
+  createDeleteFileUseCase,
+  createUpdateFileUseCase
+} from '@/use-cases/files'
+import type {
   CreateProjectUseCase,
   DeleteProjectUseCase,
   GetProjectsUseCase,
@@ -26,6 +36,10 @@ export type Container = {
   getProject: GetProjectUseCase
   updateProject: UpdateProjectUseCase
   deleteProject: DeleteProjectUseCase
+  // Files use cases
+  createFile: CreateFileUseCase
+  updateFile: UpdateFileUseCase
+  deleteFile: DeleteFileUseCase
 }
 
 /**
@@ -41,7 +55,10 @@ export function createContainer(): Container {
     getProjects: createGetProjectsUseCase(projectsRepository),
     getProject: createGetProjectUseCase(projectsRepository),
     updateProject: createUpdateProjectUseCase(projectsRepository),
-    deleteProject: createDeleteProjectUseCase(projectsRepository)
+    deleteProject: createDeleteProjectUseCase(projectsRepository),
+    createFile: createCreateFileUseCase(projectsRepository),
+    updateFile: createUpdateFileUseCase(projectsRepository),
+    deleteFile: createDeleteFileUseCase(projectsRepository)
   }
 }
 
