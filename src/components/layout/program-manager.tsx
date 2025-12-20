@@ -12,7 +12,7 @@ import {
   savedProgramsAtom,
   saveProgramAtom
 } from '@/store'
-import { currentProjectAtom } from '@/store/projects-v2'
+import { currentProjectAtom } from '@/store/projects'
 import styles from './program-manager.module.css'
 
 export function ProgramManager() {

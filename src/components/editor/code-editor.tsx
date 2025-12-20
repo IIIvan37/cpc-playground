@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
-import { currentFileAtom } from '@/store/projects-v2'
+import { currentFileAtom } from '@/store/projects'
 import styles from './code-editor.module.css'
 
 const LINE_HEIGHT = 21
@@ -19,7 +19,7 @@ export function CodeEditor() {
   // Synchronize code with current file when it changes
   useEffect(() => {
     if (currentFile) {
-      setCode(currentFile.content)
+      setCode(currentFile.content.value)
     }
   }, [currentFile, setCode])
 
