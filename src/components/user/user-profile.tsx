@@ -38,7 +38,7 @@ export function UserProfile() {
 
   const handleSignOut = async () => {
     if (confirm('Are you sure you want to sign out?')) {
-      await supabase.auth.signOut()
+      await supabase.auth.signOut({ scope: 'local' })
     }
   }
 
