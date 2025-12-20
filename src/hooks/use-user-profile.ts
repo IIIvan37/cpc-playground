@@ -54,16 +54,30 @@ export function useUserProfile() {
   const updateUsername = async (newUsername: string) => {
     if (!user) throw new Error('Not authenticated')
 
+    // Validate username format (3-30 chars, lowercase letters, numbers, underscores, hyphens)
+    if (newUsername.length < 3 || newUsername.length > 30) {
+      throw new Error('Username must be between 3 and 30 characters')
+    }
+    if (!/^[a-z0-9_-]+$/.test(newUsername)) {
+      throw new Error(
+        'Username can only contain lowercase letters, numbers, underscores and hyphens'
+      )
+    }
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('user_profiles')
         .update({
           username: newUsername,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw new Error(error.message || 'Failed to update username')
+      }
 
       setProfile((prev) => (prev ? { ...prev, username: newUsername } : null))
     } catch (err) {
