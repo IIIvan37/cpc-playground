@@ -252,29 +252,28 @@ export function ProjectBrowser() {
                 <FileIcon />
                 <span className={styles.fileName}>{file.name}</span>
                 {file.isMain ? (
-                  <StarFilledIcon
-                    className={styles.mainStar}
-                    title='Main file'
-                  />
+                  <StarFilledIcon className={styles.mainStar} />
                 ) : (
-                  <button
+                  <Button
                     type='button'
+                    variant='icon'
                     className={styles.iconButton}
                     onClick={(e) => handleSetMainFile(file.id, e)}
                     title='Set as main file'
                   >
                     <StarIcon />
-                  </button>
+                  </Button>
                 )}
                 {!file.isMain && (
-                  <button
+                  <Button
                     type='button'
+                    variant='icon'
                     className={styles.iconButton}
                     onClick={(e) => handleDeleteFile(file.id, e)}
                     title='Delete file'
                   >
                     <TrashIcon />
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}

@@ -1,5 +1,6 @@
 import { useAtomValue } from 'jotai'
 import { useState } from 'react'
+import Button from '@/components/ui/button/button'
 import { Input } from '@/components/ui/input'
 import { userAtom } from '../../hooks/use-auth'
 import { useUserProfile } from '../../hooks/use-user-profile'
@@ -42,8 +43,9 @@ export function UserProfile() {
 
   return (
     <>
-      <button
+      <Button
         type='button'
+        variant='outline'
         className={styles.profileButton}
         onClick={handleOpenModal}
       >
@@ -51,7 +53,7 @@ export function UserProfile() {
         <span className={styles.username}>
           {loading ? '...' : profile?.username || 'User'}
         </span>
-      </button>
+      </Button>
 
       {showModal && (
         <div className={styles.modal} onClick={() => setShowModal(false)}>
@@ -61,14 +63,15 @@ export function UserProfile() {
           >
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>User Profile</h2>
-              <button
+              <Button
                 type='button'
+                variant='icon'
                 className={styles.closeButton}
                 onClick={() => setShowModal(false)}
                 aria-label='Close'
               >
                 ×
-              </button>
+              </Button>
             </div>
 
             <div className={styles.info}>
@@ -99,21 +102,21 @@ export function UserProfile() {
             </div>
 
             <div className={styles.actions}>
-              <button
+              <Button
                 type='button'
                 onClick={handleSaveUsername}
                 disabled={saving}
               >
                 {saving ? 'Saving...' : 'Save Username'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type='button'
-                className={styles.signOutButton}
+                variant='secondary'
                 onClick={handleSignOut}
                 disabled={saving}
               >
                 Sign Out
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useState } from 'react'
+import Button from '@/components/ui/button/button'
 import Checkbox from '@/components/ui/checkbox/checkbox'
 import { Select, SelectItem } from '@/components/ui/select/select'
 import { supabase } from '../../lib/supabase'
@@ -202,14 +203,15 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>Project Settings</h2>
-          <button
+          <Button
             type='button'
+            variant='icon'
             className={styles.closeButton}
             onClick={onClose}
             aria-label='Close'
           >
             ×
-          </button>
+          </Button>
         </div>
 
         {/* Basic Info */}
@@ -279,15 +281,16 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                       <span className={styles.shareUsername}>
                         {share.userId}
                       </span>
-                      <button
+                      <Button
                         type='button'
+                        variant='icon'
                         className={styles.shareRemove}
                         onClick={() => handleRemoveShare(share.userId)}
                         disabled={loading}
                         aria-label='Remove user'
                       >
                         ×
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -307,13 +310,13 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                     if (e.key === 'Enter') handleAddShare()
                   }}
                 />
-                <button
+                <Button
                   type='button'
                   onClick={handleAddShare}
                   disabled={loading || !shareUsername.trim()}
                 >
                   Add
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -327,15 +330,16 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
               {currentProject.tags.map((tag) => (
                 <span key={tag.id} className={styles.tag}>
                   {tag.name}
-                  <button
+                  <Button
                     type='button'
+                    variant='icon'
                     className={styles.tagRemove}
                     onClick={() => handleRemoveTag(tag.id)}
                     disabled={loading}
                     aria-label='Remove tag'
                   >
                     ×
-                  </button>
+                  </Button>
                 </span>
               ))}
             </div>
@@ -353,13 +357,13 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                 if (e.key === 'Enter') handleAddTag()
               }}
             />
-            <button
+            <Button
               type='button'
               onClick={handleAddTag}
               disabled={loading || !newTag.trim()}
             >
               Add Tag
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -378,15 +382,16 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                   <div className={styles.dependencyInfo}>
                     <div className={styles.dependencyName}>{dep.name}</div>
                   </div>
-                  <button
+                  <Button
                     type='button'
+                    variant='icon'
                     className={styles.dependencyRemove}
                     onClick={() => handleRemoveDependency(dep.id)}
                     disabled={loading}
                     aria-label='Remove dependency'
                   >
                     ×
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -406,13 +411,13 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                   </SelectItem>
                 ))}
               </Select>
-              <button
+              <Button
                 type='button'
                 onClick={handleAddDependency}
                 disabled={loading || !selectedDependency}
               >
                 Add
-              </button>
+              </Button>
             </div>
           ) : (
             <div className={styles.helpText}>
@@ -424,22 +429,23 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
-          <button
+          <Button
             type='button'
             onClick={handleSave}
             disabled={loading}
-            style={{ flex: 1 }}
+            fullWidth
           >
             {loading ? 'Saving...' : 'Save Changes'}
-          </button>
-          <button
+          </Button>
+          <Button
             type='button'
+            variant='outline'
             onClick={onClose}
             disabled={loading}
-            style={{ flex: 1, background: 'var(--bg-primary)' }}
+            fullWidth
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </div>

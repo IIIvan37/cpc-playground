@@ -59,14 +59,15 @@ export function AuthModal({ onClose }: AuthModalProps) {
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2>{mode === 'signin' ? 'Sign In' : 'Sign Up'}</h2>
-          <button
+          <Button
             type='button'
+            variant='icon'
             className={styles.closeButton}
             onClick={onClose}
             aria-label='Close'
           >
             ×
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -116,24 +117,26 @@ export function AuthModal({ onClose }: AuthModalProps) {
             {mode === 'signin' ? (
               <>
                 Don't have an account?{' '}
-                <button
+                <Button
                   type='button'
+                  variant='link'
                   onClick={() => setMode('signup')}
                   disabled={loading}
                 >
                   Sign up
-                </button>
+                </Button>
               </>
             ) : (
               <>
                 Already have an account?{' '}
-                <button
+                <Button
                   type='button'
+                  variant='link'
                   onClick={() => setMode('signin')}
                   disabled={loading}
                 >
                   Sign in
-                </button>
+                </Button>
               </>
             )}
           </div>
