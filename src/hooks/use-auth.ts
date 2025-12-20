@@ -45,8 +45,18 @@ export function useAuth() {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut({ scope: 'local' })
-    return { error }
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
+      // Ignore 403 errors as the session is already invalid
+      if (error && !error.message.includes('403')) {
+        return { error }
+      }
+      return { error: null }
+    } catch (e) {
+      // Ignore network errors, session will be cleared locally anyway
+      console.warn('SignOut error (ignored):', e)
+      return { error: null }
+    }
   }
 
   const signInWithGithub = async () => {
