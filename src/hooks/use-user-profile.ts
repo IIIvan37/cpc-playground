@@ -23,6 +23,7 @@ export function useUserProfile() {
     }
 
     async function fetchProfile() {
+      if (!user) return
       try {
         setLoading(true)
         const { data, error } = await supabase

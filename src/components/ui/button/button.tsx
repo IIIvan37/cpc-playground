@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import styles from './button.module.css'
 
-type Variant = 'primary' | 'secondary' | 'icon' | 'outline' | 'ghost'
+type Variant = 'primary' | 'secondary' | 'icon' | 'outline' | 'ghost' | 'link'
 
 type Props = {
   children: ReactNode

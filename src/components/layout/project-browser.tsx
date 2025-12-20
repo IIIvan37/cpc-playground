@@ -19,7 +19,6 @@ import { codeAtom } from '@/store/editor'
 import {
   createFileAtom,
   createProjectAtom,
-  currentFileAtom,
   currentFileIdAtom,
   currentProjectAtom,
   currentProjectIdAtom,
@@ -29,8 +28,7 @@ import {
   fetchDependencyFilesAtom,
   fetchProjectsAtom,
   projectsAtom,
-  setMainFileAtom,
-  updateFileAtom
+  setMainFileAtom
 } from '@/store/projects-v2'
 import styles from './project-browser.module.css'
 
@@ -40,8 +38,7 @@ export function ProjectBrowser() {
   const [currentProjectId, setCurrentProjectId] = useAtom(currentProjectIdAtom)
   const currentProject = useAtomValue(currentProjectAtom)
   const [currentFileId, setCurrentFileId] = useAtom(currentFileIdAtom)
-  const _currentFile = useAtomValue(currentFileAtom)
-  const [_code, setCode] = useAtom(codeAtom)
+  const [, setCode] = useAtom(codeAtom)
   const dependencyFiles = useAtomValue(dependencyFilesAtom)
   const fetchDependencyFiles = useSetAtom(fetchDependencyFilesAtom)
 
@@ -49,7 +46,6 @@ export function ProjectBrowser() {
   const createProject = useSetAtom(createProjectAtom)
   const deleteProject = useSetAtom(deleteProjectAtom)
   const createFile = useSetAtom(createFileAtom)
-  const _updateFile = useSetAtom(updateFileAtom)
   const deleteFile = useSetAtom(deleteFileAtom)
   const setMainFile = useSetAtom(setMainFileAtom)
 

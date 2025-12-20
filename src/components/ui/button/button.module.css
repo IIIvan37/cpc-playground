@@ -94,6 +94,19 @@
   background-color: var(--color-hover-secondary);
 }
 
+.link {
+  background: transparent;
+  border: none;
+  color: var(--color-accent);
+  padding: 0;
+  text-decoration: underline;
+  text-transform: none;
+}
+
+.link:hover {
+  color: var(--color-foreground);
+}
+
 .small {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: var(--font-size-xs);

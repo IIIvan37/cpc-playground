@@ -21,7 +21,6 @@ export interface ProjectFile {
 }
 
 export interface ProjectShare {
-  id: string
   projectId: string
   userId: string
   createdAt: string
@@ -407,7 +406,7 @@ export const deleteProjectAtom = atom(
         .map((p) => ({
           ...p,
           // Remove the deleted project from dependencies of other projects
-          dependencies: p.dependencies.filter((d) => d.id !== projectId)
+          dependencies: (p.dependencies ?? []).filter((d) => d.id !== projectId)
         }))
       set(projectsAtom, updatedProjects)
 
@@ -644,14 +643,14 @@ export const shareProjectAtom = atom(
   async (
     get,
     set,
-    { projectId, userEmail }: { projectId: string; userEmail: string }
+    { projectId, username }: { projectId: string; username: string }
   ) => {
     try {
-      // First, get the user ID from email
+      // First, get the user ID from username via user_profiles
       const { data: userData, error: userError } = await supabase
-        .from('auth.users')
+        .from('user_profiles')
         .select('id')
-        .eq('email', userEmail)
+        .eq('username', username)
         .single()
 
       if (userError) throw new Error('User not found')
@@ -668,7 +667,6 @@ export const shareProjectAtom = atom(
       if (error) throw error
 
       const newShare: ProjectShare = {
-        id: data.id,
         projectId: data.project_id,
         userId: data.user_id,
         createdAt: data.created_at
@@ -696,13 +694,14 @@ export const unshareProjectAtom = atom(
   async (
     get,
     set,
-    { projectId, shareId }: { projectId: string; shareId: string }
+    { projectId, userId }: { projectId: string; userId: string }
   ) => {
     try {
       const { error } = await supabase
         .from('project_shares')
         .delete()
-        .eq('id', shareId)
+        .eq('project_id', projectId)
+        .eq('user_id', userId)
 
       if (error) throw error
 
@@ -711,7 +710,10 @@ export const unshareProjectAtom = atom(
         projectsAtom,
         get(projectsAtom).map((p) =>
           p.id === projectId
-            ? { ...p, shares: p.shares?.filter((s) => s.id !== shareId) ?? [] }
+            ? {
+                ...p,
+                shares: p.shares?.filter((s) => s.userId !== userId) ?? []
+              }
             : p
         )
       )
