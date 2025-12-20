@@ -56,11 +56,8 @@ export function UserProfile() {
       </Button>
 
       {showModal && (
-        <div className={styles.modal} onClick={() => setShowModal(false)}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className={styles.overlay} onClick={() => setShowModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>User Profile</h2>
               <Button

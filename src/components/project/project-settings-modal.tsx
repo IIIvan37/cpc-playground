@@ -199,8 +199,8 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
   )
 
   return (
-    <div className={styles.modal} onClick={onClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>Project Settings</h2>
           <Button
