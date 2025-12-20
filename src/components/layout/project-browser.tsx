@@ -9,6 +9,7 @@ import {
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import Button from '@/components/ui/button/button'
+import Checkbox from '@/components/ui/checkbox/checkbox'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks'
 import { codeAtom } from '@/store/editor'
@@ -296,24 +297,12 @@ export function ProjectBrowser() {
               onChange={(e) => setNewProjectName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
             />
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginTop: '1rem',
-                cursor: 'pointer'
-              }}
-            >
-              <input
-                type='checkbox'
-                checked={newProjectIsLibrary}
-                onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
-              />
-              <span>
-                Library/Utility project (no entry point, cannot be assembled)
-              </span>
-            </label>
+            <Checkbox
+              label='Library/Utility project (no entry point, cannot be assembled)'
+              checked={newProjectIsLibrary}
+              onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
+              style={{ marginTop: '1rem' }}
+            />
             <div className={styles.dialogActions}>
               <Button
                 variant='outline'

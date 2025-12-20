@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useState } from 'react'
+import Checkbox from '@/components/ui/checkbox/checkbox'
 import { Select, SelectItem } from '@/components/ui/select/select'
 import { supabase } from '../../lib/supabase'
 import {
@@ -232,14 +233,11 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
             />
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.checkbox}>
-              <input
-                type='checkbox'
-                checked={isLibrary}
-                onChange={(e) => setIsLibrary(e.target.checked)}
-              />
-              <span>This is a library project</span>
-            </label>
+            <Checkbox
+              label='This is a library project'
+              checked={isLibrary}
+              onChange={(e) => setIsLibrary(e.target.checked)}
+            />
             <div className={styles.helpText}>
               Library projects can be used as dependencies by other projects
             </div>
