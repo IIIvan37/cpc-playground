@@ -1,48 +1,48 @@
-import { PlayIcon, ResetIcon } from "@radix-ui/react-icons";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import Button from "@/components/ui/button/button";
-import Flex from "@/components/ui/flex/flex";
-import { Select, SelectItem } from "@/components/ui/select/select";
-import { useEmulator, useRasm } from "@/hooks";
+import { PlayIcon, ResetIcon } from '@radix-ui/react-icons'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import Button from '@/components/ui/button/button'
+import Flex from '@/components/ui/flex/flex'
+import { Select, SelectItem } from '@/components/ui/select/select'
+import { useEmulator, useRasm } from '@/hooks'
 import {
   codeAtom,
   compilationStatusAtom,
   type OutputFormat,
   outputFormatAtom,
   type ViewMode,
-  viewModeAtom,
-} from "@/store";
+  viewModeAtom
+} from '@/store'
 import {
   currentFileAtom,
   currentProjectAtom,
-  fetchProjectWithDependenciesAtom,
-} from "@/store/projects-v2";
-import { ProgramManager } from "./program-manager";
-import styles from "./toolbar.module.css";
+  fetchProjectWithDependenciesAtom
+} from '@/store/projects-v2'
+import { ProgramManager } from './program-manager'
+import styles from './toolbar.module.css'
 
 export function Toolbar() {
-  const code = useAtomValue(codeAtom);
-  const compilationStatus = useAtomValue(compilationStatusAtom);
-  const [viewMode, setViewMode] = useAtom(viewModeAtom);
-  const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom);
-  const currentProject = useAtomValue(currentProjectAtom);
-  const currentFile = useAtomValue(currentFileAtom);
+  const code = useAtomValue(codeAtom)
+  const compilationStatus = useAtomValue(compilationStatusAtom)
+  const [viewMode, setViewMode] = useAtom(viewModeAtom)
+  const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
+  const currentProject = useAtomValue(currentProjectAtom)
+  const currentFile = useAtomValue(currentFileAtom)
   const fetchProjectWithDependencies = useSetAtom(
     fetchProjectWithDependenciesAtom
-  );
-  const { compile } = useRasm();
-  const { isReady, loadSna, loadDsk, reset } = useEmulator();
+  )
+  const { compile } = useRasm()
+  const { isReady, loadSna, loadDsk, reset } = useEmulator()
 
   const handleCompileAndRun = async () => {
     // Collect files from the current project and its dependencies
     let additionalFiles:
       | { name: string; content: string; projectName?: string }[]
-      | undefined;
+      | undefined
 
     if (currentProject && currentFile) {
       try {
         // Get all files including dependencies
-        const allFiles = await fetchProjectWithDependencies(currentProject.id);
+        const allFiles = await fetchProjectWithDependencies(currentProject.id)
 
         // Separate current project files from dependency files
         additionalFiles = allFiles
@@ -52,48 +52,48 @@ export function Toolbar() {
             content: f.content,
             // Only add projectName for dependency files (not current project)
             ...(f.projectId !== currentProject.id && {
-              projectName: f.projectName,
-            }),
-          }));
+              projectName: f.projectName
+            })
+          }))
       } catch (error) {
-        console.error("Error fetching dependencies:", error);
+        console.error('Error fetching dependencies:', error)
         // Fallback to just current project files
         additionalFiles = currentProject.files
           .filter((f) => f.id !== currentFile.id)
           .map((f) => ({
             name: f.name,
-            content: f.content,
-          }));
+            content: f.content
+          }))
       }
     }
 
-    const binary = await compile(code, outputFormat, additionalFiles);
+    const binary = await compile(code, outputFormat, additionalFiles)
     if (binary && isReady) {
-      if (outputFormat === "dsk") {
-        loadDsk(binary);
+      if (outputFormat === 'dsk') {
+        loadDsk(binary)
       } else {
-        loadSna(binary);
+        loadSna(binary)
       }
     }
-  };
+  }
 
-  const isCompiling = compilationStatus === "compiling";
+  const isCompiling = compilationStatus === 'compiling'
 
   return (
     <div className={styles.toolbar}>
-      <Flex gap="var(--spacing-md)" align="center">
+      <Flex gap='var(--spacing-md)' align='center'>
         <ProgramManager />
 
         <div className={styles.separator} />
 
-        <Flex gap="var(--spacing-sm)" align="center">
+        <Flex gap='var(--spacing-sm)' align='center'>
           <span className={styles.label}>Output:</span>
           <Select
             value={outputFormat}
             onValueChange={(v) => setOutputFormat(v as OutputFormat)}
           >
-            <SelectItem value="sna">SNA</SelectItem>
-            <SelectItem value="dsk">DSK</SelectItem>
+            <SelectItem value='sna'>SNA</SelectItem>
+            <SelectItem value='dsk'>DSK</SelectItem>
           </Select>
         </Flex>
 
@@ -102,30 +102,30 @@ export function Toolbar() {
           disabled={!isReady || isCompiling || currentProject?.isLibrary}
           title={
             currentProject?.isLibrary
-              ? "Library projects cannot be assembled or run"
+              ? 'Library projects cannot be assembled or run'
               : undefined
           }
         >
           <PlayIcon />
-          <span>{isCompiling ? "Compiling..." : "Run"}</span>
+          <span>{isCompiling ? 'Compiling...' : 'Run'}</span>
         </Button>
-        <Button variant="secondary" onClick={reset} disabled={!isReady}>
+        <Button variant='secondary' onClick={reset} disabled={!isReady}>
           <ResetIcon />
           <span>Reset</span>
         </Button>
       </Flex>
 
-      <Flex gap="var(--spacing-sm)" align="center">
+      <Flex gap='var(--spacing-sm)' align='center'>
         <span className={styles.label}>View:</span>
         <Select
           value={viewMode}
           onValueChange={(v) => setViewMode(v as ViewMode)}
         >
-          <SelectItem value="split">Split</SelectItem>
-          <SelectItem value="editor">Editor</SelectItem>
-          <SelectItem value="emulator">Emulator</SelectItem>
+          <SelectItem value='split'>Split</SelectItem>
+          <SelectItem value='editor'>Editor</SelectItem>
+          <SelectItem value='emulator'>Emulator</SelectItem>
         </Select>
       </Flex>
     </div>
-  );
+  )
 }

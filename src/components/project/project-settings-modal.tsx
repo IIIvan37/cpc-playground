@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useState } from 'react'
+import { Select, SelectItem } from '@/components/ui/select/select'
 import { supabase } from '../../lib/supabase'
 import {
   addDependencyToProjectAtom,
@@ -250,17 +251,16 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
           <h3 className={styles.sectionTitle}>Visibility & Sharing</h3>
           <div className={styles.formGroup}>
             <label className={styles.label}>Visibility</label>
-            <select
-              className={styles.select}
+            <Select
               value={visibility}
-              onChange={(e) =>
-                setVisibility(e.target.value as 'private' | 'public' | 'shared')
+              onValueChange={(value) =>
+                setVisibility(value as 'private' | 'public' | 'shared')
               }
             >
-              <option value='private'>Private (only you)</option>
-              <option value='public'>Public (everyone can see)</option>
-              <option value='shared'>Shared (specific users)</option>
-            </select>
+              <SelectItem value='private'>Private (only you)</SelectItem>
+              <SelectItem value='public'>Public (everyone can see)</SelectItem>
+              <SelectItem value='shared'>Shared (specific users)</SelectItem>
+            </Select>
             <div className={styles.helpText}>
               {visibility === 'private' &&
                 'Only you can see and edit this project'}
@@ -397,18 +397,17 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
           )}
           {availableDependencies.length > 0 ? (
             <div className={styles.addDependency}>
-              <select
-                className={`${styles.select} ${styles.projectSelect}`}
+              <Select
                 value={selectedDependency}
-                onChange={(e) => setSelectedDependency(e.target.value)}
+                onValueChange={(value) => setSelectedDependency(value)}
               >
-                <option value=''>Select a library...</option>
+                <SelectItem value=''>Select a library...</SelectItem>
                 {availableDependencies.map((proj) => (
-                  <option key={proj.id} value={proj.id}>
+                  <SelectItem key={proj.id} value={proj.id}>
                     {proj.name}
-                  </option>
+                  </SelectItem>
                 ))}
-              </select>
+              </Select>
               <button
                 type='button'
                 onClick={handleAddDependency}
