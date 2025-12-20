@@ -8,7 +8,6 @@ import { useSharedCode } from '@/hooks/use-shared-code'
 import { viewModeAtom } from '@/store'
 import { AppHeader } from './app-header'
 import styles from './main-layout.module.css'
-import { ProgramManager } from './program-manager'
 import { ProjectBrowser } from './project-browser'
 import { Toolbar } from './toolbar'
 
@@ -38,7 +37,6 @@ export function MainLayout() {
           className={`${styles.panel} ${styles.editorPanel}`}
           data-hidden={viewMode === 'emulator'}
         >
-          <ProgramManager />
           <CodeEditor />
         </div>
         <div
