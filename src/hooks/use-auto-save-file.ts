@@ -17,7 +17,7 @@ export function useAutoSaveFile() {
   const currentFile = useAtomValue(currentFileAtom)
   const updateFile = useSetAtom(updateFileAtom)
 
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   useEffect(() => {
     // Clear any pending timeout
