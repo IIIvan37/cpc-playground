@@ -255,7 +255,13 @@ export const updateProjectAtom = atom(
       description,
       visibility,
       isLibrary
-    }: { projectId: string; name?: string; description?: string; visibility?: ProjectVisibility; isLibrary?: boolean }
+    }: {
+      projectId: string
+      name?: string
+      description?: string
+      visibility?: ProjectVisibility
+      isLibrary?: boolean
+    }
   ) => {
     try {
       const updates: any = {}
@@ -776,7 +782,11 @@ export const removeTagFromProjectAtom = atom(
 // Add dependency to project
 export const addDependencyToProjectAtom = atom(
   null,
-  async (get, set, { projectId, dependencyId }: { projectId: string; dependencyId: string }) => {
+  async (
+    get,
+    set,
+    { projectId, dependencyId }: { projectId: string; dependencyId: string }
+  ) => {
     try {
       // Prevent self-dependency
       if (projectId === dependencyId) {
@@ -795,12 +805,10 @@ export const addDependencyToProjectAtom = atom(
       }
 
       // Add dependency
-      const { error } = await supabase
-        .from('project_dependencies')
-        .insert({
-          project_id: projectId,
-          dependency_id: dependencyId
-        })
+      const { error } = await supabase.from('project_dependencies').insert({
+        project_id: projectId,
+        dependency_id: dependencyId
+      })
 
       if (error) {
         // If error is duplicate, ignore it
@@ -835,7 +843,11 @@ export const addDependencyToProjectAtom = atom(
 // Remove dependency from project
 export const removeDependencyFromProjectAtom = atom(
   null,
-  async (get, set, { projectId, dependencyId }: { projectId: string; dependencyId: string }) => {
+  async (
+    get,
+    set,
+    { projectId, dependencyId }: { projectId: string; dependencyId: string }
+  ) => {
     try {
       const { error } = await supabase
         .from('project_dependencies')
@@ -850,7 +862,11 @@ export const removeDependencyFromProjectAtom = atom(
         projectsAtom,
         get(projectsAtom).map((p) =>
           p.id === projectId
-            ? { ...p, dependencies: p.dependencies?.filter((d) => d.id !== dependencyId) ?? [] }
+            ? {
+                ...p,
+                dependencies:
+                  p.dependencies?.filter((d) => d.id !== dependencyId) ?? []
+              }
             : p
         )
       )
@@ -892,7 +908,8 @@ export const fetchProjectWithDependenciesAtom = atom(
         if (error) throw error
 
         // Add files from this project
-        const files = (data.project_files?.map((f: any) => ({
+        const files =
+          data.project_files?.map((f: any) => ({
             id: f.id,
             projectId: f.project_id,
             projectName: data.name, // Include project name
@@ -902,7 +919,7 @@ export const fetchProjectWithDependenciesAtom = atom(
             order: f.order,
             createdAt: f.created_at,
             updatedAt: f.updated_at
-          })) ?? [])
+          })) ?? []
 
         allFiles.push(...files)
 

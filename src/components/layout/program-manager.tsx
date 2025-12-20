@@ -1,6 +1,7 @@
-import { FileIcon, PlusIcon, TrashIcon, GearIcon } from '@radix-ui/react-icons'
+import { FileIcon, GearIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ProjectSettingsModal } from '@/components/project/project-settings-modal'
 import Button from '@/components/ui/button/button'
 import { Select, SelectItem } from '@/components/ui/select/select'
 import {
@@ -12,7 +13,6 @@ import {
   saveProgramAtom
 } from '@/store'
 import { currentProjectAtom } from '@/store/projects-v2'
-import { ProjectSettingsModal } from '@/components/project/project-settings-modal'
 import styles from './program-manager.module.css'
 
 export function ProgramManager() {

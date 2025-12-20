@@ -158,10 +158,10 @@ async function compile(
     if (additionalFiles && additionalFiles.length > 0) {
       for (const file of additionalFiles) {
         // If file has a projectName, write it in a subdirectory
-        const filePath = file.projectName 
+        const filePath = file.projectName
           ? `/${file.projectName}/${file.name}`
           : `/${file.name}`
-        
+
         FS.writeFile(filePath, file.content)
         console.log('[RASM Worker] Wrote additional file:', filePath)
       }
