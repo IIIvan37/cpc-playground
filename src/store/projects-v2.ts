@@ -239,13 +239,22 @@ export const createProjectAtom = atom(
 
       if (projectError) throw projectError
 
-      // Create default main file
-      const { data: file, error: fileError } = await supabase
-        .from('project_files')
-        .insert({
-          project_id: project.id,
-          name: 'main.asm',
-          content: `; ${name}
+      // Create default file - different for library vs regular project
+      const fileName = isLibrary ? 'lib.asm' : 'main.asm'
+      const fileContent = isLibrary
+        ? `; ${name} - Library
+; This file can be included in other projects
+
+; Example macro
+; MACRO my_macro
+;     ; macro code here
+; MEND
+
+; Example routine
+; my_routine:
+;     ret
+`
+        : `; ${name}
 org #4000
 
 start:
@@ -267,8 +276,15 @@ print_string:
 
 message:
     db "Hello from ${name}!", 0
-`,
-          is_main: true,
+`
+
+      const { data: file, error: fileError } = await supabase
+        .from('project_files')
+        .insert({
+          project_id: project.id,
+          name: fileName,
+          content: fileContent,
+          is_main: !isLibrary,
           order: 0
         })
         .select()
