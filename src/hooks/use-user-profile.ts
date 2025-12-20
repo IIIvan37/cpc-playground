@@ -57,7 +57,10 @@ export function useUserProfile() {
     try {
       const { error } = await supabase
         .from('user_profiles')
-        .update({ username: newUsername })
+        .update({
+          username: newUsername,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user.id)
 
       if (error) throw error
