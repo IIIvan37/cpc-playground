@@ -1,7 +1,10 @@
 // TODO: Remove @ts-nocheck once ProjectDependency entity and proper types are implemented
 // @ts-nocheck
 import type { Project, ProjectShare } from '@/domain/entities/project.entity'
-import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type {
+  IProjectsRepository,
+  Tag
+} from '@/domain/repositories/projects.repository.interface'
 
 /**
  * In-memory implementation of IProjectsRepository for testing purposes.
@@ -11,6 +14,9 @@ export function createInMemoryProjectsRepository(): IProjectsRepository {
   const projects = new Map<string, Project>()
   const shares = new Map<string, ProjectShare[]>()
   const shareCodeIndex = new Map<string, string>() // shareCode -> projectId
+  const tags = new Map<string, Tag>() // tagId -> Tag
+  const projectTags = new Map<string, string[]>() // projectId -> tagIds
+  const dependencies = new Map<string, string[]>() // projectId -> dependencyIds
 
   return {
     async findAll(userId: string): Promise<Project[]> {
@@ -50,6 +56,8 @@ export function createInMemoryProjectsRepository(): IProjectsRepository {
     async delete(id: string): Promise<void> {
       projects.delete(id)
       shares.delete(id)
+      projectTags.delete(id)
+      dependencies.delete(id)
 
       // Clean up share code index
       for (const [shareCode, projectId] of shareCodeIndex.entries()) {
@@ -63,36 +71,120 @@ export function createInMemoryProjectsRepository(): IProjectsRepository {
       return shares.get(projectId) ?? []
     },
 
-    async createShare(share: ProjectShare): Promise<ProjectShare> {
-      const projectShares = shares.get(share.projectId) ?? []
+    async createShare(projectId: string): Promise<ProjectShare> {
+      const share: ProjectShare = {
+        id: crypto.randomUUID(),
+        shareCode: crypto.randomUUID(),
+        createdAt: new Date()
+      }
+      const projectShares = shares.get(projectId) ?? []
       projectShares.push(share)
-      shares.set(share.projectId, projectShares)
-      shareCodeIndex.set(share.shareCode.value, share.projectId)
+      shares.set(projectId, projectShares)
+      shareCodeIndex.set(share.shareCode, projectId)
       return share
     },
 
-    async getDependencies(projectId: string): Promise<ProjectDependency[]> {
+    // ========================================================================
+    // Tags
+    // ========================================================================
+
+    async getTags(projectId: string): Promise<readonly Tag[]> {
+      const tagIds = projectTags.get(projectId) ?? []
+      return tagIds
+        .map((id) => tags.get(id))
+        .filter((t): t is Tag => t !== undefined)
+    },
+
+    async addTag(projectId: string, tagName: string): Promise<Tag> {
+      const normalizedName = tagName.toLowerCase().trim()
+
+      // Find existing tag by name
+      let existingTag: Tag | undefined
+      for (const tag of tags.values()) {
+        if (tag.name === normalizedName) {
+          existingTag = tag
+          break
+        }
+      }
+
+      let tag: Tag
+      if (existingTag) {
+        tag = existingTag
+      } else {
+        // Create new tag
+        tag = {
+          id: crypto.randomUUID(),
+          name: normalizedName
+        }
+        tags.set(tag.id, tag)
+      }
+
+      // Link tag to project (avoid duplicates)
+      const currentTags = projectTags.get(projectId) ?? []
+      if (!currentTags.includes(tag.id)) {
+        currentTags.push(tag.id)
+        projectTags.set(projectId, currentTags)
+      }
+
+      return tag
+    },
+
+    async removeTag(projectId: string, tagIdOrName: string): Promise<void> {
+      const currentTags = projectTags.get(projectId) ?? []
+
+      // Check if it's a tag id or name
+      let tagIdToRemove = tagIdOrName
+
+      // If not a UUID-like string, it might be a name - find the tag
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          tagIdOrName
+        )
+
+      if (!isUuid) {
+        // Find tag by name
+        for (const tag of tags.values()) {
+          if (tag.name === tagIdOrName.toLowerCase()) {
+            tagIdToRemove = tag.id
+            break
+          }
+        }
+      }
+
+      projectTags.set(
+        projectId,
+        currentTags.filter((id) => id !== tagIdToRemove)
+      )
+    },
+
+    // ========================================================================
+    // Dependencies
+    // ========================================================================
+
+    async getDependencies(projectId: string): Promise<readonly string[]> {
       return dependencies.get(projectId) ?? []
     },
 
     async addDependency(
-      dependency: ProjectDependency
-    ): Promise<ProjectDependency> {
-      const projectDependencies = dependencies.get(dependency.projectId) ?? []
-      projectDependencies.push(dependency)
-      dependencies.set(dependency.projectId, projectDependencies)
-      return dependency
+      projectId: string,
+      dependencyId: string
+    ): Promise<void> {
+      const currentDeps = dependencies.get(projectId) ?? []
+      if (!currentDeps.includes(dependencyId)) {
+        currentDeps.push(dependencyId)
+        dependencies.set(projectId, currentDeps)
+      }
     },
 
     async removeDependency(
       projectId: string,
       dependencyId: string
     ): Promise<void> {
-      const projectDependencies = dependencies.get(projectId) ?? []
-      const filtered = projectDependencies.filter(
-        (dep) => dep.id !== dependencyId
+      const currentDeps = dependencies.get(projectId) ?? []
+      dependencies.set(
+        projectId,
+        currentDeps.filter((id) => id !== dependencyId)
       )
-      dependencies.set(projectId, filtered)
     }
   }
 }

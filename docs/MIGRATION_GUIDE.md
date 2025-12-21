@@ -52,13 +52,7 @@ Ce guide explique comment migrer du store `projects-v2.ts` vers la nouvelle arch
 
 Ces actions de l'ancien store n'ont pas encore été migrées :
 
-- `createFileAtom` - Créer un fichier
-- `updateFileAtom` - Modifier un fichier  
-- `deleteFileAtom` - Supprimer un fichier
-- `updateProjectVisibilityAtom` - Changer la visibilité
-- `shareProjectAtom` / `unshareProjectAtom` - Partage
-- `addTagToProjectAtom` / `removeTagFromProjectAtom` - Tags
-- `addDependencyAtom` / `removeDependencyAtom` - Dépendances
+- `shareProjectAtom` / `unshareProjectAtom` - Partage (nécessite recherche utilisateur)
 
 ## Migration étape par étape
 
@@ -191,6 +185,72 @@ const file = get(currentFileAtom)
 console.log(file.name.value)
 console.log(file.content.value)
 ```
+
+#### Value Objects dans le JSX
+
+**⚠️ Piège courant** : Oublier `.value` dans les templates JSX
+
+```tsx
+// ❌ INCORRECT - Affiche [object Object]
+<span>{currentFile?.name}</span>
+
+// ✅ CORRECT - Affiche le nom du fichier
+<span>{currentFile?.name.value}</span>
+```
+
+**Exemples concrets dans les composants :**
+
+```tsx
+// Dans code-editor.tsx
+// ❌ Avant
+<span className={styles.title}>{currentFile?.name ?? 'Scratch'}</span>
+
+// ✅ Après
+<span className={styles.title}>
+  {currentFile?.name.value ?? 'Scratch'}
+</span>
+
+// Dans project-browser.tsx
+// ❌ Avant
+<div className={styles.projectName}>{project.name}</div>
+
+// ✅ Après  
+<div className={styles.projectName}>{project.name.value}</div>
+
+// Dans toolbar.tsx (compilation)
+// ❌ Avant
+const files = project.files.map(f => ({
+  name: f.name,
+  content: f.content
+}))
+
+// ✅ Après
+const files = project.files.map(f => ({
+  name: f.name.value,
+  content: f.content.value
+}))
+```
+
+#### Liste des Value Objects
+
+| Propriété | Type | Accès |
+|-----------|------|-------|
+| `project.name` | `ProjectName` | `project.name.value` |
+| `project.visibility` | `Visibility` | `project.visibility.value` |
+| `file.name` | `FileName` | `file.name.value` |
+| `file.content` | `FileContent` | `file.content.value` |
+
+**Note** : Les propriétés suivantes restent des primitives :
+- `project.id` (string)
+- `project.userId` (string)
+- `project.description` (string | null)
+- `project.isLibrary` (boolean)
+- `project.dependencies` (string[])
+- `project.tags` (string[])
+- `file.id` (string)
+- `file.isMain` (boolean)
+- `file.order` (number)
+
 
 ## Exemple complet de migration
 
@@ -364,29 +424,68 @@ function ProjectList() {
 
 ## Checklist de migration
 
-- [ ] Remplacer l'import de `projects-v2` par `projects`
-- [ ] Ajouter `useAuth()` pour récupérer le `userId`
-- [ ] Passer `userId` aux actions qui en ont besoin
-- [ ] Adapter les signatures des fonctions (objets au lieu de paramètres positionnels)
-- [ ] Accéder aux valeurs via `.value` pour les Value Objects
-- [ ] Tester que tout fonctionne
+- [x] Remplacer l'import de `projects-v2` par `projects`
+- [x] Ajouter `useAuth()` pour récupérer le `userId`
+- [x] Passer `userId` aux actions qui en ont besoin
+- [x] Adapter les signatures des fonctions (objets au lieu de paramètres positionnels)
+- [x] Accéder aux valeurs via `.value` pour les Value Objects
+- [x] Tester que tout fonctionne
+- [x] Supprimer `projects-v2.ts` (1053 lignes supprimées !)
 - [ ] (Optionnel) Migrer vers les hooks React pour plus de simplicité
 
-## Composants à migrer
+## Composants migrés ✅
 
-### Priorité 1 (utilisent des actions)
-- [ ] `src/components/layout/project-browser.tsx`
-- [ ] `src/components/layout/toolbar.tsx`
+Tous les composants ont été migrés vers Clean Architecture :
 
-### Priorité 2 (lecture seule)
-- [ ] `src/components/editor/code-editor.tsx`
-- [ ] `src/components/examples/examples-menu.tsx`
-- [ ] `src/components/layout/program-manager.tsx`
+- [x] `src/components/layout/project-browser.tsx`
+- [x] `src/components/layout/toolbar.tsx`
+- [x] `src/components/editor/code-editor.tsx`
+- [x] `src/components/examples/examples-menu.tsx`
+- [x] `src/components/layout/program-manager.tsx`
+- [x] `src/components/project/project-settings-modal.tsx`
+- [x] `src/hooks/use-auto-save-file.ts`
+
+## ⚠️ Fonctionnalités temporairement désactivées
+
+Certaines fonctionnalités ont été **commentées** en attendant l'implémentation des use-cases correspondants :
+
+### Gestion des partages (Shares)
+
+**Fichier** : `src/components/project/project-settings-modal.tsx`
+
+**Code commenté** :
+- État `shareUsername` (ligne ~50)
+- Handlers `handleAddShare` et `handleRemoveShare` (lignes ~137-198)
+- UI de gestion des partages dans le modal (lignes ~302-340)
+
+**Comment réactiver** :
+1. Créer les use-cases :
+   - `src/use-cases/shares/add-share.use-case.ts`
+   - `src/use-cases/shares/remove-share.use-case.ts`
+2. Les ajouter au container DI
+3. Créer les atoms dans le store
+4. Décommenter le code dans project-settings-modal.tsx
+
+### Recherche du code commenté
+
+Pour trouver tout le code commenté lié à la migration :
+
+```bash
+# Rechercher les TODOs de réactivation
+grep -rn "TODO.*Re-enable\|Temporarily disabled" src/
+
+# Résultats actuels :
+# src/components/project/project-settings-modal.tsx:50 - shareUsername state
+# src/components/project/project-settings-modal.tsx:137 - share handlers
+# src/components/project/project-settings-modal.tsx:302 - share UI
+```
 
 ## Prochaines étapes
 
-1. Créer les use-cases manquants (files, tags, dependencies, sharing)
-2. Étendre le store avec les actions correspondantes
-3. Migrer tous les composants
-4. Supprimer `projects-v2.ts`
-5. Célébrer ! 🎉
+1. ~~Créer les use-cases pour les fichiers~~ ✅
+2. ~~Migrer tous les composants~~ ✅
+3. ~~Supprimer `projects-v2.ts`~~ ✅ 
+4. ~~Créer les use-cases pour tags/dependencies~~ ✅
+5. Créer les use-cases pour shares
+6. Réactiver les fonctionnalités commentées (shares UI)
+7. Célébrer ! 🎉

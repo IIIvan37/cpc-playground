@@ -417,61 +417,140 @@ export const setMainFileAtom = atom(
 )
 
 // ============================================================================
-// Tags Management (TODO: Implement with proper use-cases)
+// Tags Management
 // ============================================================================
 
 /**
  * Add a tag to a project
- * TODO: Create add-tag.use-case.ts and wire through container
  */
 export const addTagToProjectAtom = atom(
   null,
-  async (_get, _set, _params: { projectId: string; tagName: string }) => {
-    console.warn('addTagToProjectAtom: Not yet implemented')
-    throw new Error('Tags feature not yet implemented in Clean Architecture')
+  async (get, set, params: { projectId: string; tagName: string }) => {
+    const { projectId, tagName } = params
+
+    // Get current project to obtain userId
+    const projects = get(projectsAtom)
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`)
+    }
+
+    const { tag } = await container.addTag.execute({
+      projectId,
+      userId: project.userId,
+      tagName
+    })
+
+    // Update local state - add tag to project
+    set(projectsAtom, (prev) =>
+      prev.map((p) =>
+        p.id === projectId ? { ...p, tags: [...p.tags, tag.name] } : p
+      )
+    )
+
+    return tag
   }
 )
 
 /**
  * Remove a tag from a project
- * TODO: Create remove-tag.use-case.ts and wire through container
  */
 export const removeTagFromProjectAtom = atom(
   null,
-  async (_get, _set, _params: { projectId: string; tagId: string }) => {
-    console.warn('removeTagFromProjectAtom: Not yet implemented')
-    throw new Error('Tags feature not yet implemented in Clean Architecture')
+  async (get, set, params: { projectId: string; tagName: string }) => {
+    const { projectId, tagName } = params
+
+    // Get current project to obtain userId
+    const projects = get(projectsAtom)
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`)
+    }
+
+    await container.removeTag.execute({
+      projectId,
+      userId: project.userId,
+      tagIdOrName: tagName
+    })
+
+    // Update local state - remove tag from project
+    set(projectsAtom, (prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? { ...p, tags: p.tags.filter((t) => t !== tagName) }
+          : p
+      )
+    )
   }
 )
 
 // ============================================================================
-// Dependencies Management (TODO: Implement with proper use-cases)
+// Dependencies Management
 // ============================================================================
 
 /**
  * Add a dependency to a project
- * TODO: Create add-dependency.use-case.ts and wire through container
  */
 export const addDependencyToProjectAtom = atom(
   null,
-  async (_get, _set, _params: { projectId: string; dependencyId: string }) => {
-    console.warn('addDependencyToProjectAtom: Not yet implemented')
-    throw new Error(
-      'Dependencies feature not yet implemented in Clean Architecture'
+  async (get, set, params: { projectId: string; dependencyId: string }) => {
+    const { projectId, dependencyId } = params
+
+    // Get current project to obtain userId
+    const projects = get(projectsAtom)
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`)
+    }
+
+    await container.addDependency.execute({
+      projectId,
+      userId: project.userId,
+      dependencyId
+    })
+
+    // Update local state - add dependency to project
+    set(projectsAtom, (prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? { ...p, dependencies: [...p.dependencies, dependencyId] }
+          : p
+      )
     )
   }
 )
 
 /**
  * Remove a dependency from a project
- * TODO: Create remove-dependency.use-case.ts and wire through container
  */
 export const removeDependencyFromProjectAtom = atom(
   null,
-  async (_get, _set, _params: { projectId: string; dependencyId: string }) => {
-    console.warn('removeDependencyFromProjectAtom: Not yet implemented')
-    throw new Error(
-      'Dependencies feature not yet implemented in Clean Architecture'
+  async (get, set, params: { projectId: string; dependencyId: string }) => {
+    const { projectId, dependencyId } = params
+
+    // Get current project to obtain userId
+    const projects = get(projectsAtom)
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`)
+    }
+
+    await container.removeDependency.execute({
+      projectId,
+      userId: project.userId,
+      dependencyId
+    })
+
+    // Update local state - remove dependency from project
+    set(projectsAtom, (prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              dependencies: p.dependencies.filter((d) => d !== dependencyId)
+            }
+          : p
+      )
     )
   }
 )

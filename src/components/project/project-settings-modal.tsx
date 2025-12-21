@@ -85,10 +85,10 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     }
   }
 
-  const handleRemoveTag = async (tagId: string) => {
+  const handleRemoveTag = async (tagName: string) => {
     setLoading(true)
     try {
-      await removeTag({ projectId: currentProject.id, tagId })
+      await removeTag({ projectId: currentProject.id, tagName })
       await fetchProjects(user.id)
     } catch (error) {
       console.error('Error removing tag:', error)

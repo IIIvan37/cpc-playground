@@ -4,6 +4,14 @@
  */
 
 import type {
+  AddDependencyUseCase,
+  RemoveDependencyUseCase
+} from '@/use-cases/dependencies'
+import {
+  createAddDependencyUseCase,
+  createRemoveDependencyUseCase
+} from '@/use-cases/dependencies'
+import type {
   CreateFileUseCase,
   DeleteFileUseCase,
   UpdateFileUseCase
@@ -29,6 +37,8 @@ import {
   createGetProjectWithDependenciesUseCase,
   createUpdateProjectUseCase
 } from '@/use-cases/projects'
+import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
+import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
 
 export type Container = {
@@ -43,6 +53,12 @@ export type Container = {
   createFile: CreateFileUseCase
   updateFile: UpdateFileUseCase
   deleteFile: DeleteFileUseCase
+  // Tags use cases
+  addTag: AddTagUseCase
+  removeTag: RemoveTagUseCase
+  // Dependencies use cases
+  addDependency: AddDependencyUseCase
+  removeDependency: RemoveDependencyUseCase
 }
 
 /**
@@ -63,7 +79,11 @@ export function createContainer(): Container {
     deleteProject: createDeleteProjectUseCase(projectsRepository),
     createFile: createCreateFileUseCase(projectsRepository),
     updateFile: createUpdateFileUseCase(projectsRepository),
-    deleteFile: createDeleteFileUseCase(projectsRepository)
+    deleteFile: createDeleteFileUseCase(projectsRepository),
+    addTag: createAddTagUseCase(projectsRepository),
+    removeTag: createRemoveTagUseCase(projectsRepository),
+    addDependency: createAddDependencyUseCase(projectsRepository),
+    removeDependency: createRemoveDependencyUseCase(projectsRepository)
   }
 }
 

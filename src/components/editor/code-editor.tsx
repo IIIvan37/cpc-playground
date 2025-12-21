@@ -97,7 +97,9 @@ export function CodeEditor() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <span className={styles.title}>{currentFile?.name ?? 'Scratch'}</span>
+        <span className={styles.title}>
+          {currentFile?.name.value ?? 'Scratch'}
+        </span>
         <span className={styles.hint}>
           {currentFile ? 'Project File' : 'Unsaved • RASM Syntax'}
         </span>

@@ -1,6 +1,14 @@
 import type { Project, ProjectShare } from '../entities/project.entity'
 
 /**
+ * Tag representation from database
+ */
+export type Tag = {
+  id: string
+  name: string
+}
+
+/**
  * Repository interface for Projects (Port in Hexagonal Architecture)
  * The implementation will be in infrastructure layer
  */
@@ -44,6 +52,29 @@ export interface IProjectsRepository {
    * Create a share for a project
    */
   createShare(projectId: string): Promise<ProjectShare>
+
+  // ============================================================================
+  // Tags
+  // ============================================================================
+
+  /**
+   * Get all tags for a project
+   */
+  getTags(projectId: string): Promise<readonly Tag[]>
+
+  /**
+   * Add a tag to a project (creates tag if it doesn't exist)
+   */
+  addTag(projectId: string, tagName: string): Promise<Tag>
+
+  /**
+   * Remove a tag from a project (by tag id or tag name)
+   */
+  removeTag(projectId: string, tagIdOrName: string): Promise<void>
+
+  // ============================================================================
+  // Dependencies
+  // ============================================================================
 
   /**
    * Get dependencies for a project

@@ -6,7 +6,10 @@ import type { Project, ProjectShare } from '@/domain/entities/project.entity'
 import { createProject } from '@/domain/entities/project.entity'
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
-import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type {
+  IProjectsRepository,
+  Tag
+} from '@/domain/repositories/projects.repository.interface'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
@@ -310,6 +313,113 @@ export function createSupabaseProjectsRepository(): IProjectsRepository {
         .delete()
         .eq('project_id', projectId)
         .eq('dependency_id', dependencyId)
+
+      if (error) throw error
+    },
+
+    // ========================================================================
+    // Tags
+    // ========================================================================
+
+    async getTags(projectId: string): Promise<readonly Tag[]> {
+      const { data, error } = await supabase
+        .from('project_tags')
+        .select(
+          `
+          tag_id,
+          tags (
+            id,
+            name
+          )
+        `
+        )
+        .eq('project_id', projectId)
+
+      if (error) throw error
+      if (!data) return []
+
+      return data
+        .map((pt: any) => ({
+          id: pt.tags?.id,
+          name: pt.tags?.name
+        }))
+        .filter((t: any) => t.id && t.name)
+    },
+
+    async addTag(projectId: string, tagName: string): Promise<Tag> {
+      // Normalize tag name (lowercase, trimmed)
+      const normalizedName = tagName.toLowerCase().trim()
+
+      // First, find or create the tag
+      let tag: Tag
+
+      const { data: existingTag, error: findError } = await supabase
+        .from('tags')
+        .select('id, name')
+        .eq('name', normalizedName)
+        .single()
+
+      if (findError && findError.code !== 'PGRST116') {
+        throw findError
+      }
+
+      if (existingTag) {
+        tag = { id: existingTag.id, name: existingTag.name }
+      } else {
+        // Create new tag
+        const { data: newTag, error: createError } = await supabase
+          .from('tags')
+          .insert({ name: normalizedName } as any)
+          .select('id, name')
+          .single()
+
+        if (createError) throw createError
+        tag = { id: (newTag as any).id, name: (newTag as any).name }
+      }
+
+      // Link tag to project
+      const { error: linkError } = await supabase.from('project_tags').insert({
+        project_id: projectId,
+        tag_id: tag.id
+      } as any)
+
+      // Ignore duplicate key error (tag already linked)
+      if (linkError && linkError.code !== '23505') {
+        throw linkError
+      }
+
+      return tag
+    },
+
+    async removeTag(projectId: string, tagIdOrName: string): Promise<void> {
+      // First, check if it's a UUID (tag id) or a name
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          tagIdOrName
+        )
+
+      let tagId = tagIdOrName
+
+      if (!isUuid) {
+        // It's a tag name, find the tag id
+        const { data: tag, error: findError } = await supabase
+          .from('tags')
+          .select('id')
+          .eq('name', tagIdOrName.toLowerCase())
+          .single()
+
+        if (findError || !tag) {
+          // Tag doesn't exist, nothing to remove
+          return
+        }
+        tagId = tag.id
+      }
+
+      const { error } = await supabase
+        .from('project_tags')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('tag_id', tagId)
 
       if (error) throw error
     }
