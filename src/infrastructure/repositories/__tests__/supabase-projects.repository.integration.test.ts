@@ -408,16 +408,5 @@ describeIntegration('SupabaseProjectsRepository Integration', () => {
         await supabase.auth.admin.deleteUser(shareUserId)
       }
     })
-
-    // Note: createShare and findByShareCode tests are skipped
-    // because the DB schema doesn't have share_code column in project_shares
-    // The table is designed for user-specific sharing (via user_id), not public link sharing
-    it.skip('should create and get shares (share_code not in schema)', async () => {
-      // This test is skipped because project_shares table has user_id, not share_code
-    })
-
-    it.skip('should find project by share code (share_code not in schema)', async () => {
-      // This test is skipped because project_shares table has user_id, not share_code
-    })
   })
 })

@@ -1,23 +1,23 @@
-import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
-import * as RadixSelect from "@radix-ui/react-select";
-import type { ReactNode } from "react";
+import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons'
+import * as RadixSelect from '@radix-ui/react-select'
+import type { ReactNode } from 'react'
 
-import styles from "./select.module.css";
+import styles from './select.module.css'
 
 type Props = {
-  readonly value: string | undefined;
-  readonly onValueChange: (value: string) => void;
-  readonly children: ReactNode;
-  readonly disabled?: boolean;
-  readonly placeholder?: string;
-};
+  readonly value: string | undefined
+  readonly onValueChange: (value: string) => void
+  readonly children: ReactNode
+  readonly disabled?: boolean
+  readonly placeholder?: string
+}
 
 export function Select({
   value,
   onValueChange,
   children,
   disabled = false,
-  placeholder,
+  placeholder
 }: Props) {
   return (
     <RadixSelect.Root
@@ -38,13 +38,13 @@ export function Select({
         </RadixSelect.Content>
       </RadixSelect.Portal>
     </RadixSelect.Root>
-  );
+  )
 }
 
 type ItemProps = {
-  readonly value: string;
-  readonly children: ReactNode;
-};
+  readonly value: string
+  readonly children: ReactNode
+}
 
 export function SelectItem({ value, children }: Readonly<ItemProps>) {
   return (
@@ -54,5 +54,5 @@ export function SelectItem({ value, children }: Readonly<ItemProps>) {
         <CheckIcon />
       </RadixSelect.ItemIndicator>
     </RadixSelect.Item>
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import type { IProjectsRepository } from '../../domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
+import type { IProjectsRepository } from '../../domain/repositories/projects.repository.interface'
 
 /**
  * File with project context for compilation

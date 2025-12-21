@@ -7,6 +7,7 @@ import {
   type AuthorizationService,
   createAuthorizationService
 } from '@/domain/services'
+import { supabase } from '@/lib/supabase'
 import type {
   AddDependencyUseCase,
   RemoveDependencyUseCase
@@ -51,7 +52,6 @@ import {
 } from '@/use-cases/shares'
 import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
 import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
-import { supabase } from '@/lib/supabase'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
 
 export type Container = {

@@ -61,7 +61,7 @@ describeIntegration('Access Control Integration Tests', () => {
     const clientA = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { autoRefreshToken: false, persistSession: false }
     })
-    const { data: sessionA, error: authErrorA } =
+    const { data: _sessionA, error: authErrorA } =
       await clientA.auth.signInWithPassword({
         email: emailA,
         password: 'password123'
@@ -90,7 +90,7 @@ describeIntegration('Access Control Integration Tests', () => {
     const clientB = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { autoRefreshToken: false, persistSession: false }
     })
-    const { data: sessionB, error: authErrorB } =
+    const { data: _sessionB, error: authErrorB } =
       await clientB.auth.signInWithPassword({
         email: emailB,
         password: 'password123'
@@ -270,7 +270,7 @@ describeIntegration('Access Control Integration Tests', () => {
 
   describe('Other user access (User B)', () => {
     it('should NOT see User A private project', async () => {
-      const { data, error } = await userB.client
+      const { data } = await userB.client
         .from('projects')
         .select('*')
         .eq('id', privateProjectId)
@@ -320,7 +320,7 @@ describeIntegration('Access Control Integration Tests', () => {
     })
 
     it('should NOT be able to update User A project', async () => {
-      const { error } = await userB.client
+      await userB.client
         .from('projects')
         .update({ description: 'Attempted update by B' })
         .eq('id', publicProjectId)
@@ -337,10 +337,7 @@ describeIntegration('Access Control Integration Tests', () => {
     })
 
     it('should NOT be able to delete User A project', async () => {
-      const { error } = await userB.client
-        .from('projects')
-        .delete()
-        .eq('id', publicProjectId)
+      await userB.client.from('projects').delete().eq('id', publicProjectId)
 
       // Verify project still exists
       const { data: project } = await adminClient

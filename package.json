@@ -19,6 +19,7 @@
     "typecheck:comprehensive": "node scripts/typecheck-comprehensive.js",
     "preview": "vite preview",
     "test": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:integration": "TEST_INTEGRATION=true vitest run --testNamePattern='Integration'",
     "test:ui": "vitest --ui",
     "prepare": "husky"
@@ -45,6 +46,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
     "husky": "^9.1.7",
     "jsdom": "^27.3.0",
