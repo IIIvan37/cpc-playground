@@ -1,143 +1,120 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
+import { createProjectFile } from '@/domain/entities/project-file.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
+import { AUTH_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import { createFileContent } from '@/domain/value-objects/file-content.vo'
+import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
-import {
-  AUTH_ERROR_MESSAGES,
-  createAuthorizationService
-} from '../authorization.service'
+import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
+import { createAuthorizationService } from '../authorization.service'
 
 describe('AuthorizationService', () => {
-  let mockRepository: IProjectsRepository
+  let repository: IProjectsRepository & {
+    _addUser: (id: string, username: string) => void
+  }
   let service: ReturnType<typeof createAuthorizationService>
 
-  const createTestProject = (overrides?: {
+  const ownerId = 'owner-123'
+  const otherUserId = 'other-user'
+  const sharedUserId = 'shared-user'
+  const projectId = 'project-123'
+
+  beforeEach(() => {
+    repository = createInMemoryProjectsRepository()
+    service = createAuthorizationService(repository)
+  })
+
+  async function createTestProject(overrides?: {
+    id?: string
     userId?: string
     visibility?: 'private' | 'unlisted' | 'public'
     isLibrary?: boolean
-  }) =>
-    createProject({
-      id: 'project-123',
-      userId: overrides?.userId ?? 'owner-123',
+  }) {
+    const id = overrides?.id ?? projectId
+    const project = createProject({
+      id,
+      userId: overrides?.userId ?? ownerId,
       name: createProjectName('Test Project'),
+      description: null,
       visibility: createVisibility(overrides?.visibility ?? 'private'),
-      isLibrary: overrides?.isLibrary ?? false
+      isLibrary: overrides?.isLibrary ?? false,
+      files: [
+        createProjectFile({
+          id: `${id}-file-1`,
+          projectId: id,
+          name: createFileName('main.asm'),
+          content: createFileContent(''),
+          isMain: true,
+          order: 0
+        })
+      ],
+      shares: [],
+      tags: [],
+      dependencies: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     })
-
-  beforeEach(() => {
-    mockRepository = {
-      findById: vi.fn(),
-      findByShareCode: vi.fn(),
-      findAll: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      createFile: vi.fn(),
-      updateFile: vi.fn(),
-      deleteFile: vi.fn(),
-      getShares: vi.fn(),
-      createShare: vi.fn(),
-      getTags: vi.fn(),
-      addTag: vi.fn(),
-      removeTag: vi.fn(),
-      getDependencies: vi.fn(),
-      addDependency: vi.fn(),
-      removeDependency: vi.fn(),
-      getUserShares: vi.fn().mockResolvedValue([]),
-      findUserByUsername: vi.fn(),
-      addUserShare: vi.fn(),
-      removeUserShare: vi.fn()
-    }
-    service = createAuthorizationService(mockRepository)
-  })
+    await repository.create(project)
+    return project
+  }
 
   describe('canReadProject', () => {
     it('should return false if project not found', async () => {
-      vi.mocked(mockRepository.findById).mockResolvedValue(null)
-
-      const result = await service.canReadProject('project-123', 'user-123')
+      const result = await service.canReadProject('non-existent', otherUserId)
 
       expect(result).toBe(false)
     })
 
     it('should return true for owner', async () => {
-      const project = createTestProject({ userId: 'owner-123' })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject()
 
-      const result = await service.canReadProject('project-123', 'owner-123')
+      const result = await service.canReadProject(projectId, ownerId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for public project', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'public'
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject({ visibility: 'public' })
 
-      const result = await service.canReadProject('project-123', 'other-user')
+      const result = await service.canReadProject(projectId, otherUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for library project', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'private',
-        isLibrary: true
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject({ visibility: 'private', isLibrary: true })
 
-      const result = await service.canReadProject('project-123', 'other-user')
+      const result = await service.canReadProject(projectId, otherUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for shared project', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'private'
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
-      vi.mocked(mockRepository.getUserShares).mockResolvedValue([
-        {
-          projectId: 'project-123',
-          userId: 'shared-user',
-          username: 'shareduser',
-          createdAt: new Date()
-        }
-      ])
+      await createTestProject({ visibility: 'private' })
+      // Add the shared user to the in-memory repository
+      repository._addUser(sharedUserId, 'shareduser')
+      await repository.addUserShare(projectId, sharedUserId)
 
-      const result = await service.canReadProject('project-123', 'shared-user')
+      const result = await service.canReadProject(projectId, sharedUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return false for private project without share', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'private'
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
-      vi.mocked(mockRepository.getUserShares).mockResolvedValue([])
+      await createTestProject({ visibility: 'private' })
 
-      const result = await service.canReadProject('project-123', 'other-user')
+      const result = await service.canReadProject(projectId, otherUserId)
 
       expect(result).toBe(false)
     })
 
     it('should return false for unlisted project without share', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'unlisted'
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
-      vi.mocked(mockRepository.getUserShares).mockResolvedValue([])
+      await createTestProject({ visibility: 'unlisted' })
 
-      const result = await service.canReadProject('project-123', 'other-user')
+      const result = await service.canReadProject(projectId, otherUserId)
 
       expect(result).toBe(false)
     })
@@ -145,123 +122,83 @@ describe('AuthorizationService', () => {
 
   describe('mustOwnProject', () => {
     it('should throw NotFoundError if project not found', async () => {
-      vi.mocked(mockRepository.findById).mockResolvedValue(null)
-
       await expect(
-        service.mustOwnProject('project-123', 'user-123')
+        service.mustOwnProject('non-existent', ownerId)
       ).rejects.toThrow(NotFoundError)
 
       await expect(
-        service.mustOwnProject('project-123', 'user-123')
-      ).rejects.toThrow(AUTH_ERROR_MESSAGES.PROJECT_NOT_FOUND)
+        service.mustOwnProject('non-existent', ownerId)
+      ).rejects.toThrow(AUTH_ERRORS.PROJECT_NOT_FOUND)
     })
 
     it('should throw UnauthorizedError if user is not owner', async () => {
-      const project = createTestProject({ userId: 'owner-123' })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject()
 
       await expect(
-        service.mustOwnProject('project-123', 'other-user')
+        service.mustOwnProject(projectId, otherUserId)
       ).rejects.toThrow(UnauthorizedError)
 
       await expect(
-        service.mustOwnProject('project-123', 'other-user')
-      ).rejects.toThrow(AUTH_ERROR_MESSAGES.UNAUTHORIZED_MODIFY)
+        service.mustOwnProject(projectId, otherUserId)
+      ).rejects.toThrow(AUTH_ERRORS.UNAUTHORIZED_MODIFY)
     })
 
     it('should return project if user is owner', async () => {
-      const project = createTestProject({ userId: 'owner-123' })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      const project = await createTestProject()
 
-      const result = await service.mustOwnProject('project-123', 'owner-123')
+      const result = await service.mustOwnProject(projectId, ownerId)
 
-      expect(result).toBe(project)
+      expect(result.id).toBe(project.id)
+      expect(result.userId).toBe(ownerId)
     })
   })
 
   describe('canAccessAsDependency', () => {
     it('should return false if project not found', async () => {
-      vi.mocked(mockRepository.findById).mockResolvedValue(null)
-
       const result = await service.canAccessAsDependency(
-        'project-123',
-        'user-123'
+        'non-existent',
+        otherUserId
       )
 
       expect(result).toBe(false)
     })
 
     it('should return true for owner', async () => {
-      const project = createTestProject({ userId: 'owner-123' })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject()
 
-      const result = await service.canAccessAsDependency(
-        'project-123',
-        'owner-123'
-      )
+      const result = await service.canAccessAsDependency(projectId, ownerId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for public project', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'public'
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject({ visibility: 'public' })
 
-      const result = await service.canAccessAsDependency(
-        'project-123',
-        'other-user'
-      )
+      const result = await service.canAccessAsDependency(projectId, otherUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for library project', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'private',
-        isLibrary: true
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject({ visibility: 'private', isLibrary: true })
 
-      const result = await service.canAccessAsDependency(
-        'project-123',
-        'other-user'
-      )
+      const result = await service.canAccessAsDependency(projectId, otherUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return false for private non-library project', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'private',
-        isLibrary: false
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject({ visibility: 'private', isLibrary: false })
 
-      const result = await service.canAccessAsDependency(
-        'project-123',
-        'other-user'
-      )
+      const result = await service.canAccessAsDependency(projectId, otherUserId)
 
       expect(result).toBe(false)
     })
 
     it('should return false for unlisted non-library project', async () => {
-      const project = createTestProject({
-        userId: 'owner-123',
-        visibility: 'unlisted',
-        isLibrary: false
-      })
-      vi.mocked(mockRepository.findById).mockResolvedValue(project)
+      await createTestProject({ visibility: 'unlisted', isLibrary: false })
 
-      const result = await service.canAccessAsDependency(
-        'project-123',
-        'other-user'
-      )
+      const result = await service.canAccessAsDependency(projectId, otherUserId)
 
       expect(result).toBe(false)
     })

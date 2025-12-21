@@ -7,7 +7,7 @@ import { createProject } from '@/domain/entities/project.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
 import { FILE_ERRORS } from '@/domain/errors/error-messages'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
@@ -19,7 +19,7 @@ import { createUpdateFileUseCase } from '../update-file.use-case'
 
 function createTestDependencies() {
   const repository = createInMemoryProjectsRepository()
-  const authorizationService = createMockAuthorizationService(repository)
+  const authorizationService = createAuthorizationService(repository)
   return { repository, authorizationService }
 }
 

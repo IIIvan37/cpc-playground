@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { Visibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
@@ -9,7 +9,7 @@ import { createDeleteProjectUseCase } from '../delete-project.use-case'
 
 function createTestDependencies() {
   const repository = createInMemoryProjectsRepository()
-  const authorizationService = createMockAuthorizationService(repository)
+  const authorizationService = createAuthorizationService(repository)
   return { repository, authorizationService }
 }
 

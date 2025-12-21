@@ -15,7 +15,10 @@ import type {
  * In-memory implementation of IProjectsRepository for testing purposes.
  * Provides a realistic repository implementation without external dependencies.
  */
-export function createInMemoryProjectsRepository(): IProjectsRepository {
+export function createInMemoryProjectsRepository(): IProjectsRepository & {
+  _addUser: (id: string, username: string) => void
+  _clear: () => void
+} {
   const projects = new Map<string, Project>()
   const shares = new Map<string, ProjectShare[]>()
   const shareCodeIndex = new Map<string, string>() // shareCode -> projectId

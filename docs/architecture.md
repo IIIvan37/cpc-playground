@@ -208,7 +208,7 @@ export function createContainer(supabase: SupabaseClient) {
 
 ```typescript
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 
 describe('CreateProjectUseCase', () => {
   let repository: IProjectsRepository
@@ -217,7 +217,7 @@ describe('CreateProjectUseCase', () => {
 
   beforeEach(() => {
     repository = createInMemoryProjectsRepository()
-    authService = createMockAuthorizationService(repository)
+    authService = createAuthorizationService(repository)
     useCase = createCreateProjectUseCase(repository, authService)
   })
 

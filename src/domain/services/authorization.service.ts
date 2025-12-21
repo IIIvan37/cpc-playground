@@ -5,16 +5,13 @@
 
 import type { Project } from '@/domain/entities/project.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
+import { AUTH_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 
 /**
- * Error messages used by the AuthorizationService
- * Exported for use in tests
+ * @deprecated Use AUTH_ERRORS from '@/domain/errors/error-messages' instead
  */
-export const AUTH_ERROR_MESSAGES = {
-  PROJECT_NOT_FOUND: 'Project not found',
-  UNAUTHORIZED_MODIFY: 'You do not have permission to modify this project'
-} as const
+export const AUTH_ERROR_MESSAGES = AUTH_ERRORS
 
 export type AuthorizationService = {
   /**
@@ -78,11 +75,11 @@ export function createAuthorizationService(
       const project = await projectsRepository.findById(projectId)
 
       if (!project) {
-        throw new NotFoundError(AUTH_ERROR_MESSAGES.PROJECT_NOT_FOUND)
+        throw new NotFoundError(AUTH_ERRORS.PROJECT_NOT_FOUND)
       }
 
       if (project.userId !== userId) {
-        throw new UnauthorizedError(AUTH_ERROR_MESSAGES.UNAUTHORIZED_MODIFY)
+        throw new UnauthorizedError(AUTH_ERRORS.UNAUTHORIZED_MODIFY)
       }
 
       return project

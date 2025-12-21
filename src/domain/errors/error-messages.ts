@@ -85,3 +85,11 @@ export const DEPENDENCY_ERRORS = {
 export const PROJECT_ERRORS = {
   NOT_FOUND: (projectId: string) => `Project ${projectId} not found`
 } as const
+
+// ============================================================================
+// Authorization
+// ============================================================================
+export const AUTH_ERRORS = {
+  PROJECT_NOT_FOUND: 'Project not found',
+  UNAUTHORIZED_MODIFY: 'You do not have permission to modify this project'
+} as const
