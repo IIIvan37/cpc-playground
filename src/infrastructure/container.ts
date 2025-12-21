@@ -18,6 +18,7 @@ import type {
   DeleteProjectUseCase,
   GetProjectsUseCase,
   GetProjectUseCase,
+  GetProjectWithDependenciesUseCase,
   UpdateProjectUseCase
 } from '@/use-cases/projects'
 import {
@@ -25,6 +26,7 @@ import {
   createDeleteProjectUseCase,
   createGetProjectsUseCase,
   createGetProjectUseCase,
+  createGetProjectWithDependenciesUseCase,
   createUpdateProjectUseCase
 } from '@/use-cases/projects'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
@@ -34,6 +36,7 @@ export type Container = {
   createProject: CreateProjectUseCase
   getProjects: GetProjectsUseCase
   getProject: GetProjectUseCase
+  getProjectWithDependencies: GetProjectWithDependenciesUseCase
   updateProject: UpdateProjectUseCase
   deleteProject: DeleteProjectUseCase
   // Files use cases
@@ -54,6 +57,8 @@ export function createContainer(): Container {
     createProject: createCreateProjectUseCase(projectsRepository),
     getProjects: createGetProjectsUseCase(projectsRepository),
     getProject: createGetProjectUseCase(projectsRepository),
+    getProjectWithDependencies:
+      createGetProjectWithDependenciesUseCase(projectsRepository),
     updateProject: createUpdateProjectUseCase(projectsRepository),
     deleteProject: createDeleteProjectUseCase(projectsRepository),
     createFile: createCreateFileUseCase(projectsRepository),

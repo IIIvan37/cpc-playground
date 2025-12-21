@@ -16,7 +16,7 @@ import {
   currentFileAtom,
   currentProjectAtom,
   fetchProjectWithDependenciesAtom
-} from '@/store/projects-v2'
+} from '@/store/projects'
 import { ProgramManager } from './program-manager'
 import styles from './toolbar.module.css'
 
@@ -42,7 +42,10 @@ export function Toolbar() {
     if (currentProject && currentFile) {
       try {
         // Get all files including dependencies
-        const allFiles = await fetchProjectWithDependencies(currentProject.id)
+        const allFiles = await fetchProjectWithDependencies({
+          projectId: currentProject.id,
+          userId: currentProject.userId
+        })
 
         // Separate current project files from dependency files
         additionalFiles = allFiles
@@ -61,8 +64,8 @@ export function Toolbar() {
         additionalFiles = currentProject.files
           .filter((f) => f.id !== currentFile.id)
           .map((f) => ({
-            name: f.name,
-            content: f.content
+            name: f.name.value,
+            content: f.content.value
           }))
       }
     }

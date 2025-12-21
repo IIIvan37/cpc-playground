@@ -11,6 +11,7 @@ export {
   useDeleteProject,
   useGetProject,
   useGetProjects,
+  useGetProjectWithDependencies,
   useUpdateProject
 } from './use-projects'
 export { useRasm } from './use-rasm'

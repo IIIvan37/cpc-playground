@@ -89,6 +89,23 @@ export const fetchProjectAtom = atom(
 )
 
 /**
+ * Fetch a project with all its dependencies files
+ * Returns an array of files from the project and all dependencies
+ */
+export const fetchProjectWithDependenciesAtom = atom(
+  null,
+  async (_get, _set, params: { projectId: string; userId: string }) => {
+    try {
+      const result = await container.getProjectWithDependencies.execute(params)
+      return result.files
+    } catch (error) {
+      console.error('Failed to fetch project with dependencies:', error)
+      throw error
+    }
+  }
+)
+
+/**
  * Create a new project
  */
 export const createProjectAtom = atom(

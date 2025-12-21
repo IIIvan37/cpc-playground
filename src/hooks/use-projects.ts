@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { container } from '@/infrastructure/container'
 import type {
   CreateProjectInput,
+  GetProjectWithDependenciesInput,
   UpdateProjectInput
 } from '@/use-cases/projects'
 
@@ -141,4 +142,32 @@ export function useGetProject() {
   }
 
   return { getProject, loading, error }
+}
+
+/**
+ * Hook to fetch a project with all its dependencies
+ */
+export function useGetProjectWithDependencies() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const getProjectWithDependencies = async (
+    input: GetProjectWithDependenciesInput
+  ) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const result = await container.getProjectWithDependencies.execute(input)
+      return result
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { getProjectWithDependencies, loading, error }
 }
