@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { PROJECT_NAME_ERRORS } from '@/domain/errors/error-messages'
+import { PROJECT_NAME_MIN_LENGTH } from '@/domain/value-objects/project-name.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
 import { createCreateProjectUseCase } from '../create-project.use-case'
 
@@ -45,7 +47,7 @@ describe('CreateProjectUseCase', () => {
         userId: 'user-1',
         name: 'ab' // Too short
       })
-    ).rejects.toThrow('at least 3 characters')
+    ).rejects.toThrow(PROJECT_NAME_ERRORS.TOO_SHORT(PROJECT_NAME_MIN_LENGTH))
   })
 
   it('should set default visibility to private', async () => {

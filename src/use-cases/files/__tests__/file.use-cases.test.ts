@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
+import { FILE_ERRORS } from '@/domain/errors/error-messages'
 import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
@@ -311,7 +312,7 @@ describe('File Use Cases', () => {
           fileId: 'file-1',
           isMain: true
         })
-      ).rejects.toThrow('Library projects cannot have a main file')
+      ).rejects.toThrow(FILE_ERRORS.LIBRARY_NO_MAIN)
     })
   })
 
@@ -435,7 +436,7 @@ describe('File Use Cases', () => {
           userId: 'user-1',
           fileId: 'file-1'
         })
-      ).rejects.toThrow('Cannot delete the last file')
+      ).rejects.toThrow(FILE_ERRORS.CANNOT_DELETE_LAST)
     })
 
     it('should throw NotFoundError when file does not exist', async () => {

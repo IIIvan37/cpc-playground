@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { NotFoundError } from '@/domain/errors/domain.error'
+import { PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
@@ -70,7 +71,7 @@ describe('GetProjectUseCase', () => {
 
       await expect(
         useCase.execute({ projectId: 'non-existent' })
-      ).rejects.toThrow('Project non-existent not found')
+      ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('non-existent'))
     })
 
     it('should check authorization when userId is provided', async () => {
@@ -105,7 +106,7 @@ describe('GetProjectUseCase', () => {
           projectId: 'project-123',
           userId: 'unauthorized-user'
         })
-      ).rejects.toThrow('Project project-123 not found')
+      ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('project-123'))
     })
 
     it('should not check authorization when userId is not provided', async () => {

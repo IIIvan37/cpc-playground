@@ -6,6 +6,7 @@ import { createStore } from 'jotai'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
+import { FILE_ERRORS, PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
@@ -318,7 +319,7 @@ describe('Projects Store', () => {
 
       await expect(
         store.set(fetchProjectAtom, { projectId: 'invalid', userId: 'user-1' })
-      ).rejects.toThrow('Project not found')
+      ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
 
       consoleSpy.mockRestore()
     })
@@ -891,7 +892,7 @@ describe('Projects Store', () => {
             userId: 'user-1',
             fileId: 'file-1'
           })
-        ).rejects.toThrow('Library projects cannot have a main file')
+        ).rejects.toThrow(FILE_ERRORS.LIBRARY_NO_MAIN)
       })
 
       it('should throw error on failure', async () => {
@@ -979,7 +980,7 @@ describe('Projects Store', () => {
             projectId: 'invalid',
             tagName: 'tag'
           })
-        ).rejects.toThrow('Project invalid not found')
+        ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
       })
     })
 
@@ -1008,7 +1009,7 @@ describe('Projects Store', () => {
             projectId: 'invalid',
             tagName: 'tag'
           })
-        ).rejects.toThrow('Project invalid not found')
+        ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
       })
     })
   })
@@ -1120,7 +1121,7 @@ describe('Projects Store', () => {
             projectId: 'invalid',
             dependencyId: 'dep-1'
           })
-        ).rejects.toThrow('Project invalid not found')
+        ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
       })
     })
 
@@ -1149,7 +1150,7 @@ describe('Projects Store', () => {
             projectId: 'invalid',
             dependencyId: 'dep-1'
           })
-        ).rejects.toThrow('Project invalid not found')
+        ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
       })
     })
   })
@@ -1179,7 +1180,7 @@ describe('Projects Store', () => {
             projectId: 'invalid',
             username: 'john'
           })
-        ).rejects.toThrow('Project invalid not found')
+        ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
       })
     })
 
@@ -1211,7 +1212,7 @@ describe('Projects Store', () => {
             projectId: 'invalid',
             targetUserId: 'user-1'
           })
-        ).rejects.toThrow('Project invalid not found')
+        ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
       })
     })
   })

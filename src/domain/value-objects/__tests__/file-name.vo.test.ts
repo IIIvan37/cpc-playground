@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { ValidationError } from '@/domain/errors/domain.error'
+import { FILE_NAME_ERRORS } from '@/domain/errors/error-messages'
 import {
   createFileName,
+  FILE_NAME_MAX_LENGTH,
   getBaseName,
   hasExtension,
   isAssemblyFile,
@@ -39,14 +41,16 @@ describe('FileName Value Object', () => {
 
     it('should reject empty name', () => {
       expect(() => createFileName('')).toThrow(ValidationError)
-      expect(() => createFileName('  ')).toThrow('cannot be empty')
+      expect(() => createFileName('  ')).toThrow(FILE_NAME_ERRORS.EMPTY)
     })
 
     it('should reject name too long', () => {
-      const longName = 'a'.repeat(256)
+      const longName = 'a'.repeat(FILE_NAME_MAX_LENGTH + 1)
 
       expect(() => createFileName(longName)).toThrow(ValidationError)
-      expect(() => createFileName(longName)).toThrow('less than 255')
+      expect(() => createFileName(longName)).toThrow(
+        FILE_NAME_ERRORS.TOO_LONG(FILE_NAME_MAX_LENGTH)
+      )
     })
 
     it('should reject names with invalid characters', () => {

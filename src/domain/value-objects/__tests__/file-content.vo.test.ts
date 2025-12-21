@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { ValidationError } from '@/domain/errors/domain.error'
+import { FILE_CONTENT_ERRORS } from '@/domain/errors/error-messages'
 import {
   createFileContent,
   emptyFileContent,
+  FILE_CONTENT_MAX_SIZE,
   getByteSize,
   isEmpty,
   isFileContent
@@ -35,15 +37,18 @@ describe('FileContent Value Object', () => {
     })
 
     it('should reject content larger than 1MB', () => {
-      const largeContent = 'a'.repeat(1024 * 1024 + 1)
+      const largeContent = 'a'.repeat(FILE_CONTENT_MAX_SIZE + 1)
+      const expectedByteSize = new Blob([largeContent]).size
 
       expect(() => createFileContent(largeContent)).toThrow(ValidationError)
-      expect(() => createFileContent(largeContent)).toThrow('too large')
+      expect(() => createFileContent(largeContent)).toThrow(
+        FILE_CONTENT_ERRORS.TOO_LARGE(expectedByteSize, FILE_CONTENT_MAX_SIZE)
+      )
     })
 
     it('should accept content close to limit', () => {
       // Just under 1MB
-      const largeContent = 'a'.repeat(1024 * 1024 - 100)
+      const largeContent = 'a'.repeat(FILE_CONTENT_MAX_SIZE - 100)
       const content = createFileContent(largeContent)
 
       expect(content.value).toBe(largeContent)

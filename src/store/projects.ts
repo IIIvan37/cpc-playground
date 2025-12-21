@@ -5,6 +5,7 @@
 
 import { atom } from 'jotai'
 import type { Project } from '@/domain/entities/project.entity'
+import { FILE_ERRORS, PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import { container } from '@/infrastructure/container'
 
 // ============================================================================
@@ -66,7 +67,7 @@ export const fetchProjectAtom = atom(
       const result = await container.getProject.execute(params)
 
       if (!result.project) {
-        throw new Error('Project not found')
+        throw new Error(PROJECT_ERRORS.NOT_FOUND(params.projectId))
       }
 
       // Update the project in the list or add it
@@ -395,7 +396,7 @@ export const setMainFileAtom = atom(
       const projects = get(projectsAtom)
       const project = projects.find((p) => p.id === params.projectId)
       if (project?.isLibrary) {
-        throw new Error('Library projects cannot have a main file')
+        throw new Error(FILE_ERRORS.LIBRARY_NO_MAIN)
       }
 
       await container.updateFile.execute({
@@ -441,7 +442,7 @@ export const addTagToProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     const { tag } = await container.addTag.execute({
@@ -473,7 +474,7 @@ export const removeTagFromProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.removeTag.execute({
@@ -581,7 +582,7 @@ export const addDependencyToProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.addDependency.execute({
@@ -613,7 +614,7 @@ export const removeDependencyFromProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.removeDependency.execute({
@@ -652,7 +653,7 @@ export const addUserShareToProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     const { share } = await container.addUserShare.execute({
@@ -689,7 +690,7 @@ export const removeUserShareFromProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.removeUserShare.execute({

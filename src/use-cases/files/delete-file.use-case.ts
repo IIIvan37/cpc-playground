@@ -4,6 +4,7 @@
  */
 
 import { NotFoundError, ValidationError } from '@/domain/errors/domain.error'
+import { FILE_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
 
@@ -37,12 +38,12 @@ export function createDeleteFileUseCase(
       const fileExists = project.files.some((f) => f.id === input.fileId)
 
       if (!fileExists) {
-        throw new NotFoundError('File not found')
+        throw new NotFoundError(FILE_ERRORS.NOT_FOUND)
       }
 
       // Don't allow deleting the last file
       if (project.files.length === 1) {
-        throw new ValidationError('Cannot delete the last file in a project')
+        throw new ValidationError(FILE_ERRORS.CANNOT_DELETE_LAST)
       }
 
       // Check if we're deleting the main file

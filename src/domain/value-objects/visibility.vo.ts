@@ -1,4 +1,5 @@
 import { ValidationError } from '../errors/domain.error'
+import { VISIBILITY_ERRORS } from '../errors/error-messages'
 
 /**
  * Value Object for project visibility
@@ -23,7 +24,7 @@ export type Visibility = Readonly<{
 export function createVisibility(visibility: string): Visibility {
   if (!VISIBILITY_VALUES.includes(visibility as VisibilityValue)) {
     throw new ValidationError(
-      `Invalid visibility value: ${visibility}. Must be one of: ${VISIBILITY_VALUES.join(', ')}`
+      VISIBILITY_ERRORS.INVALID(visibility, VISIBILITY_VALUES)
     )
   }
 

@@ -1,5 +1,6 @@
 import type { Project } from '@/domain/entities/project.entity'
 import { NotFoundError } from '@/domain/errors/domain.error'
+import { PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
 
@@ -32,7 +33,7 @@ export function createGetProjectUseCase(
       const project = await projectsRepository.findById(input.projectId)
 
       if (!project) {
-        throw new NotFoundError(`Project ${input.projectId} not found`)
+        throw new NotFoundError(PROJECT_ERRORS.NOT_FOUND(input.projectId))
       }
 
       // Authorization check if userId is provided
@@ -42,7 +43,7 @@ export function createGetProjectUseCase(
           input.userId
         )
         if (!canRead) {
-          throw new NotFoundError(`Project ${input.projectId} not found`)
+          throw new NotFoundError(PROJECT_ERRORS.NOT_FOUND(input.projectId))
         }
       }
 
