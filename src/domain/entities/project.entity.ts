@@ -18,6 +18,7 @@ export type Project = Readonly<{
   tags: readonly string[]
   dependencies: readonly string[]
   shares: readonly ProjectShare[]
+  userShares: readonly UserShare[]
   createdAt: Date
   updatedAt: Date
 }>
@@ -25,6 +26,16 @@ export type Project = Readonly<{
 export type ProjectShare = Readonly<{
   id: string
   shareCode: string
+  createdAt: Date
+}>
+
+/**
+ * User share - sharing a project with a specific user
+ */
+export type UserShare = Readonly<{
+  projectId: string
+  userId: string
+  username: string
   createdAt: Date
 }>
 
@@ -39,6 +50,7 @@ export type CreateProjectParams = {
   tags?: readonly string[]
   dependencies?: readonly string[]
   shares?: readonly ProjectShare[]
+  userShares?: readonly UserShare[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -57,6 +69,7 @@ export function createProject(params: CreateProjectParams): Project {
     tags: Object.freeze(params.tags ?? []),
     dependencies: Object.freeze(params.dependencies ?? []),
     shares: Object.freeze(params.shares ?? []),
+    userShares: Object.freeze(params.userShares ?? []),
     createdAt: params.createdAt ?? now,
     updatedAt: params.updatedAt ?? now
   })

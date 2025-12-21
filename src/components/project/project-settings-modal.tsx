@@ -8,11 +8,13 @@ import { useAuth } from '@/hooks'
 import {
   addDependencyToProjectAtom,
   addTagToProjectAtom,
+  addUserShareToProjectAtom,
   currentProjectAtom,
   fetchProjectsAtom,
   projectsAtom,
   removeDependencyFromProjectAtom,
   removeTagFromProjectAtom,
+  removeUserShareFromProjectAtom,
   updateProjectAtom
 } from '../../store/projects'
 import styles from './project-settings-modal.module.css'
@@ -30,6 +32,8 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
   const removeTag = useSetAtom(removeTagFromProjectAtom)
   const addDependency = useSetAtom(addDependencyToProjectAtom)
   const removeDependency = useSetAtom(removeDependencyFromProjectAtom)
+  const addUserShare = useSetAtom(addUserShareToProjectAtom)
+  const removeUserShare = useSetAtom(removeUserShareFromProjectAtom)
   const fetchProjects = useSetAtom(fetchProjectsAtom)
 
   const [name, setName] = useState(currentProject?.name.value || '')
@@ -45,7 +49,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
 
   const [newTag, setNewTag] = useState('')
   const [selectedDependency, setSelectedDependency] = useState('')
-  // const [shareUsername, setShareUsername] = useState(""); // TODO: Re-enable with shares
+  const [shareUsername, setShareUsername] = useState('')
   const [loading, setLoading] = useState(false)
 
   if (!currentProject || !user) return null
@@ -132,70 +136,43 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     }
   }
 
-  /* TODO: Re-enable when shares use-cases are implemented
   const handleAddShare = async () => {
-    if (!shareUsername.trim()) return;
-    setLoading(true);
+    if (!shareUsername.trim()) return
+    setLoading(true)
     try {
-      // Find user by username
-      const { data: profile, error: profileError } = await supabase
-        .from("user_profiles")
-        .select("id")
-        .eq("username", shareUsername.trim())
-        .single();
-
-      if (profileError || !profile) {
-        alert("User not found");
-        return;
-      }
-
-      // Add share
-      const { error: shareError } = await supabase
-        .from("project_shares")
-        .insert({
-          project_id: currentProject.id,
-          user_id: profile.id,
-        });
-
-      if (shareError) {
-        if (shareError.code === "23505") {
-          alert("User already has access");
-        } else {
-          throw shareError;
-        }
-        return;
-      }
-
-      setShareUsername("");
-      await fetchProjects(user.id);
+      await addUserShare({
+        projectId: currentProject.id,
+        username: shareUsername.trim()
+      })
+      setShareUsername('')
+      await fetchProjects(user.id)
     } catch (error) {
-      console.error("Error adding share:", error);
-      alert("Error adding share");
+      console.error('Error adding share:', error)
+      if (error instanceof Error) {
+        alert(error.message)
+      } else {
+        alert('Error adding share')
+      }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleRemoveShare = async (userId: string) => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const { error } = await supabase
-        .from("project_shares")
-        .delete()
-        .eq("project_id", currentProject.id)
-        .eq("user_id", userId);
-
-      if (error) throw error;
-
-      await fetchProjects(user.id);
+      await removeUserShare({
+        projectId: currentProject.id,
+        targetUserId: userId
+      })
+      await fetchProjects(user.id)
     } catch (error) {
-      console.error("Error removing share:", error);
-      alert("Error removing share");
+      console.error('Error removing share:', error)
+      alert('Error removing share')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-  */
+  }
 
   // Filter available dependencies (libraries not already added)
   const availableDependencies = projects.filter(
@@ -293,23 +270,21 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
         {visibility === 'shared' && (
           <div className={styles.formGroup}>
             <label className={styles.label}>Shared with</label>
-            {/* TODO: Implement shares management with proper use-cases */}
-            <div className={styles.emptyState}>
-              Share management not yet migrated to Clean Architecture
-            </div>
-            {/* Temporarily disabled until shares use-cases are implemented
-            {currentProject.shares && currentProject.shares.length > 0 ? (
+            {currentProject.userShares &&
+            currentProject.userShares.length > 0 ? (
               <div className={styles.sharesList}>
-                {currentProject.shares.map((share) => (
-                  <div key={share.id} className={styles.shareItem}>
-                    <span className={styles.shareUsername}>{share.id}</span>
+                {currentProject.userShares.map((share) => (
+                  <div key={share.userId} className={styles.shareItem}>
+                    <span className={styles.shareUsername}>
+                      {share.username}
+                    </span>
                     <Button
-                      type="button"
-                      variant="icon"
+                      type='button'
+                      variant='icon'
                       className={styles.shareRemove}
-                      onClick={() => handleRemoveShare(share.id)}
+                      onClick={() => handleRemoveShare(share.userId)}
                       disabled={loading}
-                      aria-label="Remove user"
+                      aria-label='Remove user'
                     >
                       ×
                     </Button>
@@ -323,24 +298,23 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
             )}
             <div className={styles.addShare}>
               <input
-                type="text"
+                type='text'
                 className={`${styles.input} ${styles.usernameInput}`}
-                placeholder="Enter username..."
+                placeholder='Enter username...'
                 value={shareUsername}
                 onChange={(e) => setShareUsername(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleAddShare();
+                  if (e.key === 'Enter') handleAddShare()
                 }}
               />
               <Button
-                type="button"
+                type='button'
                 onClick={handleAddShare}
                 disabled={loading || !shareUsername.trim()}
               >
                 Add
               </Button>
             </div>
-            */}
           </div>
         )}
       </div>

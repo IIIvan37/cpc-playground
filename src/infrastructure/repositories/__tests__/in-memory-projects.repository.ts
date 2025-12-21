@@ -1,6 +1,10 @@
 // TODO: Remove @ts-nocheck once ProjectDependency entity and proper types are implemented
 // @ts-nocheck
-import type { Project, ProjectShare } from '@/domain/entities/project.entity'
+import type {
+  Project,
+  ProjectShare,
+  UserShare
+} from '@/domain/entities/project.entity'
 import type {
   IProjectsRepository,
   Tag
@@ -17,6 +21,8 @@ export function createInMemoryProjectsRepository(): IProjectsRepository {
   const tags = new Map<string, Tag>() // tagId -> Tag
   const projectTags = new Map<string, string[]>() // projectId -> tagIds
   const dependencies = new Map<string, string[]>() // projectId -> dependencyIds
+  const users = new Map<string, { id: string; username: string }>() // userId -> user
+  const userShares = new Map<string, UserShare[]>() // projectId -> UserShares
 
   return {
     async findAll(userId: string): Promise<Project[]> {
@@ -185,6 +191,81 @@ export function createInMemoryProjectsRepository(): IProjectsRepository {
         projectId,
         currentDeps.filter((id) => id !== dependencyId)
       )
+    },
+
+    // ========================================================================
+    // User Shares
+    // ========================================================================
+
+    async getUserShares(projectId: string): Promise<readonly UserShare[]> {
+      return userShares.get(projectId) ?? []
+    },
+
+    async findUserByUsername(
+      username: string
+    ): Promise<{ id: string; username: string } | null> {
+      for (const user of users.values()) {
+        if (user.username.toLowerCase() === username.toLowerCase()) {
+          return user
+        }
+      }
+      return null
+    },
+
+    async addUserShare(projectId: string, userId: string): Promise<UserShare> {
+      const user = users.get(userId)
+      if (!user) {
+        throw new Error(`User with id ${userId} not found`)
+      }
+
+      const existingShares = userShares.get(projectId) ?? []
+
+      // Check for duplicate
+      const existing = existingShares.find((s) => s.userId === userId)
+      if (existing) {
+        return existing
+      }
+
+      const share: UserShare = {
+        projectId,
+        userId,
+        username: user.username,
+        createdAt: new Date()
+      }
+
+      existingShares.push(share)
+      userShares.set(projectId, existingShares)
+
+      return share
+    },
+
+    async removeUserShare(projectId: string, userId: string): Promise<void> {
+      const existingShares = userShares.get(projectId) ?? []
+      userShares.set(
+        projectId,
+        existingShares.filter((s) => s.userId !== userId)
+      )
+    },
+
+    // ========================================================================
+    // Test helpers (not part of interface)
+    // ========================================================================
+
+    /** Add a user for testing purposes */
+    _addUser(id: string, username: string): void {
+      users.set(id, { id, username })
+    },
+
+    /** Clear all data for testing */
+    _clear(): void {
+      projects.clear()
+      shares.clear()
+      shareCodeIndex.clear()
+      tags.clear()
+      projectTags.clear()
+      dependencies.clear()
+      users.clear()
+      userShares.clear()
     }
   }
 }

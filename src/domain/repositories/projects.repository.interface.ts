@@ -1,4 +1,8 @@
-import type { Project, ProjectShare } from '../entities/project.entity'
+import type {
+  Project,
+  ProjectShare,
+  UserShare
+} from '../entities/project.entity'
 
 /**
  * Tag representation from database
@@ -90,4 +94,30 @@ export interface IProjectsRepository {
    * Remove a dependency from a project
    */
   removeDependency(projectId: string, dependencyId: string): Promise<void>
+
+  // ============================================================================
+  // User Shares (sharing with specific users)
+  // ============================================================================
+
+  /**
+   * Get all user shares for a project
+   */
+  getUserShares(projectId: string): Promise<readonly UserShare[]>
+
+  /**
+   * Find a user by username
+   */
+  findUserByUsername(
+    username: string
+  ): Promise<{ id: string; username: string } | null>
+
+  /**
+   * Add a user share to a project
+   */
+  addUserShare(projectId: string, userId: string): Promise<UserShare>
+
+  /**
+   * Remove a user share from a project
+   */
+  removeUserShare(projectId: string, userId: string): Promise<void>
 }

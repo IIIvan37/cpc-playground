@@ -2,7 +2,11 @@
 // The issue is with queries that include nested relations (project_files, project_shares, etc.)
 // Need to either: 1) Generate proper types from Supabase schema, or 2) Use explicit type assertions
 // @ts-nocheck
-import type { Project, ProjectShare } from '@/domain/entities/project.entity'
+import type {
+  Project,
+  ProjectShare,
+  UserShare
+} from '@/domain/entities/project.entity'
 import { createProject } from '@/domain/entities/project.entity'
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
@@ -62,6 +66,7 @@ function mapToDomain(data: any): Project {
     shares,
     tags,
     dependencies,
+    userShares: [], // Loaded separately via getUserShares()
     createdAt: new Date(data.created_at),
     updatedAt: new Date(data.updated_at)
   })
@@ -420,6 +425,96 @@ export function createSupabaseProjectsRepository(): IProjectsRepository {
         .delete()
         .eq('project_id', projectId)
         .eq('tag_id', tagId)
+
+      if (error) throw error
+    },
+
+    // ========================================================================
+    // User Shares
+    // ========================================================================
+
+    async getUserShares(projectId: string): Promise<readonly UserShare[]> {
+      const { data, error } = await supabase
+        .from('project_shares')
+        .select(
+          `
+          project_id,
+          user_id,
+          created_at,
+          user_profiles!project_shares_user_id_fkey (
+            username
+          )
+        `
+        )
+        .eq('project_id', projectId)
+
+      if (error) throw error
+      if (!data) return []
+
+      return data.map((share: any) => ({
+        projectId: share.project_id,
+        userId: share.user_id,
+        username: share.user_profiles?.username || 'Unknown',
+        createdAt: new Date(share.created_at)
+      }))
+    },
+
+    async findUserByUsername(
+      username: string
+    ): Promise<{ id: string; username: string } | null> {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id, username')
+        .eq('username', username.trim().toLowerCase())
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows found
+          return null
+        }
+        throw error
+      }
+
+      return data ? { id: data.id, username: data.username } : null
+    },
+
+    async addUserShare(projectId: string, userId: string): Promise<UserShare> {
+      // Get the user's username first
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('username')
+        .eq('id', userId)
+        .single()
+
+      if (profileError || !userProfile) {
+        throw new Error(`User with id ${userId} not found`)
+      }
+
+      const { error } = await supabase.from('project_shares').insert({
+        project_id: projectId,
+        user_id: userId
+      } as any)
+
+      // Ignore duplicate key error (already shared)
+      if (error && error.code !== '23505') {
+        throw error
+      }
+
+      return {
+        projectId,
+        userId,
+        username: userProfile.username,
+        createdAt: new Date()
+      }
+    },
+
+    async removeUserShare(projectId: string, userId: string): Promise<void> {
+      const { error } = await supabase
+        .from('project_shares')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('user_id', userId)
 
       if (error) throw error
     }

@@ -556,9 +556,79 @@ export const removeDependencyFromProjectAtom = atom(
 )
 
 // ============================================================================
-// Shares Management (TODO: Implement with proper use-cases)
+// Shares Management
 // ============================================================================
 
-// NOTE: Shares functionality requires direct Supabase calls for now
-// as it involves user lookups and complex authorization
-// This will be refactored when auth use-cases are implemented
+/**
+ * Add a user share to a project
+ */
+export const addUserShareToProjectAtom = atom(
+  null,
+  async (get, set, params: { projectId: string; username: string }) => {
+    const { projectId, username } = params
+
+    // Get current project to obtain userId
+    const projects = get(projectsAtom)
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`)
+    }
+
+    const { share } = await container.addUserShare.execute({
+      projectId,
+      userId: project.userId,
+      username
+    })
+
+    // Update local state - add share to project
+    set(projectsAtom, (prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              userShares: [...(p.userShares || []), share]
+            }
+          : p
+      )
+    )
+
+    return share
+  }
+)
+
+/**
+ * Remove a user share from a project
+ */
+export const removeUserShareFromProjectAtom = atom(
+  null,
+  async (get, set, params: { projectId: string; targetUserId: string }) => {
+    const { projectId, targetUserId } = params
+
+    // Get current project to obtain userId
+    const projects = get(projectsAtom)
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`)
+    }
+
+    await container.removeUserShare.execute({
+      projectId,
+      userId: project.userId,
+      targetUserId
+    })
+
+    // Update local state - remove share from project
+    set(projectsAtom, (prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              userShares: (p.userShares || []).filter(
+                (s) => s.userId !== targetUserId
+              )
+            }
+          : p
+      )
+    )
+  }
+)
