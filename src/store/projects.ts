@@ -157,6 +157,7 @@ export const updateProjectAtom = atom(
       name?: string
       description?: string | null
       visibility?: 'public' | 'private'
+      isLibrary?: boolean
     }
   ) => {
     try {
@@ -414,3 +415,71 @@ export const setMainFileAtom = atom(
     }
   }
 )
+
+// ============================================================================
+// Tags Management (TODO: Implement with proper use-cases)
+// ============================================================================
+
+/**
+ * Add a tag to a project
+ * TODO: Create add-tag.use-case.ts and wire through container
+ */
+export const addTagToProjectAtom = atom(
+  null,
+  async (_get, _set, _params: { projectId: string; tagName: string }) => {
+    console.warn('addTagToProjectAtom: Not yet implemented')
+    throw new Error('Tags feature not yet implemented in Clean Architecture')
+  }
+)
+
+/**
+ * Remove a tag from a project
+ * TODO: Create remove-tag.use-case.ts and wire through container
+ */
+export const removeTagFromProjectAtom = atom(
+  null,
+  async (_get, _set, _params: { projectId: string; tagId: string }) => {
+    console.warn('removeTagFromProjectAtom: Not yet implemented')
+    throw new Error('Tags feature not yet implemented in Clean Architecture')
+  }
+)
+
+// ============================================================================
+// Dependencies Management (TODO: Implement with proper use-cases)
+// ============================================================================
+
+/**
+ * Add a dependency to a project
+ * TODO: Create add-dependency.use-case.ts and wire through container
+ */
+export const addDependencyToProjectAtom = atom(
+  null,
+  async (_get, _set, _params: { projectId: string; dependencyId: string }) => {
+    console.warn('addDependencyToProjectAtom: Not yet implemented')
+    throw new Error(
+      'Dependencies feature not yet implemented in Clean Architecture'
+    )
+  }
+)
+
+/**
+ * Remove a dependency from a project
+ * TODO: Create remove-dependency.use-case.ts and wire through container
+ */
+export const removeDependencyFromProjectAtom = atom(
+  null,
+  async (_get, _set, _params: { projectId: string; dependencyId: string }) => {
+    console.warn('removeDependencyFromProjectAtom: Not yet implemented')
+    throw new Error(
+      'Dependencies feature not yet implemented in Clean Architecture'
+    )
+  }
+)
+
+// ============================================================================
+// Shares Management (TODO: Implement with proper use-cases)
+// ============================================================================
+
+// NOTE: Shares functionality requires direct Supabase calls for now
+// as it involves user lookups and complex authorization
+// This will be refactored when auth use-cases are implemented
