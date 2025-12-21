@@ -1,4 +1,4 @@
-import { NotFoundError, UnauthorizedError } from '@/domain/errors'
+import type { AuthorizationService } from '@/domain/services'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 
 // ============================================================================
@@ -25,24 +25,15 @@ export type RemoveTagUseCase = {
 // ============================================================================
 
 export function createRemoveTagUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): RemoveTagUseCase {
   return {
     async execute(input: RemoveTagInput): Promise<RemoveTagOutput> {
       const { projectId, userId, tagIdOrName } = input
 
-      // Check project exists
-      const project = await projectsRepository.findById(projectId)
-      if (!project) {
-        throw new NotFoundError(`Project with id ${projectId} not found`)
-      }
-
       // Check user owns the project
-      if (project.userId !== userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to modify this project'
-        )
-      }
+      await authorizationService.mustOwnProject(projectId, userId)
 
       // Remove tag (accepts either id or name)
       await projectsRepository.removeTag(projectId, tagIdOrName)

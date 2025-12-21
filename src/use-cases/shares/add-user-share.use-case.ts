@@ -1,10 +1,7 @@
 import type { UserShare } from '@/domain/entities/project.entity'
-import {
-  NotFoundError,
-  UnauthorizedError,
-  ValidationError
-} from '@/domain/errors'
+import { NotFoundError, ValidationError } from '@/domain/errors'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 
 // ============================================================================
 // Types
@@ -29,7 +26,8 @@ export type AddUserShareUseCase = {
 // ============================================================================
 
 export function createAddUserShareUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): AddUserShareUseCase {
   return {
     async execute(input: AddUserShareInput): Promise<AddUserShareOutput> {
@@ -41,18 +39,8 @@ export function createAddUserShareUseCase(
         throw new ValidationError('Username cannot be empty')
       }
 
-      // Check project exists
-      const project = await projectsRepository.findById(projectId)
-      if (!project) {
-        throw new NotFoundError(`Project with id ${projectId} not found`)
-      }
-
       // Check user owns the project
-      if (project.userId !== userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to share this project'
-        )
-      }
+      await authorizationService.mustOwnProject(projectId, userId)
 
       // Find user by username
       const targetUser =

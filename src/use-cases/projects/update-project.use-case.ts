@@ -1,6 +1,6 @@
 import { type Project, updateProject } from '@/domain/entities/project.entity'
-import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 
@@ -31,23 +31,16 @@ export type UpdateProjectUseCase = {
  * Factory function that creates UpdateProjectUseCase
  */
 export function createUpdateProjectUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): UpdateProjectUseCase {
   return {
     async execute(input: UpdateProjectInput): Promise<UpdateProjectOutput> {
-      // Get existing project
-      const existingProject = await projectsRepository.findById(input.projectId)
-
-      if (!existingProject) {
-        throw new NotFoundError(`Project ${input.projectId} not found`)
-      }
-
-      // Authorization check
-      if (existingProject.userId !== input.userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to update this project'
-        )
-      }
+      // Get existing project and verify ownership
+      const existingProject = await authorizationService.mustOwnProject(
+        input.projectId,
+        input.userId
+      )
 
       // Create value objects from updates
       const updates: Parameters<typeof updateProject>[1] = {}

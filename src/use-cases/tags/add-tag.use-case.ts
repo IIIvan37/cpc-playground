@@ -1,12 +1,9 @@
-import {
-  NotFoundError,
-  UnauthorizedError,
-  ValidationError
-} from '@/domain/errors'
+import { ValidationError } from '@/domain/errors'
 import type {
   IProjectsRepository,
   Tag
 } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 
 // ============================================================================
 // Types
@@ -41,7 +38,8 @@ function isValidTagName(tagName: string): boolean {
 // ============================================================================
 
 export function createAddTagUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): AddTagUseCase {
   return {
     async execute(input: AddTagInput): Promise<AddTagOutput> {
@@ -54,18 +52,8 @@ export function createAddTagUseCase(
         )
       }
 
-      // Check project exists
-      const project = await projectsRepository.findById(projectId)
-      if (!project) {
-        throw new NotFoundError(`Project with id ${projectId} not found`)
-      }
-
       // Check user owns the project
-      if (project.userId !== userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to modify this project'
-        )
-      }
+      await authorizationService.mustOwnProject(projectId, userId)
 
       // Add tag
       const tag = await projectsRepository.addTag(projectId, tagName)

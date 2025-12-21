@@ -520,57 +520,54 @@ export const dependencyFilesAtom = atom<DependencyProject[]>([])
  * Fetch dependency files for the current project
  * Groups files by their parent project
  */
-export const fetchDependencyFilesAtom = atom(
-  null,
-  async (get, set) => {
-    const currentProjectId = get(currentProjectIdAtom)
-    const projects = get(projectsAtom)
-    const currentProject = projects.find((p) => p.id === currentProjectId)
+export const fetchDependencyFilesAtom = atom(null, async (get, set) => {
+  const currentProjectId = get(currentProjectIdAtom)
+  const projects = get(projectsAtom)
+  const currentProject = projects.find((p) => p.id === currentProjectId)
 
-    if (!currentProject || currentProject.dependencies.length === 0) {
-      set(dependencyFilesAtom, [])
-      return []
-    }
+  if (!currentProject || currentProject.dependencies.length === 0) {
+    set(dependencyFilesAtom, [])
+    return []
+  }
 
-    try {
-      const result = await container.getProjectWithDependencies.execute({
-        projectId: currentProject.id,
-        userId: currentProject.userId
-      })
+  try {
+    const result = await container.getProjectWithDependencies.execute({
+      projectId: currentProject.id,
+      userId: currentProject.userId
+    })
 
-      // Group files by project (excluding the current project's files)
-      const projectsMap = new Map<string, DependencyProject>()
+    // Group files by project (excluding the current project's files)
+    const projectsMap = new Map<string, DependencyProject>()
 
-      for (const file of result.files) {
-        // Skip files from the current project
-        if (file.projectId === currentProjectId) continue
+    for (const file of result.files) {
+      // Skip files from the current project
+      if (file.projectId === currentProjectId) continue
 
-        if (!projectsMap.has(file.projectId)) {
-          projectsMap.set(file.projectId, {
-            id: file.projectId,
-            name: file.projectName,
-            files: []
-          })
-        }
-
-        projectsMap.get(file.projectId)!.files.push({
-          id: file.id,
-          name: file.name,
-          content: file.content,
-          projectId: file.projectId
+      if (!projectsMap.has(file.projectId)) {
+        projectsMap.set(file.projectId, {
+          id: file.projectId,
+          name: file.projectName,
+          files: []
         })
       }
 
-      const dependencyProjects = Array.from(projectsMap.values())
-      set(dependencyFilesAtom, dependencyProjects)
-      return dependencyProjects
-    } catch (error) {
-      console.error('Failed to fetch dependency files:', error)
-      set(dependencyFilesAtom, [])
-      return []
+      projectsMap.get(file.projectId)!.files.push({
+        id: file.id,
+        name: file.name,
+        content: file.content,
+        projectId: file.projectId
+      })
     }
+
+    const dependencyProjects = Array.from(projectsMap.values())
+    set(dependencyFilesAtom, dependencyProjects)
+    return dependencyProjects
+  } catch (error) {
+    console.error('Failed to fetch dependency files:', error)
+    set(dependencyFilesAtom, [])
+    return []
   }
-)
+})
 
 /**
  * Add a dependency to a project

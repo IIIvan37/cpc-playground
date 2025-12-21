@@ -81,9 +81,7 @@ describe('CreateProjectUseCase', () => {
       userId: 'user-1',
       name: 'My Library',
       isLibrary: true,
-      files: [
-        { name: 'lib.asm', content: 'helper code', isMain: true }
-      ]
+      files: [{ name: 'lib.asm', content: 'helper code', isMain: true }]
     })
 
     // Even though isMain: true was passed, library projects should not have main files

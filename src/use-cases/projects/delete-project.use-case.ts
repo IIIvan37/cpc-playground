@@ -1,5 +1,5 @@
-import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 
 /**
  * Use Case: Delete a project
@@ -22,23 +22,13 @@ export type DeleteProjectUseCase = {
  * Factory function that creates DeleteProjectUseCase
  */
 export function createDeleteProjectUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): DeleteProjectUseCase {
   return {
     async execute(input: DeleteProjectInput): Promise<DeleteProjectOutput> {
-      // Get existing project for authorization
-      const existingProject = await projectsRepository.findById(input.projectId)
-
-      if (!existingProject) {
-        throw new NotFoundError(`Project ${input.projectId} not found`)
-      }
-
-      // Authorization check
-      if (existingProject.userId !== input.userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to delete this project'
-        )
-      }
+      // Verify ownership
+      await authorizationService.mustOwnProject(input.projectId, input.userId)
 
       // Delete
       await projectsRepository.delete(input.projectId)

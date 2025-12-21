@@ -3,6 +3,10 @@
  * Wires up all use-cases with their repository dependencies
  */
 
+import {
+  type AuthorizationService,
+  createAuthorizationService
+} from '@/domain/services'
 import type {
   AddDependencyUseCase,
   RemoveDependencyUseCase
@@ -51,6 +55,8 @@ import { supabase } from '@/lib/supabase'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
 
 export type Container = {
+  // Services
+  authorizationService: AuthorizationService
   // Projects use cases
   createProject: CreateProjectUseCase
   getProjects: GetProjectsUseCase
@@ -80,24 +86,60 @@ export function createContainer(): Container {
   // Infrastructure layer - repositories
   const projectsRepository = createSupabaseProjectsRepository(supabase)
 
+  // Domain services
+  const authorizationService = createAuthorizationService(projectsRepository)
+
   // Use cases layer - inject repository dependencies
   return {
+    authorizationService,
     createProject: createCreateProjectUseCase(projectsRepository),
     getProjects: createGetProjectsUseCase(projectsRepository),
-    getProject: createGetProjectUseCase(projectsRepository),
-    getProjectWithDependencies:
-      createGetProjectWithDependenciesUseCase(projectsRepository),
-    updateProject: createUpdateProjectUseCase(projectsRepository),
-    deleteProject: createDeleteProjectUseCase(projectsRepository),
-    createFile: createCreateFileUseCase(projectsRepository),
-    updateFile: createUpdateFileUseCase(projectsRepository),
-    deleteFile: createDeleteFileUseCase(projectsRepository),
-    addTag: createAddTagUseCase(projectsRepository),
-    removeTag: createRemoveTagUseCase(projectsRepository),
-    addDependency: createAddDependencyUseCase(projectsRepository),
-    removeDependency: createRemoveDependencyUseCase(projectsRepository),
-    addUserShare: createAddUserShareUseCase(projectsRepository),
-    removeUserShare: createRemoveUserShareUseCase(projectsRepository)
+    getProject: createGetProjectUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    getProjectWithDependencies: createGetProjectWithDependenciesUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    updateProject: createUpdateProjectUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    deleteProject: createDeleteProjectUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    createFile: createCreateFileUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    updateFile: createUpdateFileUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    deleteFile: createDeleteFileUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    addTag: createAddTagUseCase(projectsRepository, authorizationService),
+    removeTag: createRemoveTagUseCase(projectsRepository, authorizationService),
+    addDependency: createAddDependencyUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    removeDependency: createRemoveDependencyUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    addUserShare: createAddUserShareUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    removeUserShare: createRemoveUserShareUseCase(
+      projectsRepository,
+      authorizationService
+    )
   }
 }
 

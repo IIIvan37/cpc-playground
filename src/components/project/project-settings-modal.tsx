@@ -1,10 +1,10 @@
-import { useAtomValue, useSetAtom } from 'jotai'
-import { useState } from 'react'
-import Button from '@/components/ui/button/button'
-import Checkbox from '@/components/ui/checkbox/checkbox'
-import { Modal } from '@/components/ui/modal'
-import { Select, SelectItem } from '@/components/ui/select/select'
-import { useAuth } from '@/hooks'
+import { useAtomValue, useSetAtom } from "jotai";
+import { useState } from "react";
+import Button from "@/components/ui/button/button";
+import Checkbox from "@/components/ui/checkbox/checkbox";
+import { Modal } from "@/components/ui/modal";
+import { Select, SelectItem } from "@/components/ui/select/select";
+import { useAuth } from "@/hooks";
 import {
   addDependencyToProjectAtom,
   addTagToProjectAtom,
@@ -15,165 +15,167 @@ import {
   removeDependencyFromProjectAtom,
   removeTagFromProjectAtom,
   removeUserShareFromProjectAtom,
-  updateProjectAtom
-} from '../../store/projects'
-import styles from './project-settings-modal.module.css'
+  updateProjectAtom,
+} from "../../store/projects";
+import styles from "./project-settings-modal.module.css";
 
 interface ProjectSettingsModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
-  const { user } = useAuth()
-  const currentProject = useAtomValue(currentProjectAtom)
-  const projects = useAtomValue(projectsAtom)
-  const updateProject = useSetAtom(updateProjectAtom)
-  const addTag = useSetAtom(addTagToProjectAtom)
-  const removeTag = useSetAtom(removeTagFromProjectAtom)
-  const addDependency = useSetAtom(addDependencyToProjectAtom)
-  const removeDependency = useSetAtom(removeDependencyFromProjectAtom)
-  const addUserShare = useSetAtom(addUserShareToProjectAtom)
-  const removeUserShare = useSetAtom(removeUserShareFromProjectAtom)
-  const fetchProjects = useSetAtom(fetchProjectsAtom)
+  const { user } = useAuth();
+  const currentProject = useAtomValue(currentProjectAtom);
+  const projects = useAtomValue(projectsAtom);
+  const updateProject = useSetAtom(updateProjectAtom);
+  const addTag = useSetAtom(addTagToProjectAtom);
+  const removeTag = useSetAtom(removeTagFromProjectAtom);
+  const addDependency = useSetAtom(addDependencyToProjectAtom);
+  const removeDependency = useSetAtom(removeDependencyFromProjectAtom);
+  const addUserShare = useSetAtom(addUserShareToProjectAtom);
+  const removeUserShare = useSetAtom(removeUserShareFromProjectAtom);
+  const fetchProjects = useSetAtom(fetchProjectsAtom);
 
-  const [name, setName] = useState(currentProject?.name.value || '')
+  const [name, setName] = useState(currentProject?.name.value || "");
   const [description, setDescription] = useState(
-    currentProject?.description || ''
-  )
-  const [visibility, setVisibility] = useState<'private' | 'public' | 'shared'>(
-    currentProject?.visibility.value === 'unlisted'
-      ? 'private'
-      : (currentProject?.visibility.value as 'private' | 'public') || 'private'
-  )
-  const [isLibrary, setIsLibrary] = useState(currentProject?.isLibrary || false)
+    currentProject?.description || ""
+  );
+  const [visibility, setVisibility] = useState<"private" | "public" | "shared">(
+    currentProject?.visibility.value === "unlisted"
+      ? "private"
+      : (currentProject?.visibility.value as "private" | "public") || "private"
+  );
+  const [isLibrary, setIsLibrary] = useState(
+    currentProject?.isLibrary || false
+  );
 
-  const [newTag, setNewTag] = useState('')
-  const [selectedDependency, setSelectedDependency] = useState('')
-  const [shareUsername, setShareUsername] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [newTag, setNewTag] = useState("");
+  const [selectedDependency, setSelectedDependency] = useState("");
+  const [shareUsername, setShareUsername] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  if (!currentProject || !user) return null
+  if (!currentProject || !user) return null;
 
   const handleSave = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       await updateProject({
         projectId: currentProject.id,
         userId: user.id,
         name,
         description,
-        visibility: visibility === 'shared' ? 'private' : visibility,
-        isLibrary: isLibrary
-      })
-      await fetchProjects(user.id)
-      onClose()
+        visibility: visibility === "shared" ? "private" : visibility,
+        isLibrary: isLibrary,
+      });
+      await fetchProjects(user.id);
+      onClose();
     } catch (error) {
-      console.error('Error updating project:', error)
-      alert('Error updating project')
+      console.error("Error updating project:", error);
+      alert("Error updating project");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleAddTag = async () => {
-    if (!newTag.trim()) return
-    setLoading(true)
+    if (!newTag.trim()) return;
+    setLoading(true);
     try {
-      await addTag({ projectId: currentProject.id, tagName: newTag.trim() })
-      setNewTag('')
-      await fetchProjects(user.id)
+      await addTag({ projectId: currentProject.id, tagName: newTag.trim() });
+      setNewTag("");
+      await fetchProjects(user.id);
     } catch (error) {
-      console.error('Error adding tag:', error)
-      alert('Error adding tag')
+      console.error("Error adding tag:", error);
+      alert("Error adding tag");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleRemoveTag = async (tagName: string) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      await removeTag({ projectId: currentProject.id, tagName })
-      await fetchProjects(user.id)
+      await removeTag({ projectId: currentProject.id, tagName });
+      await fetchProjects(user.id);
     } catch (error) {
-      console.error('Error removing tag:', error)
-      alert('Error removing tag')
+      console.error("Error removing tag:", error);
+      alert("Error removing tag");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleAddDependency = async () => {
-    if (!selectedDependency) return
-    setLoading(true)
+    if (!selectedDependency) return;
+    setLoading(true);
     try {
       await addDependency({
         projectId: currentProject.id,
-        dependencyId: selectedDependency
-      })
-      setSelectedDependency('')
-      await fetchProjects(user.id)
+        dependencyId: selectedDependency,
+      });
+      setSelectedDependency("");
+      await fetchProjects(user.id);
     } catch (error) {
-      console.error('Error adding dependency:', error)
-      alert('Error adding dependency')
+      console.error("Error adding dependency:", error);
+      alert("Error adding dependency");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleRemoveDependency = async (dependencyId: string) => {
-    setLoading(true)
+    setLoading(true);
     try {
       await removeDependency({
         projectId: currentProject.id,
-        dependencyId
-      })
-      await fetchProjects(user.id)
+        dependencyId,
+      });
+      await fetchProjects(user.id);
     } catch (error) {
-      console.error('Error removing dependency:', error)
-      alert('Error removing dependency')
+      console.error("Error removing dependency:", error);
+      alert("Error removing dependency");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleAddShare = async () => {
-    if (!shareUsername.trim()) return
-    setLoading(true)
+    if (!shareUsername.trim()) return;
+    setLoading(true);
     try {
       await addUserShare({
         projectId: currentProject.id,
-        username: shareUsername.trim()
-      })
-      setShareUsername('')
-      await fetchProjects(user.id)
+        username: shareUsername.trim(),
+      });
+      setShareUsername("");
+      await fetchProjects(user.id);
     } catch (error) {
-      console.error('Error adding share:', error)
+      console.error("Error adding share:", error);
       if (error instanceof Error) {
-        alert(error.message)
+        alert(error.message);
       } else {
-        alert('Error adding share')
+        alert("Error adding share");
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleRemoveShare = async (userId: string) => {
-    setLoading(true)
+    setLoading(true);
     try {
       await removeUserShare({
         projectId: currentProject.id,
-        targetUserId: userId
-      })
-      await fetchProjects(user.id)
+        targetUserId: userId,
+      });
+      await fetchProjects(user.id);
     } catch (error) {
-      console.error('Error removing share:', error)
-      alert('Error removing share')
+      console.error("Error removing share:", error);
+      alert("Error removing share");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Filter available dependencies (libraries not already added)
   const availableDependencies = projects.filter(
@@ -181,27 +183,27 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       p.isLibrary &&
       p.id !== currentProject.id &&
       !currentProject.dependencies?.includes(p.id)
-  )
+  );
 
   return (
     <Modal
       open={true}
       onClose={onClose}
-      title='Project Settings'
-      size='lg'
+      title="Project Settings"
+      size="lg"
       actions={
         <>
           <Button
-            type='button'
+            type="button"
             onClick={handleSave}
             disabled={loading}
             fullWidth
           >
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? "Saving..." : "Save Changes"}
           </Button>
           <Button
-            type='button'
-            variant='outline'
+            type="button"
+            variant="outline"
             onClick={onClose}
             disabled={loading}
             fullWidth
@@ -217,7 +219,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
         <div className={styles.formGroup}>
           <label className={styles.label}>Name</label>
           <input
-            type='text'
+            type="text"
             className={styles.input}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -233,7 +235,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
         </div>
         <div className={styles.formGroup}>
           <Checkbox
-            label='This is a library project'
+            label="This is a library project"
             checked={isLibrary}
             onChange={(e) => setIsLibrary(e.target.checked)}
           />
@@ -251,24 +253,24 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
           <Select
             value={visibility}
             onValueChange={(value) =>
-              setVisibility(value as 'private' | 'public' | 'shared')
+              setVisibility(value as "private" | "public" | "shared")
             }
           >
-            <SelectItem value='private'>Private (only you)</SelectItem>
-            <SelectItem value='public'>Public (everyone can see)</SelectItem>
-            <SelectItem value='shared'>Shared (specific users)</SelectItem>
+            <SelectItem value="private">Private (only you)</SelectItem>
+            <SelectItem value="public">Public (everyone can see)</SelectItem>
+            <SelectItem value="shared">Shared (specific users)</SelectItem>
           </Select>
           <div className={styles.helpText}>
-            {visibility === 'private' &&
-              'Only you can see and edit this project'}
-            {visibility === 'public' &&
-              'Everyone can see this project, but only you can edit it'}
-            {visibility === 'shared' &&
-              'Only you and users you share with can see this project'}
+            {visibility === "private" &&
+              "Only you can see and edit this project"}
+            {visibility === "public" &&
+              "Everyone can see this project, but only you can edit it"}
+            {visibility === "shared" &&
+              "Only you and users you share with can see this project"}
           </div>
         </div>
 
-        {visibility === 'shared' && (
+        {visibility === "shared" && (
           <div className={styles.formGroup}>
             <label className={styles.label}>Shared with</label>
             {currentProject.userShares &&
@@ -280,12 +282,12 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                       {share.username}
                     </span>
                     <Button
-                      type='button'
-                      variant='icon'
+                      type="button"
+                      variant="icon"
                       className={styles.shareRemove}
                       onClick={() => handleRemoveShare(share.userId)}
                       disabled={loading}
-                      aria-label='Remove user'
+                      aria-label="Remove user"
                     >
                       ×
                     </Button>
@@ -299,17 +301,17 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
             )}
             <div className={styles.addShare}>
               <input
-                type='text'
+                type="text"
                 className={`${styles.input} ${styles.usernameInput}`}
-                placeholder='Enter username...'
+                placeholder="Enter username..."
                 value={shareUsername}
                 onChange={(e) => setShareUsername(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddShare()
+                  if (e.key === "Enter") handleAddShare();
                 }}
               />
               <Button
-                type='button'
+                type="button"
                 onClick={handleAddShare}
                 disabled={loading || !shareUsername.trim()}
               >
@@ -329,12 +331,12 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
               <span key={tag} className={styles.tag}>
                 {tag}
                 <Button
-                  type='button'
-                  variant='icon'
+                  type="button"
+                  variant="icon"
                   className={styles.tagRemove}
                   onClick={() => handleRemoveTag(tag)}
                   disabled={loading}
-                  aria-label='Remove tag'
+                  aria-label="Remove tag"
                 >
                   ×
                 </Button>
@@ -346,17 +348,17 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
         )}
         <div className={styles.tagInput}>
           <input
-            type='text'
+            type="text"
             className={`${styles.input} ${styles.tagInputField}`}
-            placeholder='Add a tag...'
+            placeholder="Add a tag..."
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleAddTag()
+              if (e.key === "Enter") handleAddTag();
             }}
           />
           <Button
-            type='button'
+            type="button"
             onClick={handleAddTag}
             disabled={loading || !newTag.trim()}
           >
@@ -368,16 +370,16 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       {/* Dependencies */}
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Dependencies</h3>
-        <div className={styles.helpText} style={{ marginBottom: '1rem' }}>
-          Use libraries via INCLUDE directives like{' '}
+        <div className={styles.helpText} style={{ marginBottom: "1rem" }}>
+          Use libraries via INCLUDE directives like{" "}
           <code>INCLUDE "/project_name/file.asm"</code>
         </div>
         {currentProject.dependencies &&
         currentProject.dependencies.length > 0 ? (
           <div className={styles.dependenciesList}>
             {currentProject.dependencies.map((depId) => {
-              const dep = projects.find((p) => p.id === depId)
-              if (!dep) return null
+              const dep = projects.find((p) => p.id === depId);
+              if (!dep) return null;
               return (
                 <div key={dep.id} className={styles.dependencyItem}>
                   <div className={styles.dependencyInfo}>
@@ -386,17 +388,17 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
                     </div>
                   </div>
                   <Button
-                    type='button'
-                    variant='icon'
+                    type="button"
+                    variant="icon"
                     className={styles.dependencyRemove}
                     onClick={() => handleRemoveDependency(dep.id)}
                     disabled={loading}
-                    aria-label='Remove dependency'
+                    aria-label="Remove dependency"
                   >
                     ×
                   </Button>
                 </div>
-              )
+              );
             })}
           </div>
         ) : (
@@ -407,7 +409,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
             <Select
               value={selectedDependency}
               onValueChange={(value) => setSelectedDependency(value)}
-              placeholder='Select a library...'
+              placeholder="Select a library..."
             >
               {availableDependencies.map((proj) => (
                 <SelectItem key={proj.id} value={proj.id}>
@@ -416,7 +418,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
               ))}
             </Select>
             <Button
-              type='button'
+              type="button"
               onClick={handleAddDependency}
               disabled={loading || !selectedDependency}
             >
@@ -431,5 +433,5 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
         )}
       </div>
     </Modal>
-  )
+  );
 }

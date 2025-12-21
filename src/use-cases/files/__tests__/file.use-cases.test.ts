@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
+import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
@@ -15,10 +16,16 @@ import { createCreateFileUseCase } from '../create-file.use-case'
 import { createDeleteFileUseCase } from '../delete-file.use-case'
 import { createUpdateFileUseCase } from '../update-file.use-case'
 
+function createTestDependencies() {
+  const repository = createInMemoryProjectsRepository()
+  const authorizationService = createMockAuthorizationService(repository)
+  return { repository, authorizationService }
+}
+
 describe('File Use Cases', () => {
   describe('CreateFileUseCase', () => {
     it('should create a new file in a project', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const mainFile = createProjectFile({
         id: 'file-1',
@@ -39,7 +46,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createCreateFileUseCase(repository)
+      const useCase = createCreateFileUseCase(repository, authorizationService)
 
       const result = await useCase.execute({
         projectId: 'proj-1',
@@ -58,7 +65,7 @@ describe('File Use Cases', () => {
     })
 
     it('should unset other main files when creating a main file', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const mainFile = createProjectFile({
         id: 'file-1',
@@ -79,7 +86,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createCreateFileUseCase(repository)
+      const useCase = createCreateFileUseCase(repository, authorizationService)
 
       await useCase.execute({
         projectId: 'proj-1',
@@ -95,8 +102,8 @@ describe('File Use Cases', () => {
     })
 
     it('should throw NotFoundError when project does not exist', async () => {
-      const repository = createInMemoryProjectsRepository()
-      const useCase = createCreateFileUseCase(repository)
+      const { repository, authorizationService } = createTestDependencies()
+      const useCase = createCreateFileUseCase(repository, authorizationService)
 
       await expect(
         useCase.execute({
@@ -107,8 +114,8 @@ describe('File Use Cases', () => {
       ).rejects.toThrow(NotFoundError)
     })
 
-    it('should throw NotFoundError when user is not owner', async () => {
-      const repository = createInMemoryProjectsRepository()
+    it('should throw UnauthorizedError when user is not owner', async () => {
+      const { repository, authorizationService } = createTestDependencies()
 
       const project = createProject({
         id: 'proj-1',
@@ -120,7 +127,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createCreateFileUseCase(repository)
+      const useCase = createCreateFileUseCase(repository, authorizationService)
 
       await expect(
         useCase.execute({
@@ -128,13 +135,13 @@ describe('File Use Cases', () => {
           userId: 'user-2', // Different user
           name: 'file.asm'
         })
-      ).rejects.toThrow(NotFoundError)
+      ).rejects.toThrow(UnauthorizedError)
     })
   })
 
   describe('UpdateFileUseCase', () => {
     it('should update file content', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const file = createProjectFile({
         id: 'file-1',
@@ -155,7 +162,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createUpdateFileUseCase(repository)
+      const useCase = createUpdateFileUseCase(repository, authorizationService)
 
       const result = await useCase.execute({
         projectId: 'proj-1',
@@ -171,7 +178,7 @@ describe('File Use Cases', () => {
     })
 
     it('should throw UnauthorizedError when user is not owner', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const file = createProjectFile({
         id: 'file-1',
@@ -192,7 +199,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createUpdateFileUseCase(repository)
+      const useCase = createUpdateFileUseCase(repository, authorizationService)
 
       await expect(
         useCase.execute({
@@ -205,7 +212,7 @@ describe('File Use Cases', () => {
     })
 
     it('should throw error when setting isMain on library project', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const file = createProjectFile({
         id: 'file-1',
@@ -227,7 +234,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createUpdateFileUseCase(repository)
+      const useCase = createUpdateFileUseCase(repository, authorizationService)
 
       await expect(
         useCase.execute({
@@ -242,7 +249,7 @@ describe('File Use Cases', () => {
 
   describe('DeleteFileUseCase', () => {
     it('should delete a file', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const file1 = createProjectFile({
         id: 'file-1',
@@ -272,7 +279,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createDeleteFileUseCase(repository)
+      const useCase = createDeleteFileUseCase(repository, authorizationService)
 
       const result = await useCase.execute({
         projectId: 'proj-1',
@@ -288,7 +295,7 @@ describe('File Use Cases', () => {
     })
 
     it('should make first file main when deleting main file', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const file1 = createProjectFile({
         id: 'file-1',
@@ -318,7 +325,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createDeleteFileUseCase(repository)
+      const useCase = createDeleteFileUseCase(repository, authorizationService)
 
       await useCase.execute({
         projectId: 'proj-1',
@@ -331,7 +338,7 @@ describe('File Use Cases', () => {
     })
 
     it('should throw error when deleting last file', async () => {
-      const repository = createInMemoryProjectsRepository()
+      const { repository, authorizationService } = createTestDependencies()
 
       const file = createProjectFile({
         id: 'file-1',
@@ -352,7 +359,7 @@ describe('File Use Cases', () => {
 
       await repository.create(project)
 
-      const useCase = createDeleteFileUseCase(repository)
+      const useCase = createDeleteFileUseCase(repository, authorizationService)
 
       await expect(
         useCase.execute({

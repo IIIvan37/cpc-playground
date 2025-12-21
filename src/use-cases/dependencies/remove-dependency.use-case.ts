@@ -1,4 +1,4 @@
-import { NotFoundError, UnauthorizedError } from '@/domain/errors'
+import type { AuthorizationService } from '@/domain/services'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 
 // ============================================================================
@@ -24,7 +24,8 @@ export type RemoveDependencyUseCase = {
 // ============================================================================
 
 export function createRemoveDependencyUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): RemoveDependencyUseCase {
   return {
     async execute(
@@ -32,18 +33,8 @@ export function createRemoveDependencyUseCase(
     ): Promise<RemoveDependencyOutput> {
       const { projectId, userId, dependencyId } = input
 
-      // Check project exists
-      const project = await projectsRepository.findById(projectId)
-      if (!project) {
-        throw new NotFoundError(`Project with id ${projectId} not found`)
-      }
-
       // Check user owns the project
-      if (project.userId !== userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to modify this project'
-        )
-      }
+      await authorizationService.mustOwnProject(projectId, userId)
 
       // Remove dependency
       await projectsRepository.removeDependency(projectId, dependencyId)

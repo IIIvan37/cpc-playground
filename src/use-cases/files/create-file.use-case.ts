@@ -5,8 +5,8 @@
 
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
-import { NotFoundError } from '@/domain/errors/domain.error'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 
@@ -27,20 +27,16 @@ export type CreateFileUseCase = {
 }
 
 export function createCreateFileUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): CreateFileUseCase {
   return {
     async execute(input: CreateFileInput): Promise<CreateFileOutput> {
       // Verify project exists and user has access
-      const project = await projectsRepository.findById(input.projectId)
-
-      if (!project) {
-        throw new NotFoundError('Project not found')
-      }
-
-      if (project.userId !== input.userId) {
-        throw new NotFoundError('Project not found')
-      }
+      const project = await authorizationService.mustOwnProject(
+        input.projectId,
+        input.userId
+      )
 
       // Create file with validated value objects
       const file = createProjectFile({

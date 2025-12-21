@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
+import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { AUTH_ERROR_MESSAGES } from '@/domain/services/authorization.service'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
@@ -9,6 +12,7 @@ import { createRemoveTagUseCase } from '../remove-tag.use-case'
 
 describe('RemoveTagUseCase', () => {
   let repository: IProjectsRepository
+  let authorizationService: AuthorizationService
   let addTagUseCase: ReturnType<typeof createAddTagUseCase>
   let removeTagUseCase: ReturnType<typeof createRemoveTagUseCase>
   const userId = 'user-123'
@@ -16,8 +20,9 @@ describe('RemoveTagUseCase', () => {
 
   beforeEach(async () => {
     repository = createInMemoryProjectsRepository()
-    addTagUseCase = createAddTagUseCase(repository)
-    removeTagUseCase = createRemoveTagUseCase(repository)
+    authorizationService = createMockAuthorizationService(repository)
+    addTagUseCase = createAddTagUseCase(repository, authorizationService)
+    removeTagUseCase = createRemoveTagUseCase(repository, authorizationService)
 
     // Create a test project
     const project = createProject({
@@ -133,7 +138,7 @@ describe('RemoveTagUseCase', () => {
         userId,
         tagIdOrName: 'some-tag'
       })
-    ).rejects.toThrow('Project with id non-existent-id not found')
+    ).rejects.toThrow(AUTH_ERROR_MESSAGES.PROJECT_NOT_FOUND)
   })
 
   it('should throw UnauthorizedError when user does not own the project', async () => {
@@ -150,7 +155,7 @@ describe('RemoveTagUseCase', () => {
         userId: 'other-user',
         tagIdOrName: tag.id
       })
-    ).rejects.toThrow('You are not authorized to modify this project')
+    ).rejects.toThrow(AUTH_ERROR_MESSAGES.UNAUTHORIZED_MODIFY)
   })
 
   it('should succeed even if tag does not exist on project', async () => {

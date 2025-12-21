@@ -6,6 +6,8 @@ import {
   ValidationError
 } from '@/domain/errors'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
+import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
@@ -16,6 +18,7 @@ describe('AddUserShareUseCase', () => {
     _addUser: (id: string, username: string) => void
     _clear: () => void
   }
+  let authorizationService: AuthorizationService
   let useCase: ReturnType<typeof createAddUserShareUseCase>
   const ownerId = 'owner-123'
   const targetUserId = 'target-456'
@@ -24,7 +27,8 @@ describe('AddUserShareUseCase', () => {
 
   beforeEach(async () => {
     repository = createInMemoryProjectsRepository() as any
-    useCase = createAddUserShareUseCase(repository)
+    authorizationService = createMockAuthorizationService(repository)
+    useCase = createAddUserShareUseCase(repository, authorizationService)
 
     repository._clear()
 

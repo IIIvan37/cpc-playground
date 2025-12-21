@@ -4,8 +4,9 @@
  */
 
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
-import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
+import { NotFoundError } from '@/domain/errors/domain.error'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 
@@ -27,22 +28,16 @@ export type UpdateFileUseCase = {
 }
 
 export function createUpdateFileUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): UpdateFileUseCase {
   return {
     async execute(input: UpdateFileInput): Promise<UpdateFileOutput> {
-      // Verify project exists and user has access
-      const project = await projectsRepository.findById(input.projectId)
-
-      if (!project) {
-        throw new NotFoundError('Project not found')
-      }
-
-      if (project.userId !== input.userId) {
-        throw new UnauthorizedError(
-          'You do not have permission to update this file'
-        )
-      }
+      // Verify user owns the project
+      const project = await authorizationService.mustOwnProject(
+        input.projectId,
+        input.userId
+      )
 
       // Library projects cannot have a main file
       if (input.isMain && project.isLibrary) {

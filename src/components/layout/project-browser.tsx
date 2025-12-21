@@ -375,41 +375,41 @@ export function ProjectBrowser() {
             )}
             {!loadingDeps && dependencyFiles.length > 0 && (
               <div className={styles.dependencies}>
-              <div className={styles.dependenciesHeader}>
-                <span>Dependencies</span>
-              </div>
-              {dependencyFiles.map((dep) => (
-                <div key={dep.id} className={styles.dependency}>
-                  <div
-                    className={styles.dependencyFolder}
-                    onClick={() => toggleDependency(dep.id)}
-                  >
-                    {expandedDeps.has(dep.id) ? (
-                      <ChevronDownIcon />
-                    ) : (
-                      <ChevronRightIcon />
-                    )}
-                    <span className={styles.dependencyName}>/{dep.name}</span>
-                    <span className={styles.readOnly}>(read-only)</span>
-                  </div>
-                  {expandedDeps.has(dep.id) && (
-                    <div className={styles.dependencyFiles}>
-                      {dep.files.map((file: any) => (
-                        <div
-                          key={file.id}
-                          className={`${styles.file} ${styles.dependencyFile}`}
-                          onClick={() => handleSelectDependencyFile(file)}
-                        >
-                          <FileIcon />
-                          <span className={styles.fileName}>{file.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className={styles.dependenciesHeader}>
+                  <span>Dependencies</span>
                 </div>
-              ))}
-            </div>
-          )}
+                {dependencyFiles.map((dep) => (
+                  <div key={dep.id} className={styles.dependency}>
+                    <div
+                      className={styles.dependencyFolder}
+                      onClick={() => toggleDependency(dep.id)}
+                    >
+                      {expandedDeps.has(dep.id) ? (
+                        <ChevronDownIcon />
+                      ) : (
+                        <ChevronRightIcon />
+                      )}
+                      <span className={styles.dependencyName}>/{dep.name}</span>
+                      <span className={styles.readOnly}>(read-only)</span>
+                    </div>
+                    {expandedDeps.has(dep.id) && (
+                      <div className={styles.dependencyFiles}>
+                        {dep.files.map((file: any) => (
+                          <div
+                            key={file.id}
+                            className={`${styles.file} ${styles.dependencyFile}`}
+                            onClick={() => handleSelectDependencyFile(file)}
+                          >
+                            <FileIcon />
+                            <span className={styles.fileName}>{file.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </>
       )}

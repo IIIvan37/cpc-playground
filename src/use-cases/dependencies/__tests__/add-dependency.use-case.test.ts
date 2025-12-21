@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { ValidationError } from '@/domain/errors'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
+import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { AUTH_ERROR_MESSAGES } from '@/domain/services/authorization.service'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
@@ -9,6 +12,7 @@ import { createAddDependencyUseCase } from '../add-dependency.use-case'
 
 describe('AddDependencyUseCase', () => {
   let repository: IProjectsRepository
+  let authorizationService: AuthorizationService
   let useCase: ReturnType<typeof createAddDependencyUseCase>
   const userId = 'user-123'
   const projectId = 'project-456'
@@ -16,7 +20,8 @@ describe('AddDependencyUseCase', () => {
 
   beforeEach(async () => {
     repository = createInMemoryProjectsRepository()
-    useCase = createAddDependencyUseCase(repository)
+    authorizationService = createMockAuthorizationService(repository)
+    useCase = createAddDependencyUseCase(repository, authorizationService)
 
     // Create a test project
     const project = createProject({
@@ -74,7 +79,7 @@ describe('AddDependencyUseCase', () => {
         userId,
         dependencyId: libraryId
       })
-    ).rejects.toThrow('Project with id non-existent not found')
+    ).rejects.toThrow(AUTH_ERROR_MESSAGES.PROJECT_NOT_FOUND)
   })
 
   it('should throw UnauthorizedError when user does not own the project', async () => {
@@ -84,7 +89,7 @@ describe('AddDependencyUseCase', () => {
         userId: 'other-user',
         dependencyId: libraryId
       })
-    ).rejects.toThrow('You are not authorized to modify this project')
+    ).rejects.toThrow(AUTH_ERROR_MESSAGES.UNAUTHORIZED_MODIFY)
   })
 
   it('should throw ValidationError when trying to depend on itself', async () => {

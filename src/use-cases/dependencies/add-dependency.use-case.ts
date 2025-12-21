@@ -1,9 +1,6 @@
-import {
-  NotFoundError,
-  UnauthorizedError,
-  ValidationError
-} from '@/domain/errors'
+import { NotFoundError, ValidationError } from '@/domain/errors'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 
 // ============================================================================
 // Types
@@ -28,24 +25,15 @@ export type AddDependencyUseCase = {
 // ============================================================================
 
 export function createAddDependencyUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): AddDependencyUseCase {
   return {
     async execute(input: AddDependencyInput): Promise<AddDependencyOutput> {
       const { projectId, userId, dependencyId } = input
 
-      // Check project exists
-      const project = await projectsRepository.findById(projectId)
-      if (!project) {
-        throw new NotFoundError(`Project with id ${projectId} not found`)
-      }
-
       // Check user owns the project
-      if (project.userId !== userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to modify this project'
-        )
-      }
+      await authorizationService.mustOwnProject(projectId, userId)
 
       // Prevent self-dependency
       if (projectId === dependencyId) {

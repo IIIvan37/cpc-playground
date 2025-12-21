@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createProject } from '../../domain/entities/project.entity'
 import { createProjectFile } from '../../domain/entities/project-file.entity'
+import { createMockAuthorizationService } from '../../domain/services/__tests__/mock-authorization.service'
 import { createFileContent } from '../../domain/value-objects/file-content.vo'
 import { createFileName } from '../../domain/value-objects/file-name.vo'
 import { createProjectName } from '../../domain/value-objects/project-name.vo'
@@ -14,7 +15,11 @@ describe('Get Project With Dependencies Use Case', () => {
 
   beforeEach(() => {
     repository = createInMemoryProjectsRepository()
-    useCase = createGetProjectWithDependenciesUseCase(repository)
+    const authorizationService = createMockAuthorizationService(repository)
+    useCase = createGetProjectWithDependenciesUseCase(
+      repository,
+      authorizationService
+    )
   })
 
   it('should get project files without dependencies', async () => {
@@ -26,6 +31,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('main.asm'),
           content: createFileContent('org 100h'),
@@ -68,6 +74,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-lib',
           name: createFileName('lib.asm'),
           content: createFileContent('lib code'),
@@ -89,6 +96,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('main.asm'),
           content: createFileContent('org 100h'),
@@ -130,6 +138,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-3',
           name: createFileName('deep.asm'),
           content: createFileContent('deep code'),
@@ -151,6 +160,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-2',
           name: createFileName('mid.asm'),
           content: createFileContent('mid code'),
@@ -172,6 +182,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('main.asm'),
           content: createFileContent('org 100h'),
@@ -208,6 +219,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('file1.asm'),
           content: createFileContent('code 1'),
@@ -227,6 +239,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-2',
           name: createFileName('file2.asm'),
           content: createFileContent('code 2'),
@@ -274,6 +287,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('private'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('main.asm'),
           content: createFileContent('org 100h'),
@@ -306,6 +320,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('private'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-lib',
           name: createFileName('lib.asm'),
           content: createFileContent('lib code'),
@@ -327,6 +342,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('main.asm'),
           content: createFileContent('org 100h'),
@@ -359,6 +375,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-lib',
           name: createFileName('lib.asm'),
           content: createFileContent('lib code'),
@@ -380,6 +397,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('public'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('main.asm'),
           content: createFileContent('org 100h'),
@@ -416,6 +434,7 @@ describe('Get Project With Dependencies Use Case', () => {
       isLibrary: true, // This is a library
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-lib',
           name: createFileName('lib.asm'),
           content: createFileContent('lib code'),
@@ -437,6 +456,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('private'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-1',
           name: createFileName('main.asm'),
           content: createFileContent('org 100h'),
@@ -464,7 +484,7 @@ describe('Get Project With Dependencies Use Case', () => {
 
   it('should resolve transitive library dependencies', async () => {
     // Arrange: test -> plus-helpers -> classic-helpers (all private libraries)
-    
+
     // classic-helpers (deepest dependency)
     const classicHelpers = createProject({
       id: 'classic-helpers',
@@ -474,6 +494,7 @@ describe('Get Project With Dependencies Use Case', () => {
       isLibrary: true,
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-classic',
           name: createFileName('classic.asm'),
           content: createFileContent('classic helper code'),
@@ -496,6 +517,7 @@ describe('Get Project With Dependencies Use Case', () => {
       isLibrary: true,
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-plus',
           name: createFileName('plus.asm'),
           content: createFileContent('plus helper code'),
@@ -517,6 +539,7 @@ describe('Get Project With Dependencies Use Case', () => {
       visibility: createVisibility('private'),
       files: [
         createProjectFile({
+          projectId: 'dummy-project',
           id: 'file-main',
           name: createFileName('main.asm'),
           content: createFileContent('main code'),
@@ -538,8 +561,8 @@ describe('Get Project With Dependencies Use Case', () => {
 
     // Assert - should have all 3 projects' files
     expect(files).toHaveLength(3)
-    expect(files.map(f => f.projectName)).toContain('test')
-    expect(files.map(f => f.projectName)).toContain('plus-helpers')
-    expect(files.map(f => f.projectName)).toContain('classic-helpers')
+    expect(files.map((f) => f.projectName)).toContain('test')
+    expect(files.map((f) => f.projectName)).toContain('plus-helpers')
+    expect(files.map((f) => f.projectName)).toContain('classic-helpers')
   })
 })

@@ -1,4 +1,5 @@
 import type { IProjectsRepository } from '../../domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 
 /**
  * File with project context for compilation
@@ -41,7 +42,8 @@ export type GetProjectWithDependenciesUseCase = {
  * Factory for creating a get project with dependencies use case
  */
 export const createGetProjectWithDependenciesUseCase = (
-  repository: IProjectsRepository
+  repository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): GetProjectWithDependenciesUseCase => {
   return {
     /**
@@ -67,13 +69,13 @@ export const createGetProjectWithDependenciesUseCase = (
           throw new Error(`Project not found: ${id}`)
         }
 
-        // Check user has access to this project
+        // Check user has access to this project as a dependency
         // User can access if: they own it, it's public, or it's a library
-        if (
-          project.userId !== userId &&
-          project.visibility.value !== 'public' &&
-          !project.isLibrary
-        ) {
+        const canAccess = await authorizationService.canAccessAsDependency(
+          id,
+          userId
+        )
+        if (!canAccess) {
           throw new Error('Access denied to project')
         }
 

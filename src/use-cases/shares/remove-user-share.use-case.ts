@@ -1,4 +1,4 @@
-import { NotFoundError, UnauthorizedError } from '@/domain/errors'
+import type { AuthorizationService } from '@/domain/services'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 
 // ============================================================================
@@ -24,24 +24,15 @@ export type RemoveUserShareUseCase = {
 // ============================================================================
 
 export function createRemoveUserShareUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): RemoveUserShareUseCase {
   return {
     async execute(input: RemoveUserShareInput): Promise<RemoveUserShareOutput> {
       const { projectId, userId, targetUserId } = input
 
-      // Check project exists
-      const project = await projectsRepository.findById(projectId)
-      if (!project) {
-        throw new NotFoundError(`Project with id ${projectId} not found`)
-      }
-
       // Check user owns the project
-      if (project.userId !== userId) {
-        throw new UnauthorizedError(
-          'You are not authorized to modify shares for this project'
-        )
-      }
+      await authorizationService.mustOwnProject(projectId, userId)
 
       // Remove user share
       await projectsRepository.removeUserShare(projectId, targetUserId)

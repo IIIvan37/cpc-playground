@@ -3,12 +3,9 @@
  * Business logic for deleting a file from a project
  */
 
-import {
-  NotFoundError,
-  UnauthorizedError,
-  ValidationError
-} from '@/domain/errors/domain.error'
+import { NotFoundError, ValidationError } from '@/domain/errors/domain.error'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
+import type { AuthorizationService } from '@/domain/services'
 
 export type DeleteFileInput = {
   projectId: string
@@ -25,22 +22,16 @@ export type DeleteFileUseCase = {
 }
 
 export function createDeleteFileUseCase(
-  projectsRepository: IProjectsRepository
+  projectsRepository: IProjectsRepository,
+  authorizationService: AuthorizationService
 ): DeleteFileUseCase {
   return {
     async execute(input: DeleteFileInput): Promise<DeleteFileOutput> {
       // Verify project exists and user has access
-      const project = await projectsRepository.findById(input.projectId)
-
-      if (!project) {
-        throw new NotFoundError('Project not found')
-      }
-
-      if (project.userId !== input.userId) {
-        throw new UnauthorizedError(
-          'You do not have permission to delete this file'
-        )
-      }
+      const project = await authorizationService.mustOwnProject(
+        input.projectId,
+        input.userId
+      )
 
       // Find the file
       const fileExists = project.files.some((f) => f.id === input.fileId)
