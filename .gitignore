@@ -35,3 +35,4 @@ coverage
 
 # Local Netlify folder
 .netlify
+deno.lock

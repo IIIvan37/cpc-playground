@@ -93,6 +93,25 @@ describe('share function', () => {
       expect(mockStore.setJSON).toHaveBeenCalledTimes(1)
     })
 
+    it('should regenerate ID if collision occurs', async () => {
+      // First call returns existing data (collision), second call returns null (available)
+      mockStore.get
+        .mockResolvedValueOnce({ code: 'existing' })
+        .mockResolvedValueOnce(null)
+
+      const request = createRequest('POST', 'https://example.com/api/share', {
+        code: 'new code'
+      })
+
+      const response = await handler(request, mockContext)
+      const body = await response.json()
+
+      expect(response.status).toBe(201)
+      expect(body.id).toBeDefined()
+      // store.get should be called twice (first collision, then available)
+      expect(mockStore.get).toHaveBeenCalledTimes(2)
+    })
+
     it('should store code with expiry metadata', async () => {
       const code = 'org #4000'
       const now = Date.now()
@@ -145,6 +164,21 @@ describe('share function', () => {
       const response = await handler(request, mockContext)
 
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    })
+
+    it('should return 500 when store.setJSON throws an error', async () => {
+      mockStore.setJSON.mockRejectedValue(new Error('Store error'))
+
+      const request = createRequest('POST', 'https://example.com/api/share', {
+        code: 'test code'
+      })
+
+      const response = await handler(request, mockContext)
+      const body = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(body.error).toBe('Failed to create share')
+      expect(body.details).toBe('Error: Store error')
     })
   })
 
@@ -222,6 +256,22 @@ describe('share function', () => {
       const response = await handler(request, mockContext)
 
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    })
+
+    it('should return 500 when store.get throws an error', async () => {
+      mockStore.get.mockRejectedValue(new Error('Store read error'))
+
+      const request = createRequest(
+        'GET',
+        'https://example.com/api/share?id=testid'
+      )
+
+      const response = await handler(request, mockContext)
+      const body = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(body.error).toBe('Failed to retrieve share')
+      expect(body.details).toBe('Error: Store read error')
     })
   })
 

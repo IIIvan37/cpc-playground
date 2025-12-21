@@ -211,6 +211,74 @@ describe('File Use Cases', () => {
       ).rejects.toThrow(UnauthorizedError)
     })
 
+    it('should throw NotFoundError when file does not exist', async () => {
+      const { repository, authorizationService } = createTestDependencies()
+
+      const file = createProjectFile({
+        id: 'file-1',
+        projectId: 'proj-1',
+        name: createFileName('main.asm'),
+        content: createFileContent(''),
+        isMain: true,
+        order: 0
+      })
+
+      const project = createProject({
+        id: 'proj-1',
+        userId: 'user-1',
+        name: createProjectName('Test Project'),
+        visibility: Visibility.PRIVATE,
+        files: [file]
+      })
+
+      await repository.create(project)
+
+      const useCase = createUpdateFileUseCase(repository, authorizationService)
+
+      await expect(
+        useCase.execute({
+          projectId: 'proj-1',
+          userId: 'user-1',
+          fileId: 'nonexistent',
+          content: 'new content'
+        })
+      ).rejects.toThrow(NotFoundError)
+    })
+
+    it('should update file name', async () => {
+      const { repository, authorizationService } = createTestDependencies()
+
+      const file = createProjectFile({
+        id: 'file-1',
+        projectId: 'proj-1',
+        name: createFileName('old-name.asm'),
+        content: createFileContent(''),
+        isMain: true,
+        order: 0
+      })
+
+      const project = createProject({
+        id: 'proj-1',
+        userId: 'user-1',
+        name: createProjectName('Test Project'),
+        visibility: Visibility.PRIVATE,
+        files: [file]
+      })
+
+      await repository.create(project)
+
+      const useCase = createUpdateFileUseCase(repository, authorizationService)
+
+      const result = await useCase.execute({
+        projectId: 'proj-1',
+        userId: 'user-1',
+        fileId: 'file-1',
+        name: 'new-name.asm'
+      })
+
+      expect(result.file.name.value).toBe('new-name.asm')
+    })
+
     it('should throw error when setting isMain on library project', async () => {
       const { repository, authorizationService } = createTestDependencies()
 
@@ -368,6 +436,48 @@ describe('File Use Cases', () => {
           fileId: 'file-1'
         })
       ).rejects.toThrow('Cannot delete the last file')
+    })
+
+    it('should throw NotFoundError when file does not exist', async () => {
+      const { repository, authorizationService } = createTestDependencies()
+
+      const file = createProjectFile({
+        id: 'file-1',
+        projectId: 'proj-1',
+        name: createFileName('main.asm'),
+        content: createFileContent(''),
+        isMain: true,
+        order: 0
+      })
+
+      const file2 = createProjectFile({
+        id: 'file-2',
+        projectId: 'proj-1',
+        name: createFileName('utils.asm'),
+        content: createFileContent(''),
+        isMain: false,
+        order: 1
+      })
+
+      const project = createProject({
+        id: 'proj-1',
+        userId: 'user-1',
+        name: createProjectName('Test Project'),
+        visibility: Visibility.PRIVATE,
+        files: [file, file2]
+      })
+
+      await repository.create(project)
+
+      const useCase = createDeleteFileUseCase(repository, authorizationService)
+
+      await expect(
+        useCase.execute({
+          projectId: 'proj-1',
+          userId: 'user-1',
+          fileId: 'nonexistent'
+        })
+      ).rejects.toThrow(NotFoundError)
     })
   })
 })

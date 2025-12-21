@@ -3,6 +3,7 @@ import { ValidationError } from '@/domain/errors/domain.error'
 import {
   canBeShared,
   createVisibility,
+  isPrivate,
   isPublic,
   isVisibility,
   VISIBILITY_VALUES,
@@ -82,6 +83,17 @@ describe('Visibility Value Object', () => {
     it('should return false for non-public visibility', () => {
       expect(isPublic(Visibility.PRIVATE)).toBe(false)
       expect(isPublic(Visibility.UNLISTED)).toBe(false)
+    })
+  })
+
+  describe('isPrivate', () => {
+    it('should return true for private visibility', () => {
+      expect(isPrivate(Visibility.PRIVATE)).toBe(true)
+    })
+
+    it('should return false for non-private visibility', () => {
+      expect(isPrivate(Visibility.PUBLIC)).toBe(false)
+      expect(isPrivate(Visibility.UNLISTED)).toBe(false)
     })
   })
 
