@@ -2,7 +2,7 @@ import { useSetAtom } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { Select, SelectItem } from '@/components/ui/select'
 import { codeAtom } from '@/store'
-import { currentFileIdAtom, currentProjectIdAtom } from '@/store/projects-v2'
+import { currentFileIdAtom, currentProjectIdAtom } from '@/store/projects'
 
 interface Example {
   name: string

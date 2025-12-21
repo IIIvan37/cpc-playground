@@ -1,115 +1,128 @@
-import { FileIcon, GearIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { ProjectSettingsModal } from '@/components/project/project-settings-modal'
-import Button from '@/components/ui/button/button'
-import { Select, SelectItem } from '@/components/ui/select/select'
+import { FileIcon, GearIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ProjectSettingsModal } from "@/components/project/project-settings-modal";
+import Button from "@/components/ui/button/button";
+import { Select, SelectItem } from "@/components/ui/select/select";
 import {
   codeAtom,
   currentProgramIdAtom,
   deleteProgramAtom,
   newProgramAtom,
   savedProgramsAtom,
-  saveProgramAtom
-} from '@/store'
-import { currentProjectAtom } from '@/store/projects-v2'
-import styles from './program-manager.module.css'
+  saveProgramAtom,
+} from "@/store";
+import {
+  currentFileIdAtom,
+  currentProjectAtom,
+  currentProjectIdAtom,
+} from "@/store/projects";
+import styles from "./program-manager.module.css";
 
 export function ProgramManager() {
-  const [code, setCode] = useAtom(codeAtom)
-  const savedPrograms = useAtomValue(savedProgramsAtom)
-  const [currentProgramId, setCurrentProgramId] = useAtom(currentProgramIdAtom)
-  const saveProgram = useSetAtom(saveProgramAtom)
-  const deleteProgram = useSetAtom(deleteProgramAtom)
-  const newProgram = useSetAtom(newProgramAtom)
+  const [code, setCode] = useAtom(codeAtom);
+  const savedPrograms = useAtomValue(savedProgramsAtom);
+  const [currentProgramId, setCurrentProgramId] = useAtom(currentProgramIdAtom);
+  const saveProgram = useSetAtom(saveProgramAtom);
+  const deleteProgram = useSetAtom(deleteProgramAtom);
+  const newProgram = useSetAtom(newProgramAtom);
+  const setCurrentProjectId = useSetAtom(currentProjectIdAtom);
+  const setCurrentFileId = useSetAtom(currentFileIdAtom);
 
-  const [showSaveDialog, setShowSaveDialog] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [programName, setProgramName] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [programName, setProgramName] = useState("");
+  const [selectKey, setSelectKey] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const currentProgram = savedPrograms.find((p) => p.id === currentProgramId)
-  const currentProject = useAtomValue(currentProjectAtom)
+  const currentProgram = savedPrograms.find((p) => p.id === currentProgramId);
+  const currentProject = useAtomValue(currentProjectAtom);
 
   // Focus input when dialog opens
   useEffect(() => {
     if (showSaveDialog && inputRef.current) {
-      inputRef.current.focus()
+      inputRef.current.focus();
     }
-  }, [showSaveDialog])
+  }, [showSaveDialog]);
 
   const handleNew = () => {
-    newProgram()
+    newProgram();
     setCode(`; New Program
 org #4000
 
 start:
     ret
-`)
-  }
+`);
+  };
 
   const handleSave = () => {
     if (currentProgram) {
       // Update existing - save directly
-      saveProgram({ name: currentProgram.name, code })
+      saveProgram({ name: currentProgram.name, code });
     } else {
       // New - show dialog to enter name
-      setProgramName('')
-      setShowSaveDialog(true)
+      setProgramName("");
+      setShowSaveDialog(true);
     }
-  }
+  };
 
   const handleSaveConfirm = () => {
     if (programName.trim()) {
       // Create new program with this name
-      setCurrentProgramId(null) // Force create new
-      saveProgram({ name: programName.trim(), code })
-      setShowSaveDialog(false)
+      setCurrentProgramId(null); // Force create new
+      saveProgram({ name: programName.trim(), code });
+      setShowSaveDialog(false);
     }
-  }
+  };
 
   const handleLoad = (id: string) => {
-    const program = savedPrograms.find((p) => p.id === id)
+    const program = savedPrograms.find((p) => p.id === id);
     if (program) {
-      setCurrentProgramId(id)
-      setCode(program.code)
+      setCurrentProgramId(id);
+      setCode(program.code);
+      // Switch to scratch mode (deselect any project)
+      setCurrentProjectId(null);
+      setCurrentFileId(null);
+      // Reset select key to allow re-selecting same value
+      setSelectKey((k) => k + 1);
     }
-  }
+  };
 
   const handleDelete = () => {
     if (currentProgramId) {
-      setShowDeleteDialog(true)
+      setShowDeleteDialog(true);
     }
-  }
+  };
 
   const handleDeleteConfirm = () => {
     if (currentProgramId) {
-      deleteProgram(currentProgramId)
-      handleNew()
+      deleteProgram(currentProgramId);
+      handleNew();
     }
-    setShowDeleteDialog(false)
-  }
+    setShowDeleteDialog(false);
+  };
 
-  const closeSaveDialog = useCallback(() => setShowSaveDialog(false), [])
-  const closeDeleteDialog = useCallback(() => setShowDeleteDialog(false), [])
+  const closeSaveDialog = useCallback(() => setShowSaveDialog(false), []);
+  const closeDeleteDialog = useCallback(() => setShowDeleteDialog(false), []);
 
   const handleOverlayKeyDown = useCallback(
     (e: React.KeyboardEvent, closeHandler: () => void) => {
-      if (e.key === 'Escape') {
-        closeHandler()
+      if (e.key === "Escape") {
+        closeHandler();
       }
     },
     []
-  )
+  );
 
   return (
     <>
       <div className={styles.programManager}>
         <Select
-          value={currentProgramId || ''}
+          key={selectKey}
+          value={undefined}
           onValueChange={handleLoad}
-          placeholder='Select program...'
+          placeholder={currentProgram?.name || "Select program..."}
         >
           {savedPrograms.map((p) => (
             <SelectItem key={p.id} value={p.id}>
@@ -119,25 +132,25 @@ start:
         </Select>
 
         <div className={styles.programActions}>
-          <Button variant='icon' onClick={handleNew} title='New program'>
+          <Button variant="icon" onClick={handleNew} title="New program">
             <PlusIcon />
           </Button>
-          <Button variant='icon' onClick={handleSave} title='Save'>
+          <Button variant="icon" onClick={handleSave} title="Save">
             <FileIcon />
           </Button>
           <Button
-            variant='icon'
+            variant="icon"
             onClick={handleDelete}
             disabled={!currentProgramId}
-            title='Delete'
+            title="Delete"
           >
             <TrashIcon />
           </Button>
           {currentProject && (
             <Button
-              variant='icon'
+              variant="icon"
               onClick={() => setShowSettings(true)}
-              title='Project Settings'
+              title="Project Settings"
             >
               <GearIcon />
             </Button>
@@ -148,33 +161,33 @@ start:
       {/* Save Dialog */}
       {showSaveDialog && (
         <div
-          role='dialog'
-          aria-modal='true'
-          aria-labelledby='save-dialog-title'
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="save-dialog-title"
           className={styles.dialogOverlay}
           onClick={closeSaveDialog}
           onKeyDown={(e) => handleOverlayKeyDown(e, closeSaveDialog)}
         >
           <div
-            role='document'
+            role="document"
             className={styles.dialog}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <h3 id='save-dialog-title' className={styles.dialogTitle}>
+            <h3 id="save-dialog-title" className={styles.dialogTitle}>
               Save Program
             </h3>
             <input
               ref={inputRef}
               className={styles.dialogInput}
-              type='text'
-              placeholder='Program name'
+              type="text"
+              placeholder="Program name"
               value={programName}
               onChange={(e) => setProgramName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSaveConfirm()}
+              onKeyDown={(e) => e.key === "Enter" && handleSaveConfirm()}
             />
             <div className={styles.dialogActions}>
-              <Button variant='secondary' onClick={closeSaveDialog}>
+              <Button variant="secondary" onClick={closeSaveDialog}>
                 Cancel
               </Button>
               <Button onClick={handleSaveConfirm}>Save</Button>
@@ -186,20 +199,20 @@ start:
       {/* Delete Dialog */}
       {showDeleteDialog && (
         <div
-          role='dialog'
-          aria-modal='true'
-          aria-labelledby='delete-dialog-title'
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-dialog-title"
           className={styles.dialogOverlay}
           onClick={closeDeleteDialog}
           onKeyDown={(e) => handleOverlayKeyDown(e, closeDeleteDialog)}
         >
           <div
-            role='document'
+            role="document"
             className={styles.dialog}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <h3 id='delete-dialog-title' className={styles.dialogTitle}>
+            <h3 id="delete-dialog-title" className={styles.dialogTitle}>
               Delete Program
             </h3>
             <p className={styles.deleteConfirm}>
@@ -207,7 +220,7 @@ start:
               &quot;?
             </p>
             <div className={styles.dialogActions}>
-              <Button variant='secondary' onClick={closeDeleteDialog}>
+              <Button variant="secondary" onClick={closeDeleteDialog}>
                 Cancel
               </Button>
               <Button onClick={handleDeleteConfirm}>Delete</Button>
@@ -220,5 +233,5 @@ start:
         <ProjectSettingsModal onClose={() => setShowSettings(false)} />
       )}
     </>
-  )
+  );
 }

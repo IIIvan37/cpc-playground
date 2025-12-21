@@ -4,8 +4,9 @@ import { codeAtom } from '@/store/editor'
 import {
   currentFileAtom,
   currentFileIdAtom,
+  currentProjectAtom,
   updateFileAtom
-} from '@/store/projects-v2'
+} from '@/store/projects'
 import { useAuth } from './use-auth'
 
 const DEBOUNCE_MS = 1000 // 1 second debounce
@@ -15,6 +16,7 @@ export function useAutoSaveFile() {
   const code = useAtomValue(codeAtom)
   const currentFileId = useAtomValue(currentFileIdAtom)
   const currentFile = useAtomValue(currentFileAtom)
+  const currentProject = useAtomValue(currentProjectAtom)
   const updateFile = useSetAtom(updateFileAtom)
 
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -31,13 +33,23 @@ export function useAutoSaveFile() {
     }
 
     // Don't save if no file is selected or code hasn't changed
-    if (!currentFileId || !currentFile || code === currentFile.content) {
+    if (
+      !currentFileId ||
+      !currentFile ||
+      !currentProject ||
+      code === currentFile.content.value
+    ) {
       return
     }
 
     // Debounce the save
     timeoutRef.current = setTimeout(() => {
-      updateFile({ fileId: currentFileId, content: code })
+      updateFile({
+        projectId: currentProject.id,
+        userId: user.id,
+        fileId: currentFileId,
+        content: code
+      })
     }, DEBOUNCE_MS)
 
     return () => {
@@ -45,5 +57,5 @@ export function useAutoSaveFile() {
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [code, currentFileId, currentFile, updateFile, user])
+  }, [code, currentFileId, currentFile, currentProject, updateFile, user])
 }

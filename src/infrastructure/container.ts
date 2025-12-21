@@ -1,0 +1,149 @@
+/**
+ * Dependency Injection Container
+ * Wires up all use-cases with their repository dependencies
+ */
+
+import {
+  type AuthorizationService,
+  createAuthorizationService
+} from '@/domain/services'
+import type {
+  AddDependencyUseCase,
+  RemoveDependencyUseCase
+} from '@/use-cases/dependencies'
+import {
+  createAddDependencyUseCase,
+  createRemoveDependencyUseCase
+} from '@/use-cases/dependencies'
+import type {
+  CreateFileUseCase,
+  DeleteFileUseCase,
+  UpdateFileUseCase
+} from '@/use-cases/files'
+import {
+  createCreateFileUseCase,
+  createDeleteFileUseCase,
+  createUpdateFileUseCase
+} from '@/use-cases/files'
+import type {
+  CreateProjectUseCase,
+  DeleteProjectUseCase,
+  GetProjectsUseCase,
+  GetProjectUseCase,
+  GetProjectWithDependenciesUseCase,
+  UpdateProjectUseCase
+} from '@/use-cases/projects'
+import {
+  createCreateProjectUseCase,
+  createDeleteProjectUseCase,
+  createGetProjectsUseCase,
+  createGetProjectUseCase,
+  createGetProjectWithDependenciesUseCase,
+  createUpdateProjectUseCase
+} from '@/use-cases/projects'
+import type {
+  AddUserShareUseCase,
+  RemoveUserShareUseCase
+} from '@/use-cases/shares'
+import {
+  createAddUserShareUseCase,
+  createRemoveUserShareUseCase
+} from '@/use-cases/shares'
+import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
+import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
+import { supabase } from '@/lib/supabase'
+import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
+
+export type Container = {
+  // Services
+  authorizationService: AuthorizationService
+  // Projects use cases
+  createProject: CreateProjectUseCase
+  getProjects: GetProjectsUseCase
+  getProject: GetProjectUseCase
+  getProjectWithDependencies: GetProjectWithDependenciesUseCase
+  updateProject: UpdateProjectUseCase
+  deleteProject: DeleteProjectUseCase
+  // Files use cases
+  createFile: CreateFileUseCase
+  updateFile: UpdateFileUseCase
+  deleteFile: DeleteFileUseCase
+  // Tags use cases
+  addTag: AddTagUseCase
+  removeTag: RemoveTagUseCase
+  // Dependencies use cases
+  addDependency: AddDependencyUseCase
+  removeDependency: RemoveDependencyUseCase
+  // Shares use cases
+  addUserShare: AddUserShareUseCase
+  removeUserShare: RemoveUserShareUseCase
+}
+
+/**
+ * Creates the application container with all dependencies wired up
+ */
+export function createContainer(): Container {
+  // Infrastructure layer - repositories
+  const projectsRepository = createSupabaseProjectsRepository(supabase)
+
+  // Domain services
+  const authorizationService = createAuthorizationService(projectsRepository)
+
+  // Use cases layer - inject repository dependencies
+  return {
+    authorizationService,
+    createProject: createCreateProjectUseCase(projectsRepository),
+    getProjects: createGetProjectsUseCase(projectsRepository),
+    getProject: createGetProjectUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    getProjectWithDependencies: createGetProjectWithDependenciesUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    updateProject: createUpdateProjectUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    deleteProject: createDeleteProjectUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    createFile: createCreateFileUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    updateFile: createUpdateFileUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    deleteFile: createDeleteFileUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    addTag: createAddTagUseCase(projectsRepository, authorizationService),
+    removeTag: createRemoveTagUseCase(projectsRepository, authorizationService),
+    addDependency: createAddDependencyUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    removeDependency: createRemoveDependencyUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    addUserShare: createAddUserShareUseCase(
+      projectsRepository,
+      authorizationService
+    ),
+    removeUserShare: createRemoveUserShareUseCase(
+      projectsRepository,
+      authorizationService
+    )
+  }
+}
+
+/**
+ * Singleton container instance for the application
+ */
+export const container = createContainer()
