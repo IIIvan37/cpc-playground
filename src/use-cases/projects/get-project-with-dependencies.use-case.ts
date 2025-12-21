@@ -68,9 +68,11 @@ export const createGetProjectWithDependenciesUseCase = (
         }
 
         // Check user has access to this project
+        // User can access if: they own it, it's public, or it's a library
         if (
           project.userId !== userId &&
-          project.visibility.value !== 'public'
+          project.visibility.value !== 'public' &&
+          !project.isLibrary
         ) {
           throw new Error('Access denied to project')
         }

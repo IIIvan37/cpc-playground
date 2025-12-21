@@ -44,38 +44,35 @@ export function createUpdateFileUseCase(
         )
       }
 
-      // Find the file to update
-      const fileIndex = project.files.findIndex((f) => f.id === input.fileId)
+      // Library projects cannot have a main file
+      if (input.isMain && project.isLibrary) {
+        throw new Error('Library projects cannot have a main file')
+      }
 
-      if (fileIndex === -1) {
+      // Find the file to update
+      const existingFile = project.files.find((f) => f.id === input.fileId)
+
+      if (!existingFile) {
         throw new NotFoundError('File not found')
       }
 
-      const existingFile = project.files[fileIndex]
+      // Build updates object
+      const updates: {
+        name?: ReturnType<typeof createFileName>
+        content?: ReturnType<typeof createFileContent>
+        isMain?: boolean
+      } = {}
+      if (input.name) updates.name = createFileName(input.name)
+      if (input.content !== undefined)
+        updates.content = createFileContent(input.content)
+      if (input.isMain !== undefined) updates.isMain = input.isMain
 
-      // Update file with new values
-      const updatedFile = {
-        ...existingFile,
-        ...(input.name && { name: createFileName(input.name) }),
-        ...(input.content !== undefined && {
-          content: createFileContent(input.content)
-        }),
-        ...(input.isMain !== undefined && { isMain: input.isMain })
-      }
-
-      // If setting as main, unset other main files
-      let updatedFiles = [...project.files]
-      if (input.isMain === true) {
-        updatedFiles = updatedFiles.map((f, idx) =>
-          idx === fileIndex ? updatedFile : { ...f, isMain: false }
-        )
-      } else {
-        updatedFiles[fileIndex] = updatedFile
-      }
-
-      // Update project
-      const updatedProject = { ...project, files: updatedFiles }
-      await projectsRepository.update(project.id, updatedProject)
+      // Update file in database (repository handles unsetting other main files)
+      const updatedFile = await projectsRepository.updateFile(
+        input.projectId,
+        input.fileId,
+        updates
+      )
 
       return { file: updatedFile }
     }

@@ -3,6 +3,7 @@ import type {
   ProjectShare,
   UserShare
 } from '../entities/project.entity'
+import type { ProjectFile } from '../entities/project-file.entity'
 
 /**
  * Tag representation from database
@@ -46,6 +47,29 @@ export interface IProjectsRepository {
    * Delete a project
    */
   delete(projectId: string): Promise<void>
+
+  // ============================================================================
+  // Files
+  // ============================================================================
+
+  /**
+   * Create a file in a project
+   */
+  createFile(projectId: string, file: ProjectFile): Promise<ProjectFile>
+
+  /**
+   * Update a file
+   */
+  updateFile(
+    projectId: string,
+    fileId: string,
+    updates: Partial<ProjectFile>
+  ): Promise<ProjectFile>
+
+  /**
+   * Delete a file
+   */
+  deleteFile(projectId: string, fileId: string): Promise<void>
 
   /**
    * Get all shares for a project

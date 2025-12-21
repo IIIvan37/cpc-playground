@@ -2,6 +2,7 @@
 // The issue is with queries that include nested relations (project_files, project_shares, etc.)
 // Need to either: 1) Generate proper types from Supabase schema, or 2) Use explicit type assertions
 // @ts-nocheck
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   Project,
   ProjectShare,
@@ -18,7 +19,7 @@ import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
-import { supabase } from '@/lib/supabase'
+import type { Database } from '@/types/database.types'
 
 /**
  * Map Supabase data to domain entity
@@ -75,36 +76,76 @@ function mapToDomain(data: any): Project {
 /**
  * Factory function that creates a Supabase implementation of IProjectsRepository
  * Pure functional approach - returns an object implementing the interface
+ * @param supabase - The Supabase client instance (injectable for testing)
  */
-export function createSupabaseProjectsRepository(): IProjectsRepository {
+export function createSupabaseProjectsRepository(
+  supabase: SupabaseClient<Database>
+): IProjectsRepository {
   return {
     async findAll(userId: string): Promise<readonly Project[]> {
-      const { data, error } = await supabase
-        .from('projects')
-        .select(
-          `
-          *,
-          project_files (*),
-          project_shares (*),
-          project_tags (
-            tags (*)
-          ),
-          project_dependencies (
-            dependency:projects!project_dependencies_dependency_id_fkey (
-              id,
-              name,
-              is_library
-            )
+      const projectSelect = `
+        *,
+        project_files (*),
+        project_shares (*),
+        project_tags (
+          tags (*)
+        ),
+        project_dependencies!project_dependencies_project_id_fkey (
+          dependency:projects!project_dependencies_dependency_id_fkey (
+            id,
+            name,
+            is_library
           )
-        `
         )
-        .or(`user_id.eq.${userId},project_shares.user_id.eq.${userId}`)
+      `
+
+      // First, get user's own projects
+      const { data: ownProjects, error: ownError } = await supabase
+        .from('projects')
+        .select(projectSelect)
+        .eq('user_id', userId)
         .order('updated_at', { ascending: false })
 
-      if (error) throw error
-      if (!data) return []
+      if (ownError) throw ownError
 
-      return data.map((p: any) => mapToDomain(p))
+      // Then, get project IDs shared with this user
+      const { data: sharedProjectIds, error: sharedIdsError } = await supabase
+        .from('project_shares')
+        .select('project_id')
+        .eq('user_id', userId)
+
+      if (sharedIdsError) throw sharedIdsError
+
+      // Fetch shared projects if any
+      let sharedProjects: any[] = []
+      if (sharedProjectIds && sharedProjectIds.length > 0) {
+        const ids = sharedProjectIds.map((s) => s.project_id)
+        const { data, error } = await supabase
+          .from('projects')
+          .select(projectSelect)
+          .in('id', ids)
+          .order('updated_at', { ascending: false })
+
+        if (error) throw error
+        sharedProjects = data || []
+      }
+
+      // Combine and deduplicate (in case user owns a project that's also shared)
+      const allProjects = [...(ownProjects || [])]
+      const ownIds = new Set(allProjects.map((p) => p.id))
+      for (const p of sharedProjects) {
+        if (!ownIds.has(p.id)) {
+          allProjects.push(p)
+        }
+      }
+
+      // Sort by updated_at descending
+      allProjects.sort(
+        (a, b) =>
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      )
+
+      return allProjects.map((p: any) => mapToDomain(p))
     },
 
     async findById(projectId: string): Promise<Project | null> {
@@ -118,7 +159,7 @@ export function createSupabaseProjectsRepository(): IProjectsRepository {
           project_tags (
             tags (*)
           ),
-          project_dependencies (
+          project_dependencies!project_dependencies_project_id_fkey (
             dependency:projects!project_dependencies_dependency_id_fkey (
               id,
               name,
@@ -150,7 +191,7 @@ export function createSupabaseProjectsRepository(): IProjectsRepository {
             project_tags (
               tags (*)
             ),
-            project_dependencies (
+            project_dependencies!project_dependencies_project_id_fkey (
               dependency:projects!project_dependencies_dependency_id_fkey (
                 id,
                 name,
@@ -244,6 +285,90 @@ export function createSupabaseProjectsRepository(): IProjectsRepository {
         .from('projects')
         .delete()
         .eq('id', projectId)
+
+      if (error) throw error
+    },
+
+    // ========================================================================
+    // Files
+    // ========================================================================
+
+    async createFile(
+      projectId: string,
+      file: ProjectFile
+    ): Promise<ProjectFile> {
+      const { data, error } = await supabase
+        .from('project_files')
+        .insert({
+          id: file.id,
+          project_id: projectId,
+          name: file.name.value,
+          content: file.content.value,
+          is_main: file.isMain,
+          order: file.order
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return {
+        id: data.id,
+        projectId: data.project_id,
+        name: createFileName(data.name),
+        content: createFileContent(data.content),
+        isMain: data.is_main,
+        order: data.order
+      }
+    },
+
+    async updateFile(
+      projectId: string,
+      fileId: string,
+      updates: Partial<ProjectFile>
+    ): Promise<ProjectFile> {
+      const dbUpdates: Record<string, unknown> = {}
+
+      if (updates.name) dbUpdates.name = updates.name.value
+      if (updates.content) dbUpdates.content = updates.content.value
+      if (updates.isMain !== undefined) dbUpdates.is_main = updates.isMain
+      if (updates.order !== undefined) dbUpdates.order = updates.order
+
+      // If setting as main, first unset all other main files
+      if (updates.isMain === true) {
+        await supabase
+          .from('project_files')
+          .update({ is_main: false })
+          .eq('project_id', projectId)
+          .neq('id', fileId)
+      }
+
+      const { data, error } = await supabase
+        .from('project_files')
+        .update(dbUpdates)
+        .eq('id', fileId)
+        .eq('project_id', projectId)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return {
+        id: data.id,
+        projectId: data.project_id,
+        name: createFileName(data.name),
+        content: createFileContent(data.content),
+        isMain: data.is_main,
+        order: data.order
+      }
+    },
+
+    async deleteFile(projectId: string, fileId: string): Promise<void> {
+      const { error } = await supabase
+        .from('project_files')
+        .delete()
+        .eq('id', fileId)
+        .eq('project_id', projectId)
 
       if (error) throw error
     },

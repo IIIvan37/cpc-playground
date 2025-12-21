@@ -5,6 +5,7 @@ import type {
   ProjectShare,
   UserShare
 } from '@/domain/entities/project.entity'
+import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import type {
   IProjectsRepository,
   Tag
@@ -191,6 +192,77 @@ export function createInMemoryProjectsRepository(): IProjectsRepository {
         projectId,
         currentDeps.filter((id) => id !== dependencyId)
       )
+    },
+
+    // ========================================================================
+    // File Operations
+    // ========================================================================
+
+    async createFile(
+      projectId: string,
+      file: ProjectFile
+    ): Promise<ProjectFile> {
+      const project = projects.get(projectId)
+      if (!project) {
+        throw new Error(`Project with id ${projectId} not found`)
+      }
+
+      // If this file is main, unset other main files
+      let updatedFiles = project.files
+      if (file.isMain) {
+        updatedFiles = project.files.map((f) => ({ ...f, isMain: false }))
+      }
+
+      const updatedProject = {
+        ...project,
+        files: [...updatedFiles, file]
+      }
+      projects.set(projectId, updatedProject)
+
+      return file
+    },
+
+    async updateFile(
+      projectId: string,
+      fileId: string,
+      updates: Partial<Pick<ProjectFile, 'name' | 'content' | 'isMain'>>
+    ): Promise<ProjectFile> {
+      const project = projects.get(projectId)
+      if (!project) {
+        throw new Error(`Project with id ${projectId} not found`)
+      }
+
+      const fileIndex = project.files.findIndex((f) => f.id === fileId)
+      if (fileIndex === -1) {
+        throw new Error(`File with id ${fileId} not found`)
+      }
+
+      // If setting as main, unset other main files first
+      let newFiles = [...project.files]
+      if (updates.isMain === true) {
+        newFiles = newFiles.map((f) => ({ ...f, isMain: false }))
+      }
+
+      const updatedFile = { ...newFiles[fileIndex], ...updates }
+      newFiles[fileIndex] = updatedFile
+
+      const updatedProject = { ...project, files: newFiles }
+      projects.set(projectId, updatedProject)
+
+      return updatedFile
+    },
+
+    async deleteFile(projectId: string, fileId: string): Promise<void> {
+      const project = projects.get(projectId)
+      if (!project) {
+        throw new Error(`Project with id ${projectId} not found`)
+      }
+
+      const updatedProject = {
+        ...project,
+        files: project.files.filter((f) => f.id !== fileId)
+      }
+      projects.set(projectId, updatedProject)
     },
 
     // ========================================================================

@@ -3,10 +3,7 @@ export type {
   AddTagOutput,
   AddTagUseCase
 } from './add-tag.use-case'
-export {
-  createAddTagUseCase,
-  InvalidTagNameError
-} from './add-tag.use-case'
+export { createAddTagUseCase } from './add-tag.use-case'
 
 export type {
   RemoveTagInput,

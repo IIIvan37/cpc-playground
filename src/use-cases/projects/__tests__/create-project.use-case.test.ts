@@ -59,4 +59,52 @@ describe('CreateProjectUseCase', () => {
 
     expect(result.project.visibility.value).toBe('private')
   })
+
+  it('should create a library project with isLibrary flag', async () => {
+    const repository = createInMemoryProjectsRepository()
+    const useCase = createCreateProjectUseCase(repository)
+
+    const result = await useCase.execute({
+      userId: 'user-1',
+      name: 'My Library',
+      isLibrary: true
+    })
+
+    expect(result.project.isLibrary).toBe(true)
+  })
+
+  it('should NOT set isMain on files for library projects', async () => {
+    const repository = createInMemoryProjectsRepository()
+    const useCase = createCreateProjectUseCase(repository)
+
+    const result = await useCase.execute({
+      userId: 'user-1',
+      name: 'My Library',
+      isLibrary: true,
+      files: [
+        { name: 'lib.asm', content: 'helper code', isMain: true }
+      ]
+    })
+
+    // Even though isMain: true was passed, library projects should not have main files
+    expect(result.project.files[0].isMain).toBe(false)
+  })
+
+  it('should set first file as main for non-library projects by default', async () => {
+    const repository = createInMemoryProjectsRepository()
+    const useCase = createCreateProjectUseCase(repository)
+
+    const result = await useCase.execute({
+      userId: 'user-1',
+      name: 'My Project',
+      isLibrary: false,
+      files: [
+        { name: 'main.asm', content: 'code' },
+        { name: 'utils.asm', content: 'utils' }
+      ]
+    })
+
+    expect(result.project.files[0].isMain).toBe(true)
+    expect(result.project.files[1].isMain).toBe(false)
+  })
 })

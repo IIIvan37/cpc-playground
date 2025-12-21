@@ -71,7 +71,8 @@ export function createCreateProjectUseCase(
             projectId: '', // Will be set after project creation
             name: fileName,
             content: fileContent,
-            isMain: fileInput.isMain ?? index === 0,
+            // Library projects don't have a main file
+            isMain: input.isLibrary ? false : (fileInput.isMain ?? index === 0),
             order: index
           })
 

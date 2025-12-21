@@ -203,6 +203,41 @@ describe('File Use Cases', () => {
         })
       ).rejects.toThrow(UnauthorizedError)
     })
+
+    it('should throw error when setting isMain on library project', async () => {
+      const repository = createInMemoryProjectsRepository()
+
+      const file = createProjectFile({
+        id: 'file-1',
+        projectId: 'proj-1',
+        name: createFileName('lib.asm'),
+        content: createFileContent(''),
+        isMain: false,
+        order: 0
+      })
+
+      const project = createProject({
+        id: 'proj-1',
+        userId: 'user-1',
+        name: createProjectName('My Library'),
+        visibility: Visibility.PRIVATE,
+        isLibrary: true,
+        files: [file]
+      })
+
+      await repository.create(project)
+
+      const useCase = createUpdateFileUseCase(repository)
+
+      await expect(
+        useCase.execute({
+          projectId: 'proj-1',
+          userId: 'user-1',
+          fileId: 'file-1',
+          isMain: true
+        })
+      ).rejects.toThrow('Library projects cannot have a main file')
+    })
   })
 
   describe('DeleteFileUseCase', () => {

@@ -404,4 +404,142 @@ describe('Get Project With Dependencies Use Case', () => {
     expect(files[0].projectName).toBe('My Project')
     expect(files[1].projectName).toBe('Public Library')
   })
+
+  it('should allow access to private library dependencies (isLibrary=true)', async () => {
+    // Arrange
+    // Private library owned by someone else - should still be accessible
+    const library = createProject({
+      id: 'lib-1',
+      userId: 'owner',
+      name: createProjectName('Private Library'),
+      visibility: createVisibility('private'),
+      isLibrary: true, // This is a library
+      files: [
+        createProjectFile({
+          id: 'file-lib',
+          name: createFileName('lib.asm'),
+          content: createFileContent('lib code'),
+          isMain: false, // Libraries don't have main files
+          order: 0
+        })
+      ],
+      dependencies: [],
+      tags: [],
+      shares: []
+    })
+    await repository.create(library)
+
+    // User's project with private library dependency
+    const project = createProject({
+      id: 'project-1',
+      userId: 'user-1',
+      name: createProjectName('My Project'),
+      visibility: createVisibility('private'),
+      files: [
+        createProjectFile({
+          id: 'file-1',
+          name: createFileName('main.asm'),
+          content: createFileContent('org 100h'),
+          isMain: true,
+          order: 0
+        })
+      ],
+      dependencies: ['lib-1'],
+      tags: [],
+      shares: []
+    })
+    await repository.create(project)
+
+    // Act
+    const { files } = await useCase.execute({
+      projectId: 'project-1',
+      userId: 'user-1'
+    })
+
+    // Assert - should succeed because lib-1 is a library (isLibrary=true)
+    expect(files).toHaveLength(2)
+    expect(files[0].projectName).toBe('My Project')
+    expect(files[1].projectName).toBe('Private Library')
+  })
+
+  it('should resolve transitive library dependencies', async () => {
+    // Arrange: test -> plus-helpers -> classic-helpers (all private libraries)
+    
+    // classic-helpers (deepest dependency)
+    const classicHelpers = createProject({
+      id: 'classic-helpers',
+      userId: 'lib-author',
+      name: createProjectName('classic-helpers'),
+      visibility: createVisibility('private'),
+      isLibrary: true,
+      files: [
+        createProjectFile({
+          id: 'file-classic',
+          name: createFileName('classic.asm'),
+          content: createFileContent('classic helper code'),
+          isMain: false,
+          order: 0
+        })
+      ],
+      dependencies: [],
+      tags: [],
+      shares: []
+    })
+    await repository.create(classicHelpers)
+
+    // plus-helpers depends on classic-helpers
+    const plusHelpers = createProject({
+      id: 'plus-helpers',
+      userId: 'lib-author',
+      name: createProjectName('plus-helpers'),
+      visibility: createVisibility('private'),
+      isLibrary: true,
+      files: [
+        createProjectFile({
+          id: 'file-plus',
+          name: createFileName('plus.asm'),
+          content: createFileContent('plus helper code'),
+          isMain: false,
+          order: 0
+        })
+      ],
+      dependencies: ['classic-helpers'],
+      tags: [],
+      shares: []
+    })
+    await repository.create(plusHelpers)
+
+    // test project depends on plus-helpers
+    const testProject = createProject({
+      id: 'test-project',
+      userId: 'user-1',
+      name: createProjectName('test'),
+      visibility: createVisibility('private'),
+      files: [
+        createProjectFile({
+          id: 'file-main',
+          name: createFileName('main.asm'),
+          content: createFileContent('main code'),
+          isMain: true,
+          order: 0
+        })
+      ],
+      dependencies: ['plus-helpers'],
+      tags: [],
+      shares: []
+    })
+    await repository.create(testProject)
+
+    // Act
+    const { files } = await useCase.execute({
+      projectId: 'test-project',
+      userId: 'user-1'
+    })
+
+    // Assert - should have all 3 projects' files
+    expect(files).toHaveLength(3)
+    expect(files.map(f => f.projectName)).toContain('test')
+    expect(files.map(f => f.projectName)).toContain('plus-helpers')
+    expect(files.map(f => f.projectName)).toContain('classic-helpers')
+  })
 })

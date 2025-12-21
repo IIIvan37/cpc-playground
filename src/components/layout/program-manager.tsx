@@ -12,7 +12,11 @@ import {
   savedProgramsAtom,
   saveProgramAtom
 } from '@/store'
-import { currentProjectAtom } from '@/store/projects'
+import {
+  currentFileIdAtom,
+  currentProjectAtom,
+  currentProjectIdAtom
+} from '@/store/projects'
 import styles from './program-manager.module.css'
 
 export function ProgramManager() {
@@ -22,11 +26,14 @@ export function ProgramManager() {
   const saveProgram = useSetAtom(saveProgramAtom)
   const deleteProgram = useSetAtom(deleteProgramAtom)
   const newProgram = useSetAtom(newProgramAtom)
+  const setCurrentProjectId = useSetAtom(currentProjectIdAtom)
+  const setCurrentFileId = useSetAtom(currentFileIdAtom)
 
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [programName, setProgramName] = useState('')
+  const [selectKey, setSelectKey] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const currentProgram = savedPrograms.find((p) => p.id === currentProgramId)
@@ -74,6 +81,11 @@ start:
     if (program) {
       setCurrentProgramId(id)
       setCode(program.code)
+      // Switch to scratch mode (deselect any project)
+      setCurrentProjectId(null)
+      setCurrentFileId(null)
+      // Reset select key to allow re-selecting same value
+      setSelectKey((k) => k + 1)
     }
   }
 
@@ -107,9 +119,10 @@ start:
     <>
       <div className={styles.programManager}>
         <Select
-          value={currentProgramId || ''}
+          key={selectKey}
+          value={undefined}
           onValueChange={handleLoad}
-          placeholder='Select program...'
+          placeholder={currentProgram?.name || 'Select program...'}
         >
           {savedPrograms.map((p) => (
             <SelectItem key={p.id} value={p.id}>

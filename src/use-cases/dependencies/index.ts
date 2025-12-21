@@ -3,12 +3,7 @@ export type {
   AddDependencyOutput,
   AddDependencyUseCase
 } from './add-dependency.use-case'
-export {
-  createAddDependencyUseCase,
-  DependencyNotFoundError,
-  DependencyNotLibraryError,
-  SelfDependencyError
-} from './add-dependency.use-case'
+export { createAddDependencyUseCase } from './add-dependency.use-case'
 
 export type {
   RemoveDependencyInput,

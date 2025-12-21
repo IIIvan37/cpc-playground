@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import styles from './select.module.css'
 
 type Props = {
-  readonly value: string
+  readonly value: string | undefined
   readonly onValueChange: (value: string) => void
   readonly children: ReactNode
   readonly disabled?: boolean
@@ -21,7 +21,7 @@ export function Select({
 }: Props) {
   return (
     <RadixSelect.Root
-      value={value}
+      value={value || undefined}
       onValueChange={onValueChange}
       disabled={disabled}
     >

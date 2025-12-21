@@ -33,10 +33,18 @@ export function useUserProfile() {
           .from('user_profiles')
           .select('*')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if (error) throw error
-        if (!data) throw new Error('Profile not found')
+
+        // Profile doesn't exist - user might be orphaned after db reset
+        if (!data) {
+          console.warn(
+            'User profile not found. Please sign out and sign in again.'
+          )
+          setProfile(null)
+          return
+        }
 
         setProfile({
           id: data.id,

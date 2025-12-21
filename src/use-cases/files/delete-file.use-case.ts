@@ -54,20 +54,28 @@ export function createDeleteFileUseCase(
         throw new ValidationError('Cannot delete the last file in a project')
       }
 
-      // Remove the file
-      const updatedFiles = project.files.filter((f) => f.id !== input.fileId)
+      // Check if we're deleting the main file
+      const fileToDelete = project.files.find((f) => f.id === input.fileId)
+      const isDeletingMainFile = fileToDelete?.isMain
 
-      // If we deleted the main file, make the first file main
-      const hadMainFile = project.files.some((f) => f.isMain)
-      const hasMainFileAfter = updatedFiles.some((f) => f.isMain)
+      // Delete the file from database
+      await projectsRepository.deleteFile(input.projectId, input.fileId)
 
-      if (hadMainFile && !hasMainFileAfter && updatedFiles.length > 0) {
-        updatedFiles[0] = { ...updatedFiles[0], isMain: true }
+      // If we deleted the main file, make another file main
+      if (isDeletingMainFile) {
+        const remainingFiles = project.files.filter(
+          (f) => f.id !== input.fileId
+        )
+        if (remainingFiles.length > 0) {
+          await projectsRepository.updateFile(
+            input.projectId,
+            remainingFiles[0].id,
+            {
+              isMain: true
+            }
+          )
+        }
       }
-
-      // Update project
-      const updatedProject = { ...project, files: updatedFiles }
-      await projectsRepository.update(project.id, updatedProject)
 
       return { success: true }
     }

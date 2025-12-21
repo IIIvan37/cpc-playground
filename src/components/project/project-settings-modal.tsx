@@ -66,6 +66,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
         isLibrary: isLibrary
       })
       await fetchProjects(user.id)
+      onClose()
     } catch (error) {
       console.error('Error updating project:', error)
       alert('Error updating project')

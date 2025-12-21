@@ -17,7 +17,7 @@ if ! command -v pnpm >/dev/null 2>&1; then
 fi
 
 echo "🔍 Running TypeScript checks..."
-if ! npx tsc --noEmit; then
+if ! node scripts/typecheck-comprehensive.js; then
   echo "❌ TypeScript check failed!"
   exit 1
 fi
@@ -25,6 +25,12 @@ fi
 echo "🔍 Running biome checks..."
 if ! npx @biomejs/biome check . --write --error-on-warnings; then
   echo "❌ Biome check failed!"
+  exit 1
+fi
+
+echo "🔍 Running barrel exports check..."
+if ! node scripts/check-barrel-exports.js; then
+  echo "❌ Barrel exports check failed!"
   exit 1
 fi
 

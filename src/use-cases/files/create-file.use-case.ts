@@ -52,20 +52,28 @@ export function createCreateFileUseCase(
         order: project.files.length
       })
 
-      // If this is the main file, unset other main files
-      let updatedFiles = project.files
+      // If this is the main file, unset other main files first
       if (file.isMain) {
-        updatedFiles = project.files.map((f) => ({ ...f, isMain: false }))
+        for (const existingFile of project.files) {
+          if (existingFile.isMain) {
+            await projectsRepository.updateFile(
+              input.projectId,
+              existingFile.id,
+              {
+                isMain: false
+              }
+            )
+          }
+        }
       }
 
-      // Add the new file
-      updatedFiles = [...updatedFiles, file]
+      // Create the file in the database
+      const createdFile = await projectsRepository.createFile(
+        input.projectId,
+        file
+      )
 
-      // Update project with new file
-      const updatedProject = { ...project, files: updatedFiles }
-      await projectsRepository.update(project.id, updatedProject)
-
-      return { file }
+      return { file: createdFile }
     }
   }
 }

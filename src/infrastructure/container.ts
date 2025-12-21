@@ -47,6 +47,7 @@ import {
 } from '@/use-cases/shares'
 import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
 import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
+import { supabase } from '@/lib/supabase'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
 
 export type Container = {
@@ -77,7 +78,7 @@ export type Container = {
  */
 export function createContainer(): Container {
   // Infrastructure layer - repositories
-  const projectsRepository = createSupabaseProjectsRepository()
+  const projectsRepository = createSupabaseProjectsRepository(supabase)
 
   // Use cases layer - inject repository dependencies
   return {
