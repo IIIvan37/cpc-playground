@@ -6,47 +6,45 @@ A web-based Amstrad CPC development environment with integrated assembler and em
 
 ## Features
 
-- **Code Editor** - Write Z80 assembly code with line numbers and error highlighting
-- **RASM Assembler** - Compile your code to SNA snapshots using [RASM](http://rasm.music.world) (WebAssembly)
-- **CPCEC Emulator** - Run your programs instantly in the [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) emulator (WebAssembly)
-- **CPC Plus Support** - Full support for CPC Plus hardware features (sprites, enhanced palette, DMA...)
-- **Examples** - Load ready-to-run examples including classic CPC and Plus demos
-- **Console Output** - View assembler output, errors with clickable line references
+- **Code Editor** - Write Z80 assembly code with syntax highlighting and error markers
+- **RASM Assembler** - Compile your code using [RASM](http://rasm.music.world) (WebAssembly)
+- **CPCEC Emulator** - Run programs instantly in [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) (WebAssembly)
+- **CPC Plus Support** - Full support for Plus hardware (sprites, enhanced palette, DMA)
+- **Multi-file Projects** - Organize code with includes and dependencies
+- **Cloud Storage** - Save projects with Supabase authentication
+- **Project Libraries** - Create reusable code libraries
+- **Sharing** - Public, private, or shared with specific users
 
 ## Quick Start
-
-1. Write your Z80 assembly code in the editor
-2. Click **Run** (or press the shortcut) to compile and execute
-3. The emulator shows your program running
-4. Click on the emulator canvas to capture keyboard input
-
-## Examples
-
-The playground includes several examples:
-- **Hello World** - Basic text output
-- **Serval Classic Raster Overscan** - Raster effects on classic CPC
-- **Serval Plus Raster Overscan** - Raster effects using CPC Plus hardware
-
-## Tech Stack
-
-- React + TypeScript + Vite
-- [RASM](http://rasm.music.world) - Z80 cross-assembler (compiled to WebAssembly)
-- [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) - Amstrad CPC emulator (compiled to WebAssembly)
-- Jotai for state management
-- Deployed on Netlify
-
-## Development
 
 ```bash
 # Install dependencies
 pnpm install
 
+# Start local Supabase
+supabase start
+
 # Start dev server
 pnpm dev
-
-# Build for production
-pnpm build
 ```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/architecture.md) | Clean Architecture, domain model, patterns |
+| [Setup Guide](docs/setup.md) | Installation, Supabase, environments |
+| [Features](docs/features.md) | Projects, sharing, tags, dependencies, includes |
+| [Development](docs/development.md) | CLI commands, migrations, testing |
+
+## Tech Stack
+
+- **Frontend**: React + TypeScript + Vite
+- **State**: Jotai
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **Assembler**: [RASM](http://rasm.music.world) (WebAssembly)
+- **Emulator**: [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) (WebAssembly)
+- **Hosting**: Netlify
 
 ## Credits
 
@@ -55,6 +53,4 @@ pnpm build
 
 ## License
 
-This project is licensed under the **GNU General Public License v3.0** (GPL-3.0), as it incorporates CPCEC which is distributed under GPL-3.0.
-
-See [LICENSE](LICENSE) for details.
+GNU General Public License v3.0 (GPL-3.0) - See [LICENSE](LICENSE)
