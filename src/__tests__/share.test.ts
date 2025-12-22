@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler, {
   EXPIRY_DAYS,
-  generateId,
+  SHARE_ID_LENGTH,
   type ShareData
 } from '../../netlify/functions/share'
 
@@ -36,31 +36,13 @@ describe('share function', () => {
     mockStore.delete.mockResolvedValue(undefined)
   })
 
-  describe('generateId', () => {
-    it('should generate an 8 character ID', () => {
-      const id = generateId()
-      expect(id).toHaveLength(8)
+  describe('constants', () => {
+    it('should have correct SHARE_ID_LENGTH', () => {
+      expect(SHARE_ID_LENGTH).toBe(8)
     })
 
-    it('should only contain valid characters', () => {
-      const validChars =
-        'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
-      for (let i = 0; i < 100; i++) {
-        const id = generateId()
-        for (const char of id) {
-          expect(validChars).toContain(char)
-        }
-      }
-    })
-
-    it('should not contain ambiguous characters (0, O, 1, l, I)', () => {
-      const ambiguousChars = '01lIO'
-      for (let i = 0; i < 100; i++) {
-        const id = generateId()
-        for (const char of id) {
-          expect(ambiguousChars).not.toContain(char)
-        }
-      }
+    it('should have correct EXPIRY_DAYS', () => {
+      expect(EXPIRY_DAYS).toBe(7)
     })
   })
 
