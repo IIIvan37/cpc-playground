@@ -59,7 +59,7 @@ start:
   const handleSave = () => {
     if (currentProgram) {
       // Update existing - save directly
-      saveProgram({ name: currentProgram.name, code })
+      saveProgram({ name: currentProgram.name.value, code })
     } else {
       // New - show dialog to enter name
       setProgramName('')
@@ -122,11 +122,11 @@ start:
           key={selectKey}
           value={undefined}
           onValueChange={handleLoad}
-          placeholder={currentProgram?.name || 'Select program...'}
+          placeholder={currentProgram?.name.value || 'Select program...'}
         >
           {savedPrograms.map((p) => (
             <SelectItem key={p.id} value={p.id}>
-              {p.name}
+              {p.name.value}
             </SelectItem>
           ))}
         </Select>
@@ -216,7 +216,7 @@ start:
               Delete Program
             </h3>
             <p className={styles.deleteConfirm}>
-              Are you sure you want to delete &quot;{currentProgram?.name}
+              Are you sure you want to delete &quot;{currentProgram?.name.value}
               &quot;?
             </p>
             <div className={styles.dialogActions}>

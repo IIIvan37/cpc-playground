@@ -87,6 +87,22 @@ export const PROJECT_ERRORS = {
 } as const
 
 // ============================================================================
+// Program Name Validation
+// ============================================================================
+export const PROGRAM_NAME_ERRORS = {
+  EMPTY: 'Program name cannot be empty',
+  TOO_LONG: (maxLength: number) =>
+    `Program name must be less than ${maxLength} characters long`
+} as const
+
+// ============================================================================
+// Program Operations
+// ============================================================================
+export const PROGRAM_ERRORS = {
+  NOT_FOUND: 'Program not found'
+} as const
+
+// ============================================================================
 // Authorization
 // ============================================================================
 export const AUTH_ERRORS = {

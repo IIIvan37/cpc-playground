@@ -1,5 +1,133 @@
-import { atom } from 'jotai'
+/**
+ * Programs Store - Clean Architecture version
+ * Uses use-cases with localStorage repository
+ */
 
+import { atom } from 'jotai'
+import type { Program } from '@/domain/entities/program.entity'
+import { programsContainer } from '@/infrastructure/programs-container'
+
+// ============================================================================
+// State Atoms
+// ============================================================================
+
+export const savedProgramsAtom = atom<Program[]>([])
+export const currentProgramIdAtom = atom<string | null>(null)
+
+// ============================================================================
+// Derived Atoms
+// ============================================================================
+
+export const currentProgramAtom = atom((get) => {
+  const programs = get(savedProgramsAtom)
+  const currentId = get(currentProgramIdAtom)
+  return programs.find((p) => p.id === currentId) ?? null
+})
+
+// ============================================================================
+// Action Atoms
+// ============================================================================
+
+/**
+ * Load all programs from storage
+ */
+export const fetchProgramsAtom = atom(null, async (_get, set) => {
+  try {
+    const { programs } = await programsContainer.getPrograms.execute()
+    set(savedProgramsAtom, [...programs])
+  } catch (error) {
+    console.error('Failed to fetch programs:', error)
+    throw error
+  }
+})
+
+/**
+ * Save a program (create or update)
+ */
+export const saveProgramAtom = atom(
+  null,
+  async (get, set, { name, code }: { name: string; code: string }) => {
+    try {
+      const currentId = get(currentProgramIdAtom)
+
+      const { program } = await programsContainer.saveProgram.execute({
+        id: currentId ?? undefined,
+        name,
+        code
+      })
+
+      // Update local state
+      set(savedProgramsAtom, (prev) => {
+        const index = prev.findIndex((p) => p.id === program.id)
+        if (index >= 0) {
+          const updated = [...prev]
+          updated[index] = program
+          return updated
+        }
+        return [...prev, program]
+      })
+
+      // Set current ID if new program
+      if (!currentId) {
+        set(currentProgramIdAtom, program.id)
+      }
+
+      return program
+    } catch (error) {
+      console.error('Failed to save program:', error)
+      throw error
+    }
+  }
+)
+
+/**
+ * Load a program by ID
+ */
+export const loadProgramAtom = atom(null, async (_get, set, id: string) => {
+  try {
+    const { program } = await programsContainer.loadProgram.execute({ id })
+    set(currentProgramIdAtom, id)
+    return program
+  } catch (error) {
+    console.error('Failed to load program:', error)
+    throw error
+  }
+})
+
+/**
+ * Delete a program
+ */
+export const deleteProgramAtom = atom(null, async (get, set, id: string) => {
+  try {
+    await programsContainer.deleteProgram.execute({ id })
+
+    // Update local state
+    set(savedProgramsAtom, (prev) => prev.filter((p) => p.id !== id))
+
+    // Clear current ID if deleted
+    if (get(currentProgramIdAtom) === id) {
+      set(currentProgramIdAtom, null)
+    }
+  } catch (error) {
+    console.error('Failed to delete program:', error)
+    throw error
+  }
+})
+
+/**
+ * Create a new (empty) program
+ */
+export const newProgramAtom = atom(null, (_get, set) => {
+  set(currentProgramIdAtom, null)
+})
+
+// ============================================================================
+// Legacy compatibility - re-export for old consumers
+// ============================================================================
+
+/**
+ * @deprecated Use Program entity directly
+ */
 export interface SavedProgram {
   id: string
   name: string
@@ -8,83 +136,23 @@ export interface SavedProgram {
   updatedAt: string
 }
 
-const STORAGE_KEY = 'cpc-playground-programs'
-
-// Load programs from localStorage
-function loadPrograms(): SavedProgram[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch {
-    return []
+/**
+ * Convert Program entity to legacy SavedProgram format
+ */
+export function toLegacySavedProgram(program: Program): SavedProgram {
+  return {
+    id: program.id,
+    name: program.name.value,
+    code: program.code,
+    createdAt: program.createdAt.toISOString(),
+    updatedAt: program.updatedAt.toISOString()
   }
 }
 
-// Save programs to localStorage
-function savePrograms(programs: SavedProgram[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(programs))
-}
-
-// Atom with localStorage persistence
-export const savedProgramsAtom = atom<SavedProgram[]>(loadPrograms())
-
-// Current program ID being edited
-export const currentProgramIdAtom = atom<string | null>(null)
-
-// Actions
-export const saveProgramAtom = atom(
-  null,
-  (get, set, { name, code }: { name: string; code: string }) => {
-    const programs = get(savedProgramsAtom)
-    const currentId = get(currentProgramIdAtom)
-    const now = new Date().toISOString()
-
-    if (currentId) {
-      // Update existing
-      const updated = programs.map((p) =>
-        p.id === currentId ? { ...p, name, code, updatedAt: now } : p
-      )
-      set(savedProgramsAtom, updated)
-      savePrograms(updated)
-    } else {
-      // Create new
-      const newProgram: SavedProgram = {
-        id: crypto.randomUUID(),
-        name,
-        code,
-        createdAt: now,
-        updatedAt: now
-      }
-      const updated = [...programs, newProgram]
-      set(savedProgramsAtom, updated)
-      set(currentProgramIdAtom, newProgram.id)
-      savePrograms(updated)
-    }
-  }
-)
-
-export const loadProgramAtom = atom(null, (get, set, id: string) => {
+/**
+ * @deprecated Use savedProgramsAtom with Program entity
+ */
+export const legacySavedProgramsAtom = atom((get) => {
   const programs = get(savedProgramsAtom)
-  const program = programs.find((p) => p.id === id)
-  if (program) {
-    set(currentProgramIdAtom, id)
-    return program
-  }
-  return null
-})
-
-export const deleteProgramAtom = atom(null, (get, set, id: string) => {
-  const programs = get(savedProgramsAtom)
-  const currentId = get(currentProgramIdAtom)
-  const updated = programs.filter((p) => p.id !== id)
-  set(savedProgramsAtom, updated)
-  savePrograms(updated)
-
-  if (currentId === id) {
-    set(currentProgramIdAtom, null)
-  }
-})
-
-export const newProgramAtom = atom(null, (_get, set) => {
-  set(currentProgramIdAtom, null)
+  return programs.map(toLegacySavedProgram)
 })

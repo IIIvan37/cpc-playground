@@ -1,4 +1,5 @@
 import { atom } from 'jotai'
+import { rasmErrorParser } from '@/infrastructure/assemblers/rasm-error-parser'
 
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly
@@ -55,30 +56,13 @@ export const consoleMessagesAtom = atom<ConsoleMessage[]>([])
 
 let messageCounter = 0
 
-// Parse RASM error format: [/input.asm:23] -> extracts line 23
-// RASM adds offset lines for directives we prepend:
-// - SNA: BUILDSNA + BANKSET = 2 lines
-// - DSK: blank line + __cpc_playground_start equ = 2 lines (source starts at line 3)
-const RASM_LINE_OFFSET = 2
-
-function extractLineNumber(text: string): number | undefined {
-  // Match patterns like [/input.asm:23] or [input.asm:23]
-  const match = text.match(/\[\/?\w+\.asm:(\d+)\]/)
-  if (match) {
-    const rawLine = Number.parseInt(match[1], 10)
-    // Subtract the offset from RASM directives we add
-    return Math.max(1, rawLine - RASM_LINE_OFFSET)
-  }
-  return undefined
-}
-
 // Actions
 export const addConsoleMessageAtom = atom(
   null,
   (get, set, message: Omit<ConsoleMessage, 'timestamp' | 'id' | 'line'>) => {
     const messages = get(consoleMessagesAtom)
     messageCounter += 1
-    const line = extractLineNumber(message.text)
+    const line = rasmErrorParser.extractLineNumber(message.text)
 
     // If we extracted a line number, it's an error line - add to highlights
     // (RASM outputs errors to stdout, so we can't rely on message type)
