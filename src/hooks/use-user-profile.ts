@@ -1,41 +1,21 @@
 /**
  * User profile hook
- * Fetches and updates user profile from Supabase
- *
- * Note: This could be migrated to Clean Architecture with:
- * - UserProfile entity in domain/entities
- * - IUserProfilesRepository in domain/repositories
- * - GetUserProfile and UpdateUsername use-cases
+ * Uses Clean Architecture use-cases for profile management
  */
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import type { Database } from '@/types/database.types'
+import { useCallback, useEffect, useState } from 'react'
+import type { UserProfile } from '@/domain/entities/user.entity'
+import { container } from '@/infrastructure/container'
 import { useAuth } from './use-auth'
 
-type UserProfileRow = Database['public']['Tables']['user_profiles']['Row']
-type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
-
-export interface UserProfile {
-  id: string
-  username: string
-  createdAt: string
-  updatedAt: string
-}
-
-function mapToUserProfile(row: UserProfileRow): UserProfile {
-  return {
-    id: row.id,
-    username: row.username,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
-  }
-}
+export type { UserProfile }
 
 export function useUserProfile() {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+
+  const { getUserProfile, updateUserProfile } = container
 
   useEffect(() => {
     if (!user) {
@@ -48,16 +28,11 @@ export function useUserProfile() {
       if (!user) return
       try {
         setLoading(true)
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
+        const { profile: fetchedProfile } = await getUserProfile.execute({
+          userId: user.id
+        })
 
-        if (error) throw error
-
-        // Profile doesn't exist - user might be orphaned after db reset
-        if (!data) {
+        if (!fetchedProfile) {
           console.warn(
             'User profile not found. Please sign out and sign in again.'
           )
@@ -65,7 +40,7 @@ export function useUserProfile() {
           return
         }
 
-        setProfile(mapToUserProfile(data))
+        setProfile(fetchedProfile)
       } catch (err) {
         setError(
           err instanceof Error ? err : new Error('Failed to fetch profile')
@@ -76,46 +51,30 @@ export function useUserProfile() {
     }
 
     fetchProfile()
-  }, [user])
+  }, [user, getUserProfile])
 
-  const updateUsername = async (newUsername: string) => {
-    if (!user) throw new Error('Not authenticated')
+  const updateUsername = useCallback(
+    async (newUsername: string) => {
+      if (!user) throw new Error('Not authenticated')
 
-    // Normalize username to lowercase
-    const normalizedUsername = newUsername.toLowerCase().trim()
+      // Use-case handles validation and normalization via Username value object
+      const { error: updateError } = await updateUserProfile.execute({
+        userId: user.id,
+        username: newUsername
+      })
 
-    // Validate username format (3-30 chars, lowercase letters, numbers, underscores, hyphens)
-    if (normalizedUsername.length < 3 || normalizedUsername.length > 30) {
-      throw new Error('Username must be between 3 and 30 characters')
-    }
-    if (!/^[a-z0-9_-]+$/.test(normalizedUsername)) {
-      throw new Error(
-        'Username can only contain letters, numbers, underscores and hyphens'
-      )
-    }
-
-    try {
-      const updateData: UserProfileUpdate = {
-        username: normalizedUsername,
-        updated_at: new Date().toISOString()
-      }
-      const { error } = await supabase
-        .from('user_profiles')
-        .update(updateData)
-        .eq('id', user.id)
-
-      if (error) {
-        console.error('Supabase error:', error)
-        throw new Error(error.message || 'Failed to update username')
+      if (updateError) {
+        throw updateError
       }
 
+      // Update local state with normalized username
+      const normalizedUsername = newUsername.toLowerCase().trim()
       setProfile((prev) =>
         prev ? { ...prev, username: normalizedUsername } : null
       )
-    } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to update username')
-    }
-  }
+    },
+    [user, updateUserProfile]
+  )
 
   return {
     profile,

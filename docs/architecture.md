@@ -14,7 +14,7 @@ This project follows **Clean Architecture** principles with TypeScript-idiomatic
 |-----------|--------|----------|
 | **Domain Layer** | ✅ Complete | 100% |
 | └─ Entities (Project, ProjectFile, User) | ✅ | 100% |
-| └─ Value Objects (ProjectName, FileName, Visibility...) | ✅ | 100% |
+| └─ Value Objects (ProjectName, FileName, Username...) | ✅ | 100% |
 | └─ Repository Interfaces | ✅ | 100% |
 | └─ AuthorizationService | ✅ | 100% |
 | └─ Domain Errors | ✅ | 100% |
@@ -24,26 +24,24 @@ This project follows **Clean Architecture** principles with TypeScript-idiomatic
 | **Use Cases - Dependencies** | ✅ Complete | 100% |
 | **Use Cases - Shares** | ✅ Complete | 100% |
 | **Use Cases - Auth** | ✅ Complete | 100% |
-| **Infrastructure** | ✅ Complete | ~85% |
-| └─ SupabaseProjectsRepository | ✅ | 73% |
+| **Infrastructure** | ✅ Complete | ~91% |
+| └─ SupabaseProjectsRepository | ✅ | 91% |
 | └─ SupabaseAuthRepository | ✅ | 100% |
 | └─ Container (DI) | ✅ | - |
 | **Hooks - useAuth** | ✅ Uses Clean Architecture | - |
 | **Hooks - useProjects** | ✅ Uses useUseCase | - |
-| **Global Test Coverage** | ✅ | **94.84%** |
+| **Hooks - useUserProfile** | ✅ Uses Clean Architecture | - |
+| **Global Test Coverage** | ✅ | **97.91%** |
 
-### 🔄 To Clean Up (Dead Code)
+### ✅ Cleanup Done
 
-| File | Reason |
-|------|--------|
-| `src/services/auth.service.ts` | Replaced by `use-cases/auth/*` + `SupabaseAuthRepository` |
-| `src/services/__tests__/auth.service.test.ts` | Tests for dead code above |
+- ~~`src/services/auth.service.ts`~~ - Deleted (replaced by Clean Architecture)
+- ~~`src/services/__tests__/auth.service.test.ts`~~ - Deleted
 
-### 📋 Next Steps
+### 📋 Potential Future Improvements
 
-1. **Delete dead code** - Remove `src/services/auth.service.ts` and its tests
-2. **Improve repository coverage** - Add more tests for `SupabaseProjectsRepository` (73% → 90%+)
-3. **User profile management** - Migrate `useUserProfile` hook to Clean Architecture
+1. **Increase branch coverage** - Some edge cases in stores not fully covered
+2. **Add E2E tests** - Integration tests with real Supabase
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

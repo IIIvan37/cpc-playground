@@ -248,6 +248,56 @@ describe('Auth Use Cases', () => {
       })
     })
 
+    it('should normalize username to lowercase', async () => {
+      vi.mocked(mockRepo.updateUserProfile).mockResolvedValue({ error: null })
+
+      const useCase = createUpdateUserProfileUseCase(mockRepo)
+      await useCase.execute({
+        userId: 'user-123',
+        username: 'NewUserName'
+      })
+
+      expect(mockRepo.updateUserProfile).toHaveBeenCalledWith('user-123', {
+        username: 'newusername'
+      })
+    })
+
+    it('should throw ValidationError for invalid username', async () => {
+      const useCase = createUpdateUserProfileUseCase(mockRepo)
+
+      await expect(
+        useCase.execute({
+          userId: 'user-123',
+          username: 'ab' // too short
+        })
+      ).rejects.toThrow('at least 3 characters')
+    })
+
+    it('should throw ValidationError for username with invalid characters', async () => {
+      const useCase = createUpdateUserProfileUseCase(mockRepo)
+
+      await expect(
+        useCase.execute({
+          userId: 'user-123',
+          username: 'user@name'
+        })
+      ).rejects.toThrow('lowercase letters, numbers, underscores and hyphens')
+    })
+
+    it('should allow undefined username', async () => {
+      vi.mocked(mockRepo.updateUserProfile).mockResolvedValue({ error: null })
+
+      const useCase = createUpdateUserProfileUseCase(mockRepo)
+      const result = await useCase.execute({
+        userId: 'user-123'
+      })
+
+      expect(result.error).toBeNull()
+      expect(mockRepo.updateUserProfile).toHaveBeenCalledWith('user-123', {
+        username: undefined
+      })
+    })
+
     it('should return error on failure', async () => {
       const error = new Error('Update failed')
       vi.mocked(mockRepo.updateUserProfile).mockResolvedValue({ error })
