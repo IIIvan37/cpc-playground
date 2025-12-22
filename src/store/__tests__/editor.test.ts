@@ -11,22 +11,57 @@ import {
   consoleMessagesAtom,
   errorLinesAtom,
   goToLineAtom,
-  outputFormatAtom
+  outputFormatAtom,
+  selectedAssemblerAtom
 } from '../editor'
 
-// Mock the rasmErrorParser
+// Mock the assembler registry
 const ERROR_LINE_PATTERN = /\[\/?\w+\.asm:(\d+)\]/
 
-vi.mock('@/infrastructure/assemblers/rasm-error-parser', () => ({
-  rasmErrorParser: {
-    extractLineNumber: (text: string): number | undefined => {
-      const match = ERROR_LINE_PATTERN.exec(text)
-      if (match) {
-        return Math.max(1, Number.parseInt(match[1], 10) - 2)
-      }
-      return undefined
+const mockErrorParser = {
+  extractLineNumber: (text: string): number | undefined => {
+    const match = ERROR_LINE_PATTERN.exec(text)
+    if (match) {
+      return Math.max(1, Number.parseInt(match[1], 10) - 2)
     }
-  }
+    return undefined
+  },
+  extractRawLineNumber: (text: string): number | undefined => {
+    const match = ERROR_LINE_PATTERN.exec(text)
+    return match ? Number.parseInt(match[1], 10) : undefined
+  },
+  parseError: (text: string) => ({
+    text,
+    line: mockErrorParser.extractLineNumber(text),
+    rawLine: mockErrorParser.extractRawLineNumber(text)
+  })
+}
+
+const mockAssembler = {
+  config: {
+    type: 'rasm' as const,
+    name: 'RASM',
+    description: 'Mock RASM',
+    supportedFormats: ['sna', 'dsk'] as const,
+    defaultFormat: 'sna' as const,
+    wasmUrl: '/rasm.wasm',
+    jsUrl: '/rasm.js',
+    errorParser: mockErrorParser,
+    supportsCpcPlus: true
+  },
+  prepareSource: vi.fn((opts) => opts.source),
+  getCompileArgs: vi.fn(() => []),
+  getOutputFilePath: vi.fn(() => '/output.sna'),
+  getAlternateOutputPaths: vi.fn(() => [])
+}
+
+vi.mock('@/infrastructure/assemblers', () => ({
+  getAssemblerRegistry: () => ({
+    get: () => mockAssembler,
+    getDefault: () => mockAssembler,
+    getAll: () => [mockAssembler.config],
+    register: vi.fn()
+  })
 }))
 
 describe('Editor Store', () => {
@@ -65,6 +100,17 @@ describe('Editor Store', () => {
       store.set(outputFormatAtom, 'dsk')
       store.set(outputFormatAtom, 'sna')
       expect(store.get(outputFormatAtom)).toBe('sna')
+    })
+  })
+
+  describe('selectedAssemblerAtom', () => {
+    it('should default to rasm', () => {
+      expect(store.get(selectedAssemblerAtom)).toBe('rasm')
+    })
+
+    it('should allow changing assembler', () => {
+      store.set(selectedAssemblerAtom, 'pasmo')
+      expect(store.get(selectedAssemblerAtom)).toBe('pasmo')
     })
   })
 

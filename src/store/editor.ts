@@ -1,5 +1,6 @@
 import { atom } from 'jotai'
-import { rasmErrorParser } from '@/infrastructure/assemblers/rasm-error-parser'
+import type { AssemblerType } from '@/domain/services/assembler.interface'
+import { getAssemblerRegistry } from '@/infrastructure/assemblers'
 
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly
@@ -27,6 +28,9 @@ print_string:
 message:
     db "Hello from CPC Playground!", 0
 `)
+
+// Selected assembler
+export const selectedAssemblerAtom = atom<AssemblerType>('rasm')
 
 // Output format: SNA (snapshot) or DSK (disk)
 export type OutputFormat = 'sna' | 'dsk'
@@ -62,7 +66,12 @@ export const addConsoleMessageAtom = atom(
   (get, set, message: Omit<ConsoleMessage, 'timestamp' | 'id' | 'line'>) => {
     const messages = get(consoleMessagesAtom)
     messageCounter += 1
-    const line = rasmErrorParser.extractLineNumber(message.text)
+
+    // Get the error parser for the selected assembler
+    const assemblerType = get(selectedAssemblerAtom)
+    const registry = getAssemblerRegistry()
+    const assembler = registry.get(assemblerType) ?? registry.getDefault()
+    const line = assembler.config.errorParser.extractLineNumber(message.text)
 
     // If we extracted a line number, it's an error line - add to highlights
     // (RASM outputs errors to stdout, so we can't rely on message type)
