@@ -1,1 +1,1 @@
-export { ExamplesMenu } from './examples-menu'
+export { ExamplesMenu } from './examples-menu/examples-menu'

@@ -1,15 +1,15 @@
 import { useAtomValue } from 'jotai'
-import { ConsolePanel } from '@/components/console/console-panel'
-import { CodeEditor } from '@/components/editor/code-editor'
-import { EmulatorCanvas } from '@/components/emulator/emulator-canvas'
+import { ConsolePanel } from '@/components/console'
+import { CodeEditor } from '@/components/editor'
+import { EmulatorCanvas } from '@/components/emulator'
 import { ProjectBrowser } from '@/components/project/project-browser'
 import { useAuth } from '@/hooks'
 import { useAutoSaveFile } from '@/hooks/use-auto-save-file'
 import { useSharedCode } from '@/hooks/use-shared-code'
 import { viewModeAtom } from '@/store'
-import { AppHeader } from './app-header'
+import { AppHeader } from '../app-header/app-header'
+import { Toolbar } from '../toolbar/toolbar'
 import styles from './main-layout.module.css'
-import { Toolbar } from './toolbar'
 
 export function MainLayout() {
   const viewMode = useAtomValue(viewModeAtom)

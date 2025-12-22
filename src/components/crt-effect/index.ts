@@ -1,1 +1,1 @@
-export { CrtEffect } from './crt-effect'
+export { CrtEffect } from './crt-effect/crt-effect'

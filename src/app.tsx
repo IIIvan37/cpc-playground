@@ -1,5 +1,5 @@
 import { CrtEffect } from '@/components/crt-effect'
-import { MainLayout } from '@/components/layout/main-layout'
+import { MainLayout } from '@/components/layout'
 import { ThemeProvider } from '@/components/theme/theme-provider'
 
 export default function App() {
