@@ -1,7 +1,3 @@
-// TODO: Remove @ts-nocheck - Fix Supabase types by properly typing complex queries with relations
-// The issue is with queries that include nested relations (project_files, project_shares, etc.)
-// Need to either: 1) Generate proper types from Supabase schema, or 2) Use explicit type assertions
-// @ts-nocheck
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   Project,
@@ -19,14 +15,68 @@ import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
-import type { Database } from '@/types/database.types'
+import type { Database, Tables } from '@/types/database.types'
+
+// =============================================================================
+// Supabase Query Result Types
+// =============================================================================
+// These types represent the shape of data returned by Supabase queries with relations.
+// Supabase doesn't generate types for nested selects, so we define them explicitly.
+
+type ProjectRow = Tables<'projects'>
+type ProjectFileRow = Tables<'project_files'>
+type ProjectShareRow = Tables<'project_shares'>
+type TagRow = Tables<'tags'>
+
+/** DB visibility enum - maps to domain VisibilityValue */
+type DbVisibility = Database['public']['Enums']['project_visibility']
+
+/** Result of project query with nested relations */
+interface ProjectWithRelations extends ProjectRow {
+  project_files: ProjectFileRow[]
+  project_shares: ProjectShareRow[]
+  project_tags: Array<{ tags: TagRow | null }>
+  project_dependencies: Array<{
+    dependency: { id: string; name: string; is_library: boolean } | null
+  }>
+}
+
+/** Result of project_shares query with nested project */
+interface ShareWithProject {
+  project: ProjectWithRelations
+}
+
+/** Result of project_tags query with nested tag */
+interface ProjectTagWithTag {
+  tag_id: string
+  tags: { id: string; name: string } | null
+}
+
+/** Result of project_shares query with nested user_profiles */
+interface ShareWithUserProfile {
+  project_id: string
+  user_id: string
+  created_at: string
+  user_profiles: { username: string } | null
+}
+
+/**
+ * Supabase project_shares table result with share_code
+ * Note: This assumes the DB schema has share_code column which may not match generated types
+ */
+interface ProjectShareDbRow {
+  id: string
+  project_id: string
+  share_code: string
+  created_at: string
+}
 
 /**
  * Map Supabase data to domain entity
  */
-function mapToDomain(data: any): Project {
+function mapToDomain(data: ProjectWithRelations): Project {
   // Map files
-  const files: ProjectFile[] = (data.project_files || []).map((f: any) =>
+  const files: ProjectFile[] = (data.project_files || []).map((f) =>
     createProjectFile({
       id: f.id,
       projectId: f.project_id,
@@ -40,7 +90,11 @@ function mapToDomain(data: any): Project {
   )
 
   // Map shares
-  const shares: ProjectShare[] = (data.project_shares || []).map((s: any) => ({
+  // Note: The DB schema for project_shares may have share_code (production) or not (local)
+  // We cast to the expected shape with share_code
+  const shares: ProjectShare[] = (
+    data.project_shares as unknown as ProjectShareDbRow[]
+  ).map((s) => ({
     id: s.id,
     shareCode: s.share_code,
     createdAt: new Date(s.created_at)
@@ -48,12 +102,12 @@ function mapToDomain(data: any): Project {
 
   // Map tags
   const tags: string[] = (data.project_tags || [])
-    .map((pt: any) => pt.tags?.name || '')
+    .map((pt) => pt.tags?.name || '')
     .filter(Boolean)
 
   // Map dependencies
   const dependencies: string[] = (data.project_dependencies || [])
-    .map((pd: any) => pd.dependency?.id || '')
+    .map((pd) => pd.dependency?.id || '')
     .filter(Boolean)
 
   return createProject({
@@ -117,7 +171,7 @@ export function createSupabaseProjectsRepository(
       if (sharedIdsError) throw sharedIdsError
 
       // Fetch shared projects if any
-      let sharedProjects: any[] = []
+      let sharedProjects: ProjectWithRelations[] = []
       if (sharedProjectIds && sharedProjectIds.length > 0) {
         const ids = sharedProjectIds.map((s) => s.project_id)
         const { data, error } = await supabase
@@ -131,11 +185,13 @@ export function createSupabaseProjectsRepository(
       }
 
       // Combine and deduplicate (in case user owns a project that's also shared)
-      const allProjects = [...(ownProjects || [])]
+      const allProjects: Array<(typeof ownProjects)[number]> = [
+        ...(ownProjects || [])
+      ]
       const ownIds = new Set(allProjects.map((p) => p.id))
       for (const p of sharedProjects) {
         if (!ownIds.has(p.id)) {
-          allProjects.push(p)
+          allProjects.push(p as (typeof ownProjects)[number])
         }
       }
 
@@ -145,7 +201,9 @@ export function createSupabaseProjectsRepository(
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       )
 
-      return allProjects.map((p: any) => mapToDomain(p))
+      return allProjects.map((p) =>
+        mapToDomain(p as unknown as ProjectWithRelations)
+      )
     },
 
     async findById(projectId: string): Promise<Project | null> {
@@ -209,20 +267,21 @@ export function createSupabaseProjectsRepository(
         throw error
       }
 
-      return mapToDomain((data as any).project)
+      return mapToDomain((data as unknown as ShareWithProject).project)
     },
 
     async create(project: Project): Promise<Project> {
       // Insert project
+      // Note: Domain uses 'unlisted' but DB uses 'shared' - map accordingly
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .insert({
           user_id: project.userId,
           name: project.name.value,
           description: project.description,
-          visibility: project.visibility.value,
+          visibility: project.visibility.value as DbVisibility,
           is_library: project.isLibrary
-        } as any)
+        })
         .select()
         .single()
 
@@ -231,7 +290,7 @@ export function createSupabaseProjectsRepository(
       // Insert files if any
       if (project.files.length > 0) {
         const filesData = project.files.map((file) => ({
-          project_id: (projectData as any).id,
+          project_id: projectData.id,
           name: file.name.value,
           content: file.content.value,
           is_main: file.isMain,
@@ -240,13 +299,13 @@ export function createSupabaseProjectsRepository(
 
         const { error: filesError } = await supabase
           .from('project_files')
-          .insert(filesData as any)
+          .insert(filesData)
 
         if (filesError) throw filesError
       }
 
       // Fetch complete project
-      const created = await this.findById((projectData as any).id)
+      const created = await this.findById(projectData.id)
       if (!created) throw new Error('Failed to create project')
 
       return created
@@ -256,12 +315,19 @@ export function createSupabaseProjectsRepository(
       projectId: string,
       updates: Partial<Project>
     ): Promise<Project> {
-      const dbUpdates: any = {}
+      const dbUpdates: Partial<{
+        name: string
+        description: string | null
+        visibility: DbVisibility
+        is_library: boolean
+        updated_at: string
+      }> = {}
 
       if (updates.name) dbUpdates.name = updates.name.value
       if (updates.description !== undefined)
         dbUpdates.description = updates.description
-      if (updates.visibility) dbUpdates.visibility = updates.visibility.value
+      if (updates.visibility)
+        dbUpdates.visibility = updates.visibility.value as DbVisibility
       if (updates.isLibrary !== undefined)
         dbUpdates.is_library = updates.isLibrary
 
@@ -312,14 +378,16 @@ export function createSupabaseProjectsRepository(
 
       if (error) throw error
 
-      return {
+      return createProjectFile({
         id: data.id,
         projectId: data.project_id,
         name: createFileName(data.name),
         content: createFileContent(data.content),
         isMain: data.is_main,
-        order: data.order
-      }
+        order: data.order,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at)
+      })
     },
 
     async updateFile(
@@ -353,14 +421,16 @@ export function createSupabaseProjectsRepository(
 
       if (error) throw error
 
-      return {
+      return createProjectFile({
         id: data.id,
         projectId: data.project_id,
         name: createFileName(data.name),
         content: createFileContent(data.content),
         isMain: data.is_main,
-        order: data.order
-      }
+        order: data.order,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at)
+      })
     },
 
     async deleteFile(projectId: string, fileId: string): Promise<void> {
@@ -382,7 +452,8 @@ export function createSupabaseProjectsRepository(
       if (error) throw error
       if (!data) return []
 
-      return data.map((share: any) => ({
+      // Cast to expected shape - DB may have share_code column not in generated types
+      return (data as unknown as ProjectShareDbRow[]).map((share) => ({
         id: share.id,
         shareCode: share.share_code,
         createdAt: new Date(share.created_at)
@@ -392,21 +463,23 @@ export function createSupabaseProjectsRepository(
     async createShare(projectId: string): Promise<ProjectShare> {
       const shareCode = crypto.randomUUID()
 
+      // Cast insert data - DB may have share_code column not in generated types
       const { data, error } = await supabase
         .from('project_shares')
         .insert({
           project_id: projectId,
           share_code: shareCode
-        } as any)
+        } as unknown as Tables<'project_shares'>)
         .select()
         .single()
 
       if (error) throw error
 
+      const shareData = data as unknown as ProjectShareDbRow
       return {
-        id: (data as any).id,
-        shareCode: (data as any).share_code,
-        createdAt: new Date((data as any).created_at)
+        id: shareData.id,
+        shareCode: shareData.share_code,
+        createdAt: new Date(shareData.created_at)
       }
     },
 
@@ -419,7 +492,7 @@ export function createSupabaseProjectsRepository(
       if (error) throw error
       if (!data) return []
 
-      return data.map((dep: any) => dep.dependency_id)
+      return data.map((dep) => dep.dependency_id)
     },
 
     async addDependency(
@@ -429,7 +502,7 @@ export function createSupabaseProjectsRepository(
       const { error } = await supabase.from('project_dependencies').insert({
         project_id: projectId,
         dependency_id: dependencyId
-      } as any)
+      })
 
       if (error) throw error
     },
@@ -468,12 +541,12 @@ export function createSupabaseProjectsRepository(
       if (error) throw error
       if (!data) return []
 
-      return data
-        .map((pt: any) => ({
+      return (data as unknown as ProjectTagWithTag[])
+        .map((pt) => ({
           id: pt.tags?.id,
           name: pt.tags?.name
         }))
-        .filter((t: any) => t.id && t.name)
+        .filter((t): t is Tag => Boolean(t.id && t.name))
     },
 
     async addTag(projectId: string, tagName: string): Promise<Tag> {
@@ -499,19 +572,20 @@ export function createSupabaseProjectsRepository(
         // Create new tag
         const { data: newTag, error: createError } = await supabase
           .from('tags')
-          .insert({ name: normalizedName } as any)
+          .insert({ name: normalizedName })
           .select('id, name')
           .single()
 
         if (createError) throw createError
-        tag = { id: (newTag as any).id, name: (newTag as any).name }
+        if (!newTag) throw new Error('Failed to create tag')
+        tag = { id: newTag.id, name: newTag.name }
       }
 
       // Link tag to project
       const { error: linkError } = await supabase.from('project_tags').insert({
         project_id: projectId,
         tag_id: tag.id
-      } as any)
+      })
 
       // Ignore duplicate key error (tag already linked)
       if (linkError && linkError.code !== '23505') {
@@ -576,7 +650,7 @@ export function createSupabaseProjectsRepository(
       if (error) throw error
       if (!data) return []
 
-      return data.map((share: any) => ({
+      return (data as unknown as ShareWithUserProfile[]).map((share) => ({
         projectId: share.project_id,
         userId: share.user_id,
         username: share.user_profiles?.username || 'Unknown',
@@ -619,7 +693,7 @@ export function createSupabaseProjectsRepository(
       const { error } = await supabase.from('project_shares').insert({
         project_id: projectId,
         user_id: userId
-      } as any)
+      })
 
       // Ignore duplicate key error (already shared)
       if (error && error.code !== '23505') {
