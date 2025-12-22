@@ -1,9 +1,10 @@
 import type { InputHTMLAttributes } from 'react'
 import styles from './checkbox.module.css'
 
-type CheckboxProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
+type CheckboxProps = Readonly<{
   label?: string
-}
+}> &
+  Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>
 
 export default function Checkbox({
   label,
