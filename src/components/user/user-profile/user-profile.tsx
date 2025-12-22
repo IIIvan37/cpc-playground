@@ -1,8 +1,8 @@
 import { useAtomValue } from 'jotai'
 import { useState } from 'react'
-import { userAtom } from '../../hooks/use-auth'
-import { useUserProfile } from '../../hooks/use-user-profile'
-import { supabase } from '../../lib/supabase'
+import { userAtom } from '@/hooks/use-auth'
+import { useUserProfile } from '@/hooks/use-user-profile'
+import { supabase } from '@/lib/supabase'
 import { UserProfileView } from './user-profile.view'
 
 /**

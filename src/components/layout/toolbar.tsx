@@ -1,5 +1,6 @@
 import { PlayIcon, ResetIcon } from '@radix-ui/react-icons'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import { ProgramManager } from '@/components/program/program-manager'
 import Button from '@/components/ui/button/button'
 import Flex from '@/components/ui/flex/flex'
 import { Select, SelectItem } from '@/components/ui/select/select'
@@ -17,7 +18,6 @@ import {
   currentProjectAtom,
   fetchProjectWithDependenciesAtom
 } from '@/store/projects'
-import { ProgramManager } from './program-manager'
 import styles from './toolbar.module.css'
 
 export function Toolbar() {

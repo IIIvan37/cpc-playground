@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { AuthModal } from '@/components/auth'
 import { ExamplesMenu } from '@/components/examples'
 import Button from '@/components/ui/button/button'
-import { UserProfile } from '@/components/user/user-profile'
+import { UserProfile } from '@/components/user'
 import { useAuth } from '@/hooks'
 import styles from './app-header.module.css'
 

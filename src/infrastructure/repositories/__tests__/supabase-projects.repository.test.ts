@@ -301,7 +301,7 @@ describe('SupabaseProjectsRepository', () => {
     it('should create a project', async () => {
       // First call: insert project
       const insertMock = createFullChainMock({
-        data: { id: 'new-project-123', ...mockProjectRow },
+        data: { ...mockProjectRow, id: 'new-project-123' },
         error: null
       })
       // Second call: findById
@@ -367,7 +367,7 @@ describe('SupabaseProjectsRepository', () => {
     it('should create a project with files', async () => {
       // First call: insert project
       const insertMock = createFullChainMock({
-        data: { id: 'new-project-123', ...mockProjectRow },
+        data: { ...mockProjectRow, id: 'new-project-123' },
         error: null
       })
       // Second call: insert files
@@ -423,7 +423,7 @@ describe('SupabaseProjectsRepository', () => {
     it('should throw on file insert error', async () => {
       // First call: insert project
       const insertMock = createFullChainMock({
-        data: { id: 'new-project-123', ...mockProjectRow },
+        data: { ...mockProjectRow, id: 'new-project-123' },
         error: null
       })
       // Second call: insert files fails - insert returns directly
