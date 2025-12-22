@@ -67,13 +67,15 @@ export function useUserProfile() {
         throw updateError
       }
 
-      // Update local state with normalized username
-      const normalizedUsername = newUsername.toLowerCase().trim()
-      setProfile((prev) =>
-        prev ? { ...prev, username: normalizedUsername } : null
-      )
+      // Re-fetch profile to get server-side state
+      const { profile: updatedProfile } = await getUserProfile.execute({
+        userId: user.id
+      })
+      if (updatedProfile) {
+        setProfile(updatedProfile)
+      }
     },
-    [user, updateUserProfile]
+    [user, updateUserProfile, getUserProfile]
   )
 
   return {
