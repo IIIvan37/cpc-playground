@@ -295,4 +295,39 @@ describe('useUseCaseWithoutInput', () => {
 
     expect(result.current.error).toBe(error)
   })
+
+  it('should convert non-Error values to Error objects', async () => {
+    const useCase = { execute: vi.fn().mockRejectedValue('String error') }
+    const { result } = renderHook(() => useUseCaseWithoutInput(useCase))
+
+    await act(async () => {
+      try {
+        await result.current.execute()
+      } catch {
+        // Expected
+      }
+    })
+
+    expect(result.current.error).toBeInstanceOf(Error)
+    expect(result.current.error?.message).toBe('String error')
+  })
+
+  it('should reset state', async () => {
+    const useCase = { execute: vi.fn().mockResolvedValue({ data: 'test' }) }
+    const { result } = renderHook(() => useUseCaseWithoutInput(useCase))
+
+    await act(async () => {
+      await result.current.execute()
+    })
+
+    expect(result.current.data).toBeTruthy()
+
+    act(() => {
+      result.current.reset()
+    })
+
+    expect(result.current.loading).toBe(false)
+    expect(result.current.error).toBe(null)
+    expect(result.current.data).toBe(null)
+  })
 })
