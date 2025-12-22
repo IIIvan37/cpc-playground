@@ -8,11 +8,6 @@ import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
 import { AUTH_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 
-/**
- * @deprecated Use AUTH_ERRORS from '@/domain/errors/error-messages' instead
- */
-export { AUTH_ERRORS as AUTH_ERROR_MESSAGES } from '@/domain/errors/error-messages'
-
 export type AuthorizationService = {
   /**
    * Verify user can read a project (owner, public, library, or shared)

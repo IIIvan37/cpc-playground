@@ -39,12 +39,10 @@ import {
   currentProgramIdAtom,
   deleteProgramAtom,
   fetchProgramsAtom,
-  legacySavedProgramsAtom,
   loadProgramAtom,
   newProgramAtom,
   savedProgramsAtom,
-  saveProgramAtom,
-  toLegacySavedProgram
+  saveProgramAtom
 } from '../programs'
 
 describe('Programs Store', () => {
@@ -119,22 +117,6 @@ describe('Programs Store', () => {
         store.set(savedProgramsAtom, [mockProgram1])
         store.set(currentProgramIdAtom, 'non-existent')
         expect(store.get(currentProgramAtom)).toBeNull()
-      })
-    })
-
-    describe('legacySavedProgramsAtom', () => {
-      it('should convert programs to legacy format', () => {
-        store.set(savedProgramsAtom, [mockProgram1])
-        const legacy = store.get(legacySavedProgramsAtom)
-
-        expect(legacy).toHaveLength(1)
-        expect(legacy[0]).toEqual({
-          id: 'prog-1',
-          name: 'Test Program 1',
-          code: '; Program 1\nret',
-          createdAt: '2024-01-01T00:00:00.000Z',
-          updatedAt: '2024-01-02T00:00:00.000Z'
-        })
       })
     })
   })
@@ -271,20 +253,6 @@ describe('Programs Store', () => {
         store.set(newProgramAtom)
 
         expect(store.get(currentProgramIdAtom)).toBeNull()
-      })
-    })
-  })
-
-  describe('toLegacySavedProgram', () => {
-    it('should convert program entity to legacy format', () => {
-      const legacy = toLegacySavedProgram(mockProgram1)
-
-      expect(legacy).toEqual({
-        id: 'prog-1',
-        name: 'Test Program 1',
-        code: '; Program 1\nret',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-02T00:00:00.000Z'
       })
     })
   })

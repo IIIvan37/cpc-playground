@@ -15,10 +15,12 @@ import {
 } from '../editor'
 
 // Mock the rasmErrorParser
+const ERROR_LINE_PATTERN = /\[\/?\w+\.asm:(\d+)\]/
+
 vi.mock('@/infrastructure/assemblers/rasm-error-parser', () => ({
   rasmErrorParser: {
     extractLineNumber: (text: string): number | undefined => {
-      const match = text.match(/\[\/?\w+\.asm:(\d+)\]/)
+      const match = ERROR_LINE_PATTERN.exec(text)
       if (match) {
         return Math.max(1, Number.parseInt(match[1], 10) - 2)
       }

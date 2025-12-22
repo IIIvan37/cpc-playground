@@ -8,9 +8,10 @@ import type { Database } from '@/types/database.types'
 import { createSupabaseProjectsRepository } from '../supabase-projects.repository'
 
 // Create a properly chainable mock where every method returns the mock itself
-function createFullChainMock(
-  resolvedValue: unknown = { data: null, error: null }
-) {
+const DEFAULT_RESOLVED_VALUE = { data: null, error: null }
+
+function createFullChainMock(resolvedValue?: unknown) {
+  const value = resolvedValue ?? DEFAULT_RESOLVED_VALUE
   const mock: Record<string, unknown> = {}
   const methodNames = [
     'select',
@@ -26,7 +27,7 @@ function createFullChainMock(
 
   for (const name of methodNames) {
     if (name === 'single') {
-      mock[name] = vi.fn(() => Promise.resolve(resolvedValue))
+      mock[name] = vi.fn(() => Promise.resolve(value))
     } else {
       mock[name] = vi.fn(() => mock)
     }

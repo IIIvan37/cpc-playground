@@ -52,8 +52,12 @@ describeIntegration('Access Control Integration Tests', () => {
       email_confirm: true
     })
 
+    if (!userAData?.user) {
+      throw new Error('Failed to create User A')
+    }
+
     await adminClient.from('user_profiles').insert({
-      id: userAData!.user.id,
+      id: userAData.user.id,
       username: `usera${Date.now()}`
     })
 
@@ -71,7 +75,7 @@ describeIntegration('Access Control Integration Tests', () => {
       throw new Error(`Failed to sign in User A: ${authErrorA.message}`)
     }
 
-    userA = { id: userAData!.user.id, email: emailA, client: clientA }
+    userA = { id: userAData.user.id, email: emailA, client: clientA }
 
     // Create User B
     const emailB = `user-b-${Date.now()}@test.local`
@@ -81,8 +85,12 @@ describeIntegration('Access Control Integration Tests', () => {
       email_confirm: true
     })
 
+    if (!userBData?.user) {
+      throw new Error('Failed to create User B')
+    }
+
     await adminClient.from('user_profiles').insert({
-      id: userBData!.user.id,
+      id: userBData.user.id,
       username: `userb${Date.now()}`
     })
 
@@ -100,7 +108,7 @@ describeIntegration('Access Control Integration Tests', () => {
       throw new Error(`Failed to sign in User B: ${authErrorB.message}`)
     }
 
-    userB = { id: userBData!.user.id, email: emailB, client: clientB }
+    userB = { id: userBData.user.id, email: emailB, client: clientB }
 
     // Create test projects owned by User A
     const { data: privateProject } = await adminClient
@@ -503,9 +511,13 @@ describeIntegration('Access Control Integration Tests', () => {
         email_confirm: true
       })
 
+      if (!userC?.user) {
+        throw new Error('Failed to create User C')
+      }
+
       const { error } = await userA.client.from('project_shares').insert({
         project_id: privateProjectId,
-        user_id: userC!.user.id
+        user_id: userC.user.id
       })
 
       expect(error).toBeNull()
@@ -515,8 +527,8 @@ describeIntegration('Access Control Integration Tests', () => {
         .from('project_shares')
         .delete()
         .eq('project_id', privateProjectId)
-        .eq('user_id', userC!.user.id)
-      await adminClient.auth.admin.deleteUser(userC!.user.id)
+        .eq('user_id', userC.user.id)
+      await adminClient.auth.admin.deleteUser(userC.user.id)
     })
   })
 })

@@ -308,7 +308,12 @@ describeIntegration('SupabaseProjectsRepository Integration', () => {
         email_confirm: true,
         user_metadata: { username: `shareuser${Date.now()}` }
       })
-      const shareUserId = shareUserData!.user.id
+
+      if (!shareUserData?.user) {
+        throw new Error('Failed to create share user')
+      }
+
+      const shareUserId = shareUserData.user.id
 
       // Create user profile for share user
       const shareUsername = `shareuser${Date.now()}`
@@ -362,7 +367,12 @@ describeIntegration('SupabaseProjectsRepository Integration', () => {
         password: 'test-password-123',
         email_confirm: true
       })
-      const shareUserId = shareUserData!.user.id
+
+      if (!shareUserData?.user) {
+        throw new Error('Failed to create share user')
+      }
+
+      const shareUserId = shareUserData.user.id
 
       const shareUsername = `shareuser2${Date.now()}`
       await supabase.from('user_profiles').insert({

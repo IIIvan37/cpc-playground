@@ -120,39 +120,3 @@ export const deleteProgramAtom = atom(null, async (get, set, id: string) => {
 export const newProgramAtom = atom(null, (_get, set) => {
   set(currentProgramIdAtom, null)
 })
-
-// ============================================================================
-// Legacy compatibility - re-export for old consumers
-// ============================================================================
-
-/**
- * @deprecated Use Program entity directly
- */
-export interface SavedProgram {
-  id: string
-  name: string
-  code: string
-  createdAt: string
-  updatedAt: string
-}
-
-/**
- * Convert Program entity to legacy SavedProgram format
- */
-export function toLegacySavedProgram(program: Program): SavedProgram {
-  return {
-    id: program.id,
-    name: program.name.value,
-    code: program.code,
-    createdAt: program.createdAt.toISOString(),
-    updatedAt: program.updatedAt.toISOString()
-  }
-}
-
-/**
- * @deprecated Use savedProgramsAtom with Program entity
- */
-export const legacySavedProgramsAtom = atom((get) => {
-  const programs = get(savedProgramsAtom)
-  return programs.map(toLegacySavedProgram)
-})
