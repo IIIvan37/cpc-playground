@@ -74,7 +74,7 @@ supabase migration repair --status reverted <timestamp>
 ### Generate Types
 
 ```bash
-supabase gen types typescript --linked > src/types/database-generated.ts
+supabase gen types typescript --linked > src/types/database.types.ts
 ```
 
 ---
