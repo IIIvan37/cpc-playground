@@ -95,6 +95,125 @@ describe('SupabaseProjectsRepository', () => {
     vi.clearAllMocks()
   })
 
+  describe('findAll', () => {
+    it('should return user projects and shared projects', async () => {
+      // First call: get own projects
+      const ownMock = createFullChainMock()
+      ownMock.order = vi.fn(() =>
+        Promise.resolve({ data: [mockProjectRow], error: null })
+      )
+
+      // Second call: get shared project IDs
+      const sharedIdsMock = createFullChainMock()
+      sharedIdsMock.eq = vi.fn(() =>
+        Promise.resolve({
+          data: [{ project_id: 'shared-project-123' }],
+          error: null
+        })
+      )
+
+      // Third call: get shared projects
+      const sharedProjectsMock = createFullChainMock()
+      sharedProjectsMock.order = vi.fn(() =>
+        Promise.resolve({
+          data: [{ ...mockProjectRow, id: 'shared-project-123' }],
+          error: null
+        })
+      )
+
+      mockSupabase.from
+        .mockReturnValueOnce(ownMock)
+        .mockReturnValueOnce(sharedIdsMock)
+        .mockReturnValueOnce(sharedProjectsMock)
+
+      const result = await repository.findAll('user-123')
+
+      expect(result).toHaveLength(2)
+      expect(mockSupabase.from).toHaveBeenCalledWith('projects')
+      expect(mockSupabase.from).toHaveBeenCalledWith('project_shares')
+    })
+
+    it('should return only own projects when no shared projects', async () => {
+      const ownMock = createFullChainMock()
+      ownMock.order = vi.fn(() =>
+        Promise.resolve({ data: [mockProjectRow], error: null })
+      )
+
+      const sharedIdsMock = createFullChainMock()
+      sharedIdsMock.eq = vi.fn(() => Promise.resolve({ data: [], error: null }))
+
+      mockSupabase.from
+        .mockReturnValueOnce(ownMock)
+        .mockReturnValueOnce(sharedIdsMock)
+
+      const result = await repository.findAll('user-123')
+
+      expect(result).toHaveLength(1)
+    })
+
+    it('should throw on own projects error', async () => {
+      const ownMock = createFullChainMock()
+      ownMock.order = vi.fn(() =>
+        Promise.resolve({ data: null, error: { message: 'Database error' } })
+      )
+
+      mockSupabase.from.mockReturnValue(ownMock)
+
+      await expect(repository.findAll('user-123')).rejects.toEqual({
+        message: 'Database error'
+      })
+    })
+
+    it('should throw on shared project IDs error', async () => {
+      const ownMock = createFullChainMock()
+      ownMock.order = vi.fn(() =>
+        Promise.resolve({ data: [mockProjectRow], error: null })
+      )
+
+      const sharedIdsMock = createFullChainMock()
+      sharedIdsMock.eq = vi.fn(() =>
+        Promise.resolve({ data: null, error: { message: 'Shared error' } })
+      )
+
+      mockSupabase.from
+        .mockReturnValueOnce(ownMock)
+        .mockReturnValueOnce(sharedIdsMock)
+
+      await expect(repository.findAll('user-123')).rejects.toEqual({
+        message: 'Shared error'
+      })
+    })
+
+    it('should deduplicate projects owned and shared', async () => {
+      const ownMock = createFullChainMock()
+      ownMock.order = vi.fn(() =>
+        Promise.resolve({ data: [mockProjectRow], error: null })
+      )
+
+      const sharedIdsMock = createFullChainMock()
+      sharedIdsMock.eq = vi.fn(() =>
+        Promise.resolve({
+          data: [{ project_id: 'project-123' }], // Same as owned
+          error: null
+        })
+      )
+
+      const sharedProjectsMock = createFullChainMock()
+      sharedProjectsMock.order = vi.fn(() =>
+        Promise.resolve({ data: [mockProjectRow], error: null })
+      )
+
+      mockSupabase.from
+        .mockReturnValueOnce(ownMock)
+        .mockReturnValueOnce(sharedIdsMock)
+        .mockReturnValueOnce(sharedProjectsMock)
+
+      const result = await repository.findAll('user-123')
+
+      expect(result).toHaveLength(1) // Deduplicated
+    })
+  })
+
   describe('findById', () => {
     it('should return project by id', async () => {
       const chainMock = createFullChainMock({
@@ -269,6 +388,63 @@ describe('SupabaseProjectsRepository', () => {
         })
       ).rejects.toEqual({ message: 'Update failed' })
     })
+
+    it('should update visibility', async () => {
+      const updateMock = createFullChainMock()
+      updateMock.eq = vi.fn(() => Promise.resolve({ error: null }))
+      const findMock = createFullChainMock({
+        data: { ...mockProjectRow, visibility: 'public' },
+        error: null
+      })
+
+      mockSupabase.from
+        .mockReturnValueOnce(updateMock)
+        .mockReturnValueOnce(findMock)
+
+      const result = await repository.update('project-123', {
+        visibility: createVisibility('public')
+      })
+
+      expect(result.visibility.value).toBe('public')
+    })
+
+    it('should update isLibrary', async () => {
+      const updateMock = createFullChainMock()
+      updateMock.eq = vi.fn(() => Promise.resolve({ error: null }))
+      const findMock = createFullChainMock({
+        data: { ...mockProjectRow, is_library: true },
+        error: null
+      })
+
+      mockSupabase.from
+        .mockReturnValueOnce(updateMock)
+        .mockReturnValueOnce(findMock)
+
+      const result = await repository.update('project-123', {
+        isLibrary: true
+      })
+
+      expect(result.isLibrary).toBe(true)
+    })
+
+    it('should update description', async () => {
+      const updateMock = createFullChainMock()
+      updateMock.eq = vi.fn(() => Promise.resolve({ error: null }))
+      const findMock = createFullChainMock({
+        data: { ...mockProjectRow, description: 'New description' },
+        error: null
+      })
+
+      mockSupabase.from
+        .mockReturnValueOnce(updateMock)
+        .mockReturnValueOnce(findMock)
+
+      const result = await repository.update('project-123', {
+        description: 'New description'
+      })
+
+      expect(result.description).toBe('New description')
+    })
   })
 
   describe('delete', () => {
@@ -357,6 +533,57 @@ describe('SupabaseProjectsRepository', () => {
 
       expect(mockSupabase.from).toHaveBeenCalledWith('project_files')
       expect(result.content.value).toBe('; Updated')
+    })
+
+    it('should unset other main files when setting isMain to true', async () => {
+      // First call: unset other main files
+      const unsetMock = createFullChainMock()
+      unsetMock.neq = vi.fn(() => Promise.resolve({ error: null }))
+
+      // Second call: update file
+      const updateMock = createFullChainMock({
+        data: { ...mockFileRow, is_main: true },
+        error: null
+      })
+
+      mockSupabase.from
+        .mockReturnValueOnce(unsetMock)
+        .mockReturnValueOnce(updateMock)
+
+      const result = await repository.updateFile('project-123', 'file-1', {
+        isMain: true
+      })
+
+      expect(result.isMain).toBe(true)
+      expect(unsetMock.update).toHaveBeenCalledWith({ is_main: false })
+    })
+
+    it('should update file name', async () => {
+      const chainMock = createFullChainMock({
+        data: { ...mockFileRow, name: 'renamed.asm' },
+        error: null
+      })
+      mockSupabase.from.mockReturnValue(chainMock)
+
+      const result = await repository.updateFile('project-123', 'file-1', {
+        name: createFileName('renamed.asm')
+      })
+
+      expect(result.name.value).toBe('renamed.asm')
+    })
+
+    it('should update file order', async () => {
+      const chainMock = createFullChainMock({
+        data: { ...mockFileRow, order: 5 },
+        error: null
+      })
+      mockSupabase.from.mockReturnValue(chainMock)
+
+      const result = await repository.updateFile('project-123', 'file-1', {
+        order: 5
+      })
+
+      expect(result.order).toBe(5)
     })
 
     it('should throw on error', async () => {
@@ -676,6 +903,49 @@ describe('SupabaseProjectsRepository', () => {
       await expect(repository.addTag('project-123', 'test')).rejects.toEqual({
         code: 'OTHER',
         message: 'Database error'
+      })
+    })
+
+    it('should throw on link error (non-duplicate)', async () => {
+      const findMock = createFullChainMock({
+        data: { id: 'tag-1', name: 'test' },
+        error: null
+      })
+      const linkMock = createFullChainMock()
+      linkMock.insert = vi.fn(() =>
+        Promise.resolve({
+          error: { code: 'OTHER', message: 'Link failed' }
+        })
+      )
+
+      mockSupabase.from
+        .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(linkMock)
+
+      await expect(repository.addTag('project-123', 'test')).rejects.toEqual({
+        code: 'OTHER',
+        message: 'Link failed'
+      })
+    })
+
+    it('should throw on create tag error', async () => {
+      // Find tag - not found
+      const findMock = createFullChainMock({
+        data: null,
+        error: { code: 'PGRST116', message: 'Not found' }
+      })
+      // Create tag - error
+      const createMock = createFullChainMock({
+        data: null,
+        error: { message: 'Create tag failed' }
+      })
+
+      mockSupabase.from
+        .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(createMock)
+
+      await expect(repository.addTag('project-123', 'NewTag')).rejects.toEqual({
+        message: 'Create tag failed'
       })
     })
   })
