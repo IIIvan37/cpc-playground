@@ -19,7 +19,9 @@ function createMockAuthRepository(): IAuthRepository {
     getCurrentUser: vi.fn(),
     onAuthStateChange: vi.fn(() => vi.fn()),
     getUserProfile: vi.fn(),
-    updateUserProfile: vi.fn()
+    updateUserProfile: vi.fn(),
+    resetPasswordForEmail: vi.fn(),
+    updatePassword: vi.fn()
   }
 }
 

@@ -225,6 +225,54 @@ export function createSupabaseAuthRepository(
               : new Error('Failed to update profile')
         }
       }
+    },
+
+    async resetPasswordForEmail(
+      email: string,
+      redirectTo?: string
+    ): Promise<{ error: Error | null }> {
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo:
+            redirectTo ?? `${globalThis.location.origin}/reset-password`
+        })
+
+        if (error) {
+          return { error: new Error(error.message) }
+        }
+
+        return { error: null }
+      } catch (error) {
+        return {
+          error:
+            error instanceof Error
+              ? error
+              : new Error('Failed to send password reset email')
+        }
+      }
+    },
+
+    async updatePassword(
+      newPassword: string
+    ): Promise<{ error: Error | null }> {
+      try {
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword
+        })
+
+        if (error) {
+          return { error: new Error(error.message) }
+        }
+
+        return { error: null }
+      } catch (error) {
+        return {
+          error:
+            error instanceof Error
+              ? error
+              : new Error('Failed to update password')
+        }
+      }
     }
   }
 }

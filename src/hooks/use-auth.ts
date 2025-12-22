@@ -21,6 +21,8 @@ export function useAuth() {
     signOut: signOutUseCase,
     signInWithOAuth: signInWithOAuthUseCase,
     getCurrentUser: getCurrentUserUseCase,
+    requestPasswordReset: requestPasswordResetUseCase,
+    updatePassword: updatePasswordUseCase,
     authRepository
   } = container
 
@@ -77,12 +79,30 @@ export function useAuth() {
     }
   }, [signInWithOAuthUseCase])
 
+  const requestPasswordReset = useCallback(
+    async (email: string) => {
+      const result = await requestPasswordResetUseCase.execute({ email })
+      return { error: result.error }
+    },
+    [requestPasswordResetUseCase]
+  )
+
+  const updatePassword = useCallback(
+    async (newPassword: string) => {
+      const result = await updatePasswordUseCase.execute({ newPassword })
+      return { error: result.error }
+    },
+    [updatePasswordUseCase]
+  )
+
   return {
     user,
     loading,
     signIn,
     signUp,
     signOut,
-    signInWithGithub
+    signInWithGithub,
+    requestPasswordReset,
+    updatePassword
   }
 }

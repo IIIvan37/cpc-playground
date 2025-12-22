@@ -6,6 +6,10 @@ export {
   createGetUserProfileUseCase,
   type GetUserProfileUseCase
 } from './get-user-profile.use-case'
+export {
+  createRequestPasswordResetUseCase,
+  type RequestPasswordResetUseCase
+} from './request-password-reset.use-case'
 export { createSignInUseCase, type SignInUseCase } from './sign-in.use-case'
 export {
   createSignInWithOAuthUseCase,
@@ -13,6 +17,10 @@ export {
 } from './sign-in-with-oauth.use-case'
 export { createSignOutUseCase, type SignOutUseCase } from './sign-out.use-case'
 export { createSignUpUseCase, type SignUpUseCase } from './sign-up.use-case'
+export {
+  createUpdatePasswordUseCase,
+  type UpdatePasswordUseCase
+} from './update-password.use-case'
 export {
   createUpdateUserProfileUseCase,
   type UpdateUserProfileUseCase

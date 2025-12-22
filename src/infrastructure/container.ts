@@ -11,19 +11,23 @@ import { supabase } from '@/lib/supabase'
 import type {
   GetCurrentUserUseCase,
   GetUserProfileUseCase,
+  RequestPasswordResetUseCase,
   SignInUseCase,
   SignInWithOAuthUseCase,
   SignOutUseCase,
   SignUpUseCase,
+  UpdatePasswordUseCase,
   UpdateUserProfileUseCase
 } from '@/use-cases/auth'
 import {
   createGetCurrentUserUseCase,
   createGetUserProfileUseCase,
+  createRequestPasswordResetUseCase,
   createSignInUseCase,
   createSignInWithOAuthUseCase,
   createSignOutUseCase,
   createSignUpUseCase,
+  createUpdatePasswordUseCase,
   createUpdateUserProfileUseCase
 } from '@/use-cases/auth'
 import type {
@@ -89,6 +93,8 @@ export type Container = {
   getCurrentUser: GetCurrentUserUseCase
   getUserProfile: GetUserProfileUseCase
   updateUserProfile: UpdateUserProfileUseCase
+  requestPasswordReset: RequestPasswordResetUseCase
+  updatePassword: UpdatePasswordUseCase
   // Projects use cases
   createProject: CreateProjectUseCase
   getProjects: GetProjectsUseCase
@@ -139,6 +145,8 @@ export function createContainer(): Container {
     getCurrentUser: createGetCurrentUserUseCase(authRepository),
     getUserProfile: createGetUserProfileUseCase(authRepository),
     updateUserProfile: createUpdateUserProfileUseCase(authRepository),
+    requestPasswordReset: createRequestPasswordResetUseCase(authRepository),
+    updatePassword: createUpdatePasswordUseCase(authRepository),
     // Projects use cases
     createProject: createCreateProjectUseCase(projectsRepository),
     getProjects: createGetProjectsUseCase(projectsRepository),

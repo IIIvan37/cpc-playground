@@ -87,4 +87,17 @@ export interface IAuthRepository {
     userId: string,
     updates: { username?: string }
   ): Promise<{ error: Error | null }>
+
+  /**
+   * Send a password reset email
+   */
+  resetPasswordForEmail(
+    email: string,
+    redirectTo?: string
+  ): Promise<{ error: Error | null }>
+
+  /**
+   * Update user's password (for authenticated user after reset link)
+   */
+  updatePassword(newPassword: string): Promise<{ error: Error | null }>
 }
