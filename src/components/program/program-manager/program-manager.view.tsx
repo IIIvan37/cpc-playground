@@ -4,37 +4,37 @@ import { Select, SelectItem } from '@/components/ui/select/select'
 import styles from './program-manager.module.css'
 
 interface ProgramItem {
-  id: string
-  name: string
+  readonly id: string
+  readonly name: string
 }
 
 export interface ProgramManagerViewProps {
   // Data
-  savedPrograms: ProgramItem[]
-  currentProgramName: string | undefined
-  currentProgramId: string | null
-  selectKey: number
-  hasCurrentProject: boolean
+  readonly savedPrograms: readonly ProgramItem[]
+  readonly currentProgramName: string | undefined
+  readonly currentProgramId: string | null
+  readonly selectKey: number
+  readonly hasCurrentProject: boolean
 
   // Dialog states
-  showSaveDialog: boolean
-  showDeleteDialog: boolean
-  programName: string
+  readonly showSaveDialog: boolean
+  readonly showDeleteDialog: boolean
+  readonly programName: string
 
   // Handlers
-  onLoad: (id: string) => void
-  onNew: () => void
-  onSave: () => void
-  onDelete: () => void
-  onOpenSettings: () => void
-  onSaveConfirm: () => void
-  onDeleteConfirm: () => void
-  onCloseSaveDialog: () => void
-  onCloseDeleteDialog: () => void
-  onProgramNameChange: (value: string) => void
+  readonly onLoad: (id: string) => void
+  readonly onNew: () => void
+  readonly onSave: () => void
+  readonly onDelete: () => void
+  readonly onOpenSettings: () => void
+  readonly onSaveConfirm: () => void
+  readonly onDeleteConfirm: () => void
+  readonly onCloseSaveDialog: () => void
+  readonly onCloseDeleteDialog: () => void
+  readonly onProgramNameChange: (value: string) => void
 
   // Refs
-  inputRef: React.RefObject<HTMLInputElement | null>
+  readonly inputRef: React.RefObject<HTMLInputElement | null>
 }
 
 /**

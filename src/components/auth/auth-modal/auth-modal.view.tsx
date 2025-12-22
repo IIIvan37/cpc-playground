@@ -10,7 +10,7 @@ import styles from './auth-modal.module.css'
 
 export type AuthMode = 'signin' | 'signup'
 
-export type AuthModalViewProps = {
+export type AuthModalViewProps = Readonly<{
   mode: AuthMode
   email: string
   password: string
@@ -22,7 +22,7 @@ export type AuthModalViewProps = {
   onSubmit: (e: React.FormEvent) => void
   onGithubAuth: () => void
   onModeChange: (mode: AuthMode) => void
-}
+}>
 
 // ============================================================================
 // View Component

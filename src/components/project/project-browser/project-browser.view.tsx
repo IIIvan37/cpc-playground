@@ -19,25 +19,25 @@ import styles from './project-browser.module.css'
 // Types
 // ============================================================================
 
-export type DependencyProject = {
+export type DependencyProject = Readonly<{
   id: string
   name: string
-  files: Array<{
+  files: ReadonlyArray<{
     id: string
     name: string
     content: string
     projectId: string
   }>
-}
+}>
 
-export type ProjectBrowserViewProps = {
+export type ProjectBrowserViewProps = Readonly<{
   // Data
-  projects: Project[]
+  projects: readonly Project[]
   currentProjectId: string | null
   currentProject: Project | null
   currentFileId: string | null
-  dependencyFiles: DependencyProject[]
-  expandedDeps: Set<string>
+  dependencyFiles: readonly DependencyProject[]
+  expandedDeps: ReadonlySet<string>
   loadingDeps: boolean
 
   // Modal state
@@ -73,7 +73,7 @@ export type ProjectBrowserViewProps = {
   onNewProjectNameChange: (value: string) => void
   onNewProjectIsLibraryChange: (checked: boolean) => void
   onNewFileNameChange: (value: string) => void
-}
+}>
 
 // ============================================================================
 // Sub-components

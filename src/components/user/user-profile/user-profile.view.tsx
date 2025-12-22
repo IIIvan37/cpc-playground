@@ -7,7 +7,7 @@ import styles from './user-profile.module.css'
 // Types
 // ============================================================================
 
-export type UserProfileViewProps = {
+export type UserProfileViewProps = Readonly<{
   username: string
   email: string
   userId: string
@@ -20,7 +20,7 @@ export type UserProfileViewProps = {
   onUsernameChange: (value: string) => void
   onSaveUsername: () => void
   onSignOut: () => void
-}
+}>
 
 // ============================================================================
 // View Component

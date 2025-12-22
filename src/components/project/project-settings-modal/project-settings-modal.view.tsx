@@ -5,47 +5,53 @@ import { Select, SelectItem } from '@/components/ui/select/select'
 import styles from './project-settings-modal.module.css'
 
 interface DependencyInfo {
-  id: string
-  name: string
+  readonly id: string
+  readonly name: string
 }
 
 type VisibilityOption = 'private' | 'public' | 'shared'
 
 export interface ProjectSettingsModalViewProps {
   // Form state
-  name: string
-  description: string
-  visibility: VisibilityOption
-  isLibrary: boolean
-  newTag: string
-  selectedDependency: string
-  shareUsername: string
-  loading: boolean
+  readonly name: string
+  readonly description: string
+  readonly visibility: VisibilityOption
+  readonly isLibrary: boolean
+  readonly newTag: string
+  readonly selectedDependency: string
+  readonly shareUsername: string
+  readonly loading: boolean
 
   // Project data
-  currentTags: readonly string[]
-  currentDependencies: DependencyInfo[]
-  currentUserShares: ReadonlyArray<{ userId: string; username: string }>
-  availableDependencies: Array<{ id: string; name: string }>
+  readonly currentTags: readonly string[]
+  readonly currentDependencies: readonly DependencyInfo[]
+  readonly currentUserShares: ReadonlyArray<{
+    readonly userId: string
+    readonly username: string
+  }>
+  readonly availableDependencies: ReadonlyArray<{
+    readonly id: string
+    readonly name: string
+  }>
 
   // Form handlers
-  onNameChange: (value: string) => void
-  onDescriptionChange: (value: string) => void
-  onVisibilityChange: (value: VisibilityOption) => void
-  onIsLibraryChange: (checked: boolean) => void
-  onNewTagChange: (value: string) => void
-  onSelectedDependencyChange: (value: string) => void
-  onShareUsernameChange: (value: string) => void
+  readonly onNameChange: (value: string) => void
+  readonly onDescriptionChange: (value: string) => void
+  readonly onVisibilityChange: (value: VisibilityOption) => void
+  readonly onIsLibraryChange: (checked: boolean) => void
+  readonly onNewTagChange: (value: string) => void
+  readonly onSelectedDependencyChange: (value: string) => void
+  readonly onShareUsernameChange: (value: string) => void
 
   // Actions
-  onSave: () => void
-  onClose: () => void
-  onAddTag: () => void
-  onRemoveTag: (tagName: string) => void
-  onAddDependency: () => void
-  onRemoveDependency: (dependencyId: string) => void
-  onAddShare: () => void
-  onRemoveShare: (userId: string) => void
+  readonly onSave: () => void
+  readonly onClose: () => void
+  readonly onAddTag: () => void
+  readonly onRemoveTag: (tagName: string) => void
+  readonly onAddDependency: () => void
+  readonly onRemoveDependency: (dependencyId: string) => void
+  readonly onAddShare: () => void
+  readonly onRemoveShare: (userId: string) => void
 }
 
 /**
