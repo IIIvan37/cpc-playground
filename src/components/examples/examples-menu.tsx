@@ -4,10 +4,10 @@ import { Select, SelectItem } from '@/components/ui/select'
 import { codeAtom } from '@/store'
 import { currentFileIdAtom, currentProjectIdAtom } from '@/store/projects'
 
-interface Example {
+type Example = Readonly<{
   name: string
   file: string
-}
+}>
 
 export function ExamplesMenu() {
   const [examples, setExamples] = useState<Example[]>([])

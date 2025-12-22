@@ -4,55 +4,59 @@ import { Modal } from '@/components/ui/modal'
 import { Select, SelectItem } from '@/components/ui/select/select'
 import styles from './project-settings-modal.module.css'
 
-interface DependencyInfo {
-  readonly id: string
-  readonly name: string
-}
+type DependencyInfo = Readonly<{
+  id: string
+  name: string
+}>
 
 type VisibilityOption = 'private' | 'public' | 'shared'
 
-export interface ProjectSettingsModalViewProps {
+export type ProjectSettingsModalViewProps = Readonly<{
   // Form state
-  readonly name: string
-  readonly description: string
-  readonly visibility: VisibilityOption
-  readonly isLibrary: boolean
-  readonly newTag: string
-  readonly selectedDependency: string
-  readonly shareUsername: string
-  readonly loading: boolean
+  name: string
+  description: string
+  visibility: VisibilityOption
+  isLibrary: boolean
+  newTag: string
+  selectedDependency: string
+  shareUsername: string
+  loading: boolean
 
   // Project data
-  readonly currentTags: readonly string[]
-  readonly currentDependencies: readonly DependencyInfo[]
-  readonly currentUserShares: ReadonlyArray<{
-    readonly userId: string
-    readonly username: string
-  }>
-  readonly availableDependencies: ReadonlyArray<{
-    readonly id: string
-    readonly name: string
-  }>
+  currentTags: readonly string[]
+  currentDependencies: readonly DependencyInfo[]
+  currentUserShares: ReadonlyArray<
+    Readonly<{
+      userId: string
+      username: string
+    }>
+  >
+  availableDependencies: ReadonlyArray<
+    Readonly<{
+      id: string
+      name: string
+    }>
+  >
 
   // Form handlers
-  readonly onNameChange: (value: string) => void
-  readonly onDescriptionChange: (value: string) => void
-  readonly onVisibilityChange: (value: VisibilityOption) => void
-  readonly onIsLibraryChange: (checked: boolean) => void
-  readonly onNewTagChange: (value: string) => void
-  readonly onSelectedDependencyChange: (value: string) => void
-  readonly onShareUsernameChange: (value: string) => void
+  onNameChange: (value: string) => void
+  onDescriptionChange: (value: string) => void
+  onVisibilityChange: (value: VisibilityOption) => void
+  onIsLibraryChange: (checked: boolean) => void
+  onNewTagChange: (value: string) => void
+  onSelectedDependencyChange: (value: string) => void
+  onShareUsernameChange: (value: string) => void
 
   // Actions
-  readonly onSave: () => void
-  readonly onClose: () => void
-  readonly onAddTag: () => void
-  readonly onRemoveTag: (tagName: string) => void
-  readonly onAddDependency: () => void
-  readonly onRemoveDependency: (dependencyId: string) => void
-  readonly onAddShare: () => void
-  readonly onRemoveShare: (userId: string) => void
-}
+  onSave: () => void
+  onClose: () => void
+  onAddTag: () => void
+  onRemoveTag: (tagName: string) => void
+  onAddDependency: () => void
+  onRemoveDependency: (dependencyId: string) => void
+  onAddShare: () => void
+  onRemoveShare: (userId: string) => void
+}>
 
 /**
  * Pure view component for project settings modal

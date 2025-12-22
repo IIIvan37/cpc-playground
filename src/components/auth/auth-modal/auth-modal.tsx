@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { AuthModalView, type AuthMode } from './auth-modal.view'
 
-interface AuthModalProps {
+type AuthModalProps = Readonly<{
   onClose: () => void
-}
+}>
 
 /**
  * Container component for authentication modal

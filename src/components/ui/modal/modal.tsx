@@ -3,7 +3,7 @@ import styles from './modal.module.css'
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl'
 
-interface ModalProps {
+type ModalProps = Readonly<{
   /** Whether the modal is open */
   open: boolean
   /** Called when the modal should close (clicking overlay or close button) */
@@ -20,7 +20,7 @@ interface ModalProps {
   actions?: ReactNode
   /** Additional class name for the modal */
   className?: string
-}
+}>
 
 export function Modal({
   open,

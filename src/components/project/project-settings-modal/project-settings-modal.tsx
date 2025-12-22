@@ -15,9 +15,9 @@ import {
 } from '@/store/projects'
 import { ProjectSettingsModalView } from './project-settings-modal.view'
 
-interface ProjectSettingsModalProps {
+type ProjectSettingsModalProps = Readonly<{
   onClose: () => void
-}
+}>
 
 /**
  * Container component for project settings modal
