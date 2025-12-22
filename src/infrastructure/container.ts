@@ -60,6 +60,8 @@ import {
   createGetProjectWithDependenciesUseCase,
   createUpdateProjectUseCase
 } from '@/use-cases/projects'
+import type { GetSharedCodeUseCase } from '@/use-cases/shared-code'
+import { createGetSharedCodeUseCase } from '@/use-cases/shared-code'
 import type {
   AddUserShareUseCase,
   RemoveUserShareUseCase
@@ -70,6 +72,7 @@ import {
 } from '@/use-cases/shares'
 import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
 import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
+import { createApiSharedCodeRepository } from './repositories/api-shared-code.repository'
 import { createSupabaseAuthRepository } from './repositories/supabase-auth.repository'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
 
@@ -106,6 +109,8 @@ export type Container = {
   // Shares use cases
   addUserShare: AddUserShareUseCase
   removeUserShare: RemoveUserShareUseCase
+  // Shared code use cases
+  getSharedCode: GetSharedCodeUseCase
 }
 
 /**
@@ -115,6 +120,7 @@ export function createContainer(): Container {
   // Infrastructure layer - repositories
   const authRepository = createSupabaseAuthRepository(supabase)
   const projectsRepository = createSupabaseProjectsRepository(supabase)
+  const sharedCodeRepository = createApiSharedCodeRepository()
 
   // Domain services
   const authorizationService = createAuthorizationService(projectsRepository)
@@ -181,7 +187,9 @@ export function createContainer(): Container {
     removeUserShare: createRemoveUserShareUseCase(
       projectsRepository,
       authorizationService
-    )
+    ),
+    // Shared code use cases
+    getSharedCode: createGetSharedCodeUseCase(sharedCodeRepository)
   }
 }
 

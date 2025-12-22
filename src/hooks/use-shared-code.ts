@@ -1,11 +1,14 @@
 import { useAtom } from 'jotai'
 import { useEffect, useState } from 'react'
+import { container } from '@/infrastructure/container'
 import { addConsoleMessageAtom, codeAtom } from '@/store/editor'
 
 export function useSharedCode() {
   const [, setCode] = useAtom(codeAtom)
   const [, addMessage] = useAtom(addConsoleMessageAtom)
   const [isLoading, setIsLoading] = useState(false)
+
+  const { getSharedCode } = container
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -16,14 +19,9 @@ export function useSharedCode() {
     async function loadSharedCode(id: string) {
       setIsLoading(true)
       try {
-        const response = await fetch(`/api/share?id=${encodeURIComponent(id)}`)
-        const data = await response.json()
+        const { code } = await getSharedCode.execute({ shareId: id })
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to load shared code')
-        }
-
-        setCode(data.code)
+        setCode(code)
         addMessage({
           type: 'info',
           text: `Loaded shared code (ID: ${id})`
@@ -43,7 +41,7 @@ export function useSharedCode() {
     }
 
     loadSharedCode(shareId)
-  }, [setCode, addMessage])
+  }, [setCode, addMessage, getSharedCode])
 
   return { isLoading }
 }
