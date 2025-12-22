@@ -5,7 +5,7 @@
 
 import { atom } from 'jotai'
 import type { Project } from '@/domain/entities/project.entity'
-import { FILE_ERRORS, PROJECT_ERRORS } from '@/domain/errors/error-messages'
+import { PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import { container } from '@/infrastructure/container'
 
 // ============================================================================
@@ -383,7 +383,7 @@ export const deleteFileAtom = atom(
 export const setMainFileAtom = atom(
   null,
   async (
-    get,
+    _get,
     set,
     params: {
       projectId: string
@@ -392,13 +392,6 @@ export const setMainFileAtom = atom(
     }
   ) => {
     try {
-      // Check if project is a library
-      const projects = get(projectsAtom)
-      const project = projects.find((p) => p.id === params.projectId)
-      if (project?.isLibrary) {
-        throw new Error(FILE_ERRORS.LIBRARY_NO_MAIN)
-      }
-
       await container.updateFile.execute({
         ...params,
         isMain: true

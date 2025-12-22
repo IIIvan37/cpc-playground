@@ -886,6 +886,11 @@ describe('Projects Store', () => {
         })
         store.set(projectsAtom, [project])
 
+        // Use-case should throw when trying to set main on library
+        mockContainer.updateFile.execute.mockRejectedValue(
+          new Error(FILE_ERRORS.LIBRARY_NO_MAIN)
+        )
+
         await expect(
           store.set(setMainFileAtom, {
             projectId: 'proj-1',
