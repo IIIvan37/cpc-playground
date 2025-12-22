@@ -282,6 +282,19 @@ describe('SupabaseProjectsRepository', () => {
 
       expect(result).toBeNull()
     })
+
+    it('should throw on other errors', async () => {
+      const chainMock = createFullChainMock({
+        data: null,
+        error: { code: 'OTHER', message: 'Database error' }
+      })
+      mockSupabase.from.mockReturnValue(chainMock)
+
+      await expect(repository.findByShareCode('share-abc')).rejects.toEqual({
+        code: 'OTHER',
+        message: 'Database error'
+      })
+    })
   })
 
   describe('create', () => {
@@ -348,6 +361,111 @@ describe('SupabaseProjectsRepository', () => {
 
       await expect(repository.create(project)).rejects.toEqual({
         message: 'Insert failed'
+      })
+    })
+
+    it('should create a project with files', async () => {
+      // First call: insert project
+      const insertMock = createFullChainMock({
+        data: { id: 'new-project-123', ...mockProjectRow },
+        error: null
+      })
+      // Second call: insert files
+      const fileInsertMock = createFullChainMock({ error: null })
+      // Third call: findById
+      const findMock = createFullChainMock({
+        data: {
+          ...mockProjectRow,
+          id: 'new-project-123',
+          project_files: [mockFileRow]
+        },
+        error: null
+      })
+
+      mockSupabase.from
+        .mockReturnValueOnce(insertMock)
+        .mockReturnValueOnce(fileInsertMock)
+        .mockReturnValueOnce(findMock)
+
+      const project = {
+        id: '',
+        userId: 'user-123',
+        name: createProjectName('New Project'),
+        description: 'Description',
+        visibility: createVisibility('private'),
+        isLibrary: false,
+        files: [
+          {
+            id: 'file-1',
+            projectId: '',
+            name: createFileName('main.asm'),
+            content: createFileContent('; Hello'),
+            isMain: true,
+            order: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        ],
+        shares: [],
+        tags: [],
+        dependencies: [],
+        userShares: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const result = await repository.create(project)
+
+      expect(mockSupabase.from).toHaveBeenCalledWith('project_files')
+      expect(result.id).toBe('new-project-123')
+    })
+
+    it('should throw on file insert error', async () => {
+      // First call: insert project
+      const insertMock = createFullChainMock({
+        data: { id: 'new-project-123', ...mockProjectRow },
+        error: null
+      })
+      // Second call: insert files fails - insert returns directly
+      const fileInsertMock = {
+        insert: vi.fn(() =>
+          Promise.resolve({ error: { message: 'File insert failed' } })
+        )
+      }
+
+      mockSupabase.from
+        .mockReturnValueOnce(insertMock)
+        .mockReturnValueOnce(fileInsertMock)
+
+      const project = {
+        id: '',
+        userId: 'user-123',
+        name: createProjectName('New Project'),
+        description: null,
+        visibility: createVisibility('private'),
+        isLibrary: false,
+        files: [
+          {
+            id: 'file-1',
+            projectId: '',
+            name: createFileName('main.asm'),
+            content: createFileContent('; Hello'),
+            isMain: true,
+            order: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        ],
+        shares: [],
+        tags: [],
+        dependencies: [],
+        userShares: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await expect(repository.create(project)).rejects.toEqual({
+        message: 'File insert failed'
       })
     })
   })
