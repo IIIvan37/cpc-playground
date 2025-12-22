@@ -1,3 +1,4 @@
+export * from './auth'
 export * from './dependencies'
 export * from './files'
 export * from './projects'

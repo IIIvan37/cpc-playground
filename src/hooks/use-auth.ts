@@ -1,73 +1,81 @@
-import type { User } from '@supabase/supabase-js'
 import { useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useCallback, useEffect, useState } from 'react'
+import type { User } from '@/domain/entities/user.entity'
+import { container } from '@/infrastructure/container'
 
-// Auth state atom
-export const userAtom = atomWithStorage<User | null>('supabase-user', null)
+// Auth state atom - stores user in localStorage for persistence
+export const userAtom = atomWithStorage<User | null>('auth-user', null)
 
+/**
+ * Hook for authentication operations using Clean Architecture
+ */
 export function useAuth() {
   const [user, setUser] = useAtom(userAtom)
   const [loading, setLoading] = useState(true)
 
+  // Get use cases from container
+  const {
+    signIn: signInUseCase,
+    signUp: signUpUseCase,
+    signOut: signOutUseCase,
+    signInWithOAuth: signInWithOAuthUseCase,
+    getCurrentUser: getCurrentUserUseCase,
+    authRepository
+  } = container
+
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    // Get initial user
+    getCurrentUserUseCase.execute().then(({ user: currentUser }) => {
+      setUser(currentUser)
       setLoading(false)
     })
 
     // Listen for auth changes
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    const unsubscribe = authRepository.onAuthStateChange((newUser) => {
+      setUser(newUser)
     })
 
-    return () => subscription.unsubscribe()
-  }, [setUser])
+    return unsubscribe
+  }, [setUser, getCurrentUserUseCase, authRepository])
 
-  const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    return { data, error }
-  }
-
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password
-    })
-    return { data, error }
-  }
-
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut({ scope: 'local' })
-      // Ignore 403 errors as the session is already invalid
-      if (error && !error.message.includes('403')) {
-        return { error }
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const result = await signInUseCase.execute({ email, password })
+      return {
+        data: result.user ? { user: result.user } : null,
+        error: result.error
       }
-      return { error: null }
-    } catch (e) {
-      // Ignore network errors, session will be cleared locally anyway
-      console.warn('SignOut error (ignored):', e)
-      return { error: null }
+    },
+    [signInUseCase]
+  )
+
+  const signUp = useCallback(
+    async (email: string, password: string) => {
+      const result = await signUpUseCase.execute({ email, password })
+      return {
+        data: result.user ? { user: result.user } : null,
+        error: result.error
+      }
+    },
+    [signUpUseCase]
+  )
+
+  const signOut = useCallback(async () => {
+    const result = await signOutUseCase.execute()
+    if (!result.error) {
+      setUser(null)
     }
-  }
+    return { error: result.error }
+  }, [signOutUseCase, setUser])
 
-  const signInWithGithub = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: window.location.origin
-      }
-    })
-    return { data, error }
-  }
+  const signInWithGithub = useCallback(async () => {
+    const result = await signInWithOAuthUseCase.execute({ provider: 'github' })
+    return {
+      data: result.user ? { user: result.user } : null,
+      error: result.error
+    }
+  }, [signInWithOAuthUseCase])
 
   return {
     user,

@@ -9,6 +9,24 @@ import {
 } from '@/domain/services'
 import { supabase } from '@/lib/supabase'
 import type {
+  GetCurrentUserUseCase,
+  GetUserProfileUseCase,
+  SignInUseCase,
+  SignInWithOAuthUseCase,
+  SignOutUseCase,
+  SignUpUseCase,
+  UpdateUserProfileUseCase
+} from '@/use-cases/auth'
+import {
+  createGetCurrentUserUseCase,
+  createGetUserProfileUseCase,
+  createSignInUseCase,
+  createSignInWithOAuthUseCase,
+  createSignOutUseCase,
+  createSignUpUseCase,
+  createUpdateUserProfileUseCase
+} from '@/use-cases/auth'
+import type {
   AddDependencyUseCase,
   RemoveDependencyUseCase
 } from '@/use-cases/dependencies'
@@ -52,11 +70,22 @@ import {
 } from '@/use-cases/shares'
 import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
 import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
+import { createSupabaseAuthRepository } from './repositories/supabase-auth.repository'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
 
 export type Container = {
+  // Auth repository (exposed for onAuthStateChange subscription)
+  authRepository: ReturnType<typeof createSupabaseAuthRepository>
   // Services
   authorizationService: AuthorizationService
+  // Auth use cases
+  signIn: SignInUseCase
+  signUp: SignUpUseCase
+  signOut: SignOutUseCase
+  signInWithOAuth: SignInWithOAuthUseCase
+  getCurrentUser: GetCurrentUserUseCase
+  getUserProfile: GetUserProfileUseCase
+  updateUserProfile: UpdateUserProfileUseCase
   // Projects use cases
   createProject: CreateProjectUseCase
   getProjects: GetProjectsUseCase
@@ -84,6 +113,7 @@ export type Container = {
  */
 export function createContainer(): Container {
   // Infrastructure layer - repositories
+  const authRepository = createSupabaseAuthRepository(supabase)
   const projectsRepository = createSupabaseProjectsRepository(supabase)
 
   // Domain services
@@ -91,7 +121,19 @@ export function createContainer(): Container {
 
   // Use cases layer - inject repository dependencies
   return {
+    // Repository (for subscriptions)
+    authRepository,
+    // Services
     authorizationService,
+    // Auth use cases
+    signIn: createSignInUseCase(authRepository),
+    signUp: createSignUpUseCase(authRepository),
+    signOut: createSignOutUseCase(authRepository),
+    signInWithOAuth: createSignInWithOAuthUseCase(authRepository),
+    getCurrentUser: createGetCurrentUserUseCase(authRepository),
+    getUserProfile: createGetUserProfileUseCase(authRepository),
+    updateUserProfile: createUpdateUserProfileUseCase(authRepository),
+    // Projects use cases
     createProject: createCreateProjectUseCase(projectsRepository),
     getProjects: createGetProjectsUseCase(projectsRepository),
     getProject: createGetProjectUseCase(
