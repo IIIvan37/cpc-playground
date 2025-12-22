@@ -4,19 +4,60 @@
 
 This project follows **Clean Architecture** principles with TypeScript-idiomatic **factory functions**.
 
+## Migration Status
+
+> Last updated: December 22, 2025
+
+### ✅ Completed
+
+| Component | Status | Coverage |
+|-----------|--------|----------|
+| **Domain Layer** | ✅ Complete | 100% |
+| └─ Entities (Project, ProjectFile, User) | ✅ | 100% |
+| └─ Value Objects (ProjectName, FileName, Visibility...) | ✅ | 100% |
+| └─ Repository Interfaces | ✅ | 100% |
+| └─ AuthorizationService | ✅ | 100% |
+| └─ Domain Errors | ✅ | 100% |
+| **Use Cases - Projects** | ✅ Complete | 100% |
+| **Use Cases - Files** | ✅ Complete | ~97% |
+| **Use Cases - Tags** | ✅ Complete | 100% |
+| **Use Cases - Dependencies** | ✅ Complete | 100% |
+| **Use Cases - Shares** | ✅ Complete | 100% |
+| **Use Cases - Auth** | ✅ Complete | 100% |
+| **Infrastructure** | ✅ Complete | ~85% |
+| └─ SupabaseProjectsRepository | ✅ | 73% |
+| └─ SupabaseAuthRepository | ✅ | 100% |
+| └─ Container (DI) | ✅ | - |
+| **Hooks - useAuth** | ✅ Uses Clean Architecture | - |
+| **Hooks - useProjects** | ✅ Uses useUseCase | - |
+| **Global Test Coverage** | ✅ | **94.84%** |
+
+### 🔄 To Clean Up (Dead Code)
+
+| File | Reason |
+|------|--------|
+| `src/services/auth.service.ts` | Replaced by `use-cases/auth/*` + `SupabaseAuthRepository` |
+| `src/services/__tests__/auth.service.test.ts` | Tests for dead code above |
+
+### 📋 Next Steps
+
+1. **Delete dead code** - Remove `src/services/auth.service.ts` and its tests
+2. **Improve repository coverage** - Add more tests for `SupabaseProjectsRepository` (73% → 90%+)
+3. **User profile management** - Migrate `useUserProfile` hook to Clean Architecture
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION                             │
 │  components/ • hooks/ • store/                                  │
 ├─────────────────────────────────────────────────────────────────┤
 │                        USE CASES                                │
-│  use-cases/projects/ • use-cases/files/ • use-cases/tags/       │
+│  projects/ • files/ • tags/ • dependencies/ • shares/ • auth/  │
 ├─────────────────────────────────────────────────────────────────┤
 │                         DOMAIN                                  │
 │  entities/ • value-objects/ • repositories/ • services/         │
 ├─────────────────────────────────────────────────────────────────┤
 │                      INFRASTRUCTURE                             │
-│  repositories/supabase • container.ts                           │
+│  SupabaseProjectsRepository • SupabaseAuthRepository            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -32,13 +73,14 @@ This project follows **Clean Architecture** principles with TypeScript-idiomatic
 ```
 src/
 ├── domain/                    # 🎯 Business logic (no external deps)
-│   ├── entities/              # Project, ProjectFile, ProjectShare
+│   ├── entities/              # Project, ProjectFile, User
 │   ├── value-objects/         # ProjectName, Visibility, FileName, FileContent
-│   ├── repositories/          # Interface definitions (ports)
+│   ├── repositories/          # IProjectsRepository, IAuthRepository
 │   ├── services/              # AuthorizationService
 │   └── errors/                # NotFoundError, UnauthorizedError, ValidationError
 │
 ├── use-cases/                 # 📋 Application business rules
+│   ├── auth/                  # signIn, signUp, signOut, OAuth, profile
 │   ├── projects/              # CRUD, get-with-dependencies
 │   ├── files/                 # Create, update, delete files
 │   ├── tags/                  # Add, remove tags
@@ -46,7 +88,7 @@ src/
 │   └── shares/                # Add, remove user shares
 │
 ├── infrastructure/            # 🔌 Technical implementations
-│   ├── repositories/          # Supabase implementation
+│   ├── repositories/          # SupabaseProjectsRepository, SupabaseAuthRepository
 │   └── container.ts           # Dependency injection
 │
 └── presentation/              # 🎨 UI Layer
