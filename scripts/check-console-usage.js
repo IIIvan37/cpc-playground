@@ -23,7 +23,7 @@ const IGNORE_PATTERNS = [
   /\/coverage\//
 ]
 
-const FILE_EXTS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']
+const FILE_EXTS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'])
 
 function walk(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true })
@@ -49,7 +49,7 @@ function isIgnored(filePath) {
 function main() {
   console.log('🔍 Checking for console.* usage in source files...\n')
 
-  const files = walk(SRC).filter((f) => FILE_EXTS.includes(path.extname(f)))
+  const files = walk(SRC).filter((f) => FILE_EXTS.has(path.extname(f)))
   const offenders = []
 
   const consoleRegex = /\bconsole\.(log|warn|error|debug|info)\s*\(/g
@@ -62,11 +62,11 @@ function main() {
 
     // Remove comments before searching for console.* to allow examples in doc blocks
     // Remove block comments
-    content = content.replace(/\/\*[\s\S]*?\*\//g, '')
+    content = content.replaceAll(/\/\*[\s\S]*?\*\//g, '')
     // Remove any leftover lines like '*   console.log(...)' which may remain after docblock pruning
-    content = content.replace(/^\s*\*\s*console\.[^\n]*$/gm, '')
+    content = content.replaceAll(/^\s*\*\s*console\.[^\n]*$/gm, '')
     // Remove single-line comments
-    content = content.replace(/\/\/.*$/gm, '')
+    content = content.replaceAll(/\/\/.*$/gm, '')
 
     if (consoleRegex.test(content)) {
       offenders.push(rel)

@@ -32,12 +32,10 @@ export function AuthModal({ onClose }: AuthModalProps) {
 
       if (error) {
         setError(error.message)
+      } else if (mode === 'signup') {
+        setError('Check your email to confirm your account')
       } else {
-        if (mode === 'signup') {
-          setError('Check your email to confirm your account')
-        } else {
-          onClose()
-        }
+        onClose()
       }
     } finally {
       setLoading(false)

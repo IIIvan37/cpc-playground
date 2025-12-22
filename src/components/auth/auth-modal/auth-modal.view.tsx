@@ -72,7 +72,9 @@ export function AuthModalView({
         />
 
         <Button type='submit' disabled={loading} fullWidth>
-          {loading ? 'Loading...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+          {loading && 'Loading...'}
+          {!loading && mode === 'signin' && 'Sign In'}
+          {!loading && mode === 'signup' && 'Sign Up'}
         </Button>
 
         <div className={styles.divider}>

@@ -11,7 +11,7 @@ import type { IProjectsRepository } from '@/domain/repositories/projects.reposit
 /**
  * @deprecated Use AUTH_ERRORS from '@/domain/errors/error-messages' instead
  */
-export const AUTH_ERROR_MESSAGES = AUTH_ERRORS
+export { AUTH_ERRORS as AUTH_ERROR_MESSAGES } from '@/domain/errors/error-messages'
 
 export type AuthorizationService = {
   /**

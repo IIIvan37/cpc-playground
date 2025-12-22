@@ -33,7 +33,7 @@ export function createRasmErrorParser(
   const ERROR_PATTERN = /\[\/?\w+\.asm:(\d+)\]/
 
   function extractRawLineNumber(text: string): number | undefined {
-    const match = text.match(ERROR_PATTERN)
+    const match = ERROR_PATTERN.exec(text)
     if (match) {
       return Number.parseInt(match[1], 10)
     }
@@ -52,7 +52,7 @@ export function createRasmErrorParser(
   function parseError(text: string): ParsedAssemblerError {
     const rawLine = extractRawLineNumber(text)
     const line =
-      rawLine !== undefined ? Math.max(1, rawLine - lineOffset) : undefined
+      rawLine === undefined ? undefined : Math.max(1, rawLine - lineOffset)
 
     return {
       text,

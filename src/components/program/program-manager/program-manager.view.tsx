@@ -40,38 +40,28 @@ export type ProgramManagerViewProps = Readonly<{
 /**
  * Sub-component for save dialog
  */
+type SaveDialogProps = Readonly<{
+  programName: string
+  onProgramNameChange: (value: string) => void
+  onSaveConfirm: () => void
+  onClose: () => void
+  inputRef: React.RefObject<HTMLInputElement | null>
+}>
+
 function SaveDialog({
   programName,
   onProgramNameChange,
   onSaveConfirm,
   onClose,
   inputRef
-}: {
-  programName: string
-  onProgramNameChange: (value: string) => void
-  onSaveConfirm: () => void
-  onClose: () => void
-  inputRef: React.RefObject<HTMLInputElement | null>
-}) {
-  const handleOverlayKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
-  }
-
+}: SaveDialogProps) {
   return (
-    <div
-      role='dialog'
-      aria-modal='true'
+    <dialog
+      open
       aria-labelledby='save-dialog-title'
       className={styles.dialogOverlay}
-      onClick={onClose}
-      onKeyDown={handleOverlayKeyDown}
     >
-      <div
-        role='document'
-        className={styles.dialog}
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
+      <div className={styles.dialog}>
         <h3 id='save-dialog-title' className={styles.dialogTitle}>
           Save Program
         </h3>
@@ -91,41 +81,32 @@ function SaveDialog({
           <Button onClick={onSaveConfirm}>Save</Button>
         </div>
       </div>
-    </div>
+    </dialog>
   )
 }
 
 /**
  * Sub-component for delete dialog
  */
+type DeleteDialogProps = Readonly<{
+  programName: string | undefined
+  onDeleteConfirm: () => void
+  onClose: () => void
+}>
+
 function DeleteDialog({
   programName,
   onDeleteConfirm,
   onClose
-}: {
-  programName: string | undefined
-  onDeleteConfirm: () => void
-  onClose: () => void
-}) {
-  const handleOverlayKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
-  }
-
+}: DeleteDialogProps) {
   return (
-    <div
-      role='dialog'
-      aria-modal='true'
+    <dialog
+      open
       aria-labelledby='delete-dialog-title'
-      className={styles.dialogOverlay}
-      onClick={onClose}
-      onKeyDown={handleOverlayKeyDown}
+      className={`${styles.dialogOverlay} ${styles.nativeDialog}`}
+      onClose={onClose}
     >
-      <div
-        role='document'
-        className={styles.dialog}
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
+      <div className={styles.dialog}>
         <h3 id='delete-dialog-title' className={styles.dialogTitle}>
           Delete Program
         </h3>
@@ -139,7 +120,7 @@ function DeleteDialog({
           <Button onClick={onDeleteConfirm}>Delete</Button>
         </div>
       </div>
-    </div>
+    </dialog>
   )
 }
 

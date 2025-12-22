@@ -12,41 +12,41 @@ type StoredProgram = {
   updatedAt: string
 }
 
+function loadFromStorage(): Program[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (!stored) return []
+
+    const parsed: StoredProgram[] = JSON.parse(stored)
+    return parsed.map((p) =>
+      createProgram({
+        id: p.id,
+        name: createProgramName(p.name),
+        code: p.code,
+        createdAt: new Date(p.createdAt),
+        updatedAt: new Date(p.updatedAt)
+      })
+    )
+  } catch {
+    return []
+  }
+}
+
+function saveToStorage(programs: Program[]): void {
+  const toStore: StoredProgram[] = programs.map((p) => ({
+    id: p.id,
+    name: p.name.value,
+    code: p.code,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString()
+  }))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore))
+}
+
 /**
  * localStorage implementation of IProgramsRepository
  */
 export function createLocalStorageProgramsRepository(): IProgramsRepository {
-  function loadFromStorage(): Program[] {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (!stored) return []
-
-      const parsed: StoredProgram[] = JSON.parse(stored)
-      return parsed.map((p) =>
-        createProgram({
-          id: p.id,
-          name: createProgramName(p.name),
-          code: p.code,
-          createdAt: new Date(p.createdAt),
-          updatedAt: new Date(p.updatedAt)
-        })
-      )
-    } catch {
-      return []
-    }
-  }
-
-  function saveToStorage(programs: Program[]): void {
-    const toStore: StoredProgram[] = programs.map((p) => ({
-      id: p.id,
-      name: p.name.value,
-      code: p.code,
-      createdAt: p.createdAt.toISOString(),
-      updatedAt: p.updatedAt.toISOString()
-    }))
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore))
-  }
-
   return {
     async findAll(): Promise<readonly Program[]> {
       return loadFromStorage()

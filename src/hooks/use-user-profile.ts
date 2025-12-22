@@ -7,7 +7,7 @@ import type { UserProfile } from '@/domain/entities/user.entity'
 import { container } from '@/infrastructure/container'
 import { useAuth } from './use-auth'
 
-export type { UserProfile }
+export type { UserProfile } from '@/domain/entities/user.entity'
 
 export function useUserProfile() {
   const { user } = useAuth()

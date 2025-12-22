@@ -2,11 +2,14 @@ import { useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
 import { currentFileAtom } from '@/store/projects'
-import styles from './code-editor.module.css'
+import { CodeEditorView } from './code-editor.view'
 
 const LINE_HEIGHT = 21
-const PADDING = 16
 
+/**
+ * Container component for code editor
+ * Handles business logic and delegates rendering to CodeEditorView
+ */
 export function CodeEditor() {
   const [code, setCode] = useAtom(codeAtom)
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
@@ -47,7 +50,7 @@ export function CodeEditor() {
           const selected = value.substring(start, end)
           const after = value.substring(end)
           // Indent each line in selection
-          const indented = selected.replace(/^/gm, '    ')
+          const indented = selected.replaceAll(/^/gm, '    ')
           setCode(before + indented + after)
           setTimeout(() => {
             textarea.selectionStart = start
@@ -95,62 +98,18 @@ export function CodeEditor() {
   }, [goToLine, lines, setGoToLine])
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <span className={styles.title}>
-          {currentFile?.name.value ?? 'Scratch'}
-        </span>
-        <span className={styles.hint}>
-          {currentFile ? 'Project File' : 'Unsaved • RASM Syntax'}
-        </span>
-      </div>
-      <div className={styles.editorWrapper}>
-        <div
-          ref={lineNumbersRef}
-          className={styles.lineNumbers}
-          style={{ marginTop: -scrollTop }}
-        >
-          {lines.map((_, index) => {
-            const lineNum = index + 1
-            const hasError = errorLines.includes(lineNum)
-            return (
-              <div
-                key={lineNum}
-                className={`${styles.lineNumber} ${
-                  hasError ? styles.error : ''
-                }`}
-              >
-                {lineNum}
-              </div>
-            )
-          })}
-        </div>
-        <div className={styles.editorContent}>
-          <div className={styles.errorHighlights}>
-            {errorLines.map((lineNum) => (
-              <div
-                key={`error-${lineNum}`}
-                className={styles.errorHighlight}
-                style={{
-                  top: PADDING + (lineNum - 1) * LINE_HEIGHT - scrollTop
-                }}
-              />
-            ))}
-          </div>
-          <textarea
-            ref={textareaRef}
-            className={styles.editor}
-            value={code}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onScroll={handleScroll}
-            spellCheck={false}
-            autoComplete='off'
-            autoCorrect='off'
-            autoCapitalize='off'
-          />
-        </div>
-      </div>
-    </div>
+    <CodeEditorView
+      fileName={currentFile?.name.value}
+      isProjectFile={!!currentFile}
+      code={code}
+      lines={lines}
+      errorLines={errorLines}
+      scrollTop={scrollTop}
+      textareaRef={textareaRef}
+      lineNumbersRef={lineNumbersRef}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      onScroll={handleScroll}
+    />
   )
 }

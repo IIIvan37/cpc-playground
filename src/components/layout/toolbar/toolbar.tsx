@@ -1,9 +1,5 @@
-import { PlayIcon, ResetIcon } from '@radix-ui/react-icons'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { ProgramManager } from '@/components/program/program-manager'
-import Button from '@/components/ui/button/button'
-import Flex from '@/components/ui/flex/flex'
-import { Select, SelectItem } from '@/components/ui/select/select'
 import { useEmulator, useRasm } from '@/hooks'
 import {
   codeAtom,
@@ -18,8 +14,12 @@ import {
   currentProjectAtom,
   fetchProjectWithDependenciesAtom
 } from '@/store/projects'
-import styles from './toolbar.module.css'
+import { ToolbarView } from './toolbar.view'
 
+/**
+ * Container component for toolbar
+ * Handles business logic and delegates rendering to ToolbarView
+ */
 export function Toolbar() {
   const code = useAtomValue(codeAtom)
   const compilationStatus = useAtomValue(compilationStatusAtom)
@@ -83,52 +83,17 @@ export function Toolbar() {
   const isCompiling = compilationStatus === 'compiling'
 
   return (
-    <div className={styles.toolbar}>
-      <Flex gap='var(--spacing-md)' align='center'>
-        <ProgramManager />
-
-        <div className={styles.separator} />
-
-        <Flex gap='var(--spacing-sm)' align='center'>
-          <span className={styles.label}>Output:</span>
-          <Select
-            value={outputFormat}
-            onValueChange={(v) => setOutputFormat(v as OutputFormat)}
-          >
-            <SelectItem value='sna'>SNA</SelectItem>
-            <SelectItem value='dsk'>DSK</SelectItem>
-          </Select>
-        </Flex>
-
-        <Button
-          onClick={handleCompileAndRun}
-          disabled={!isReady || isCompiling || currentProject?.isLibrary}
-          title={
-            currentProject?.isLibrary
-              ? 'Library projects cannot be assembled or run'
-              : undefined
-          }
-        >
-          <PlayIcon />
-          <span>{isCompiling ? 'Compiling...' : 'Run'}</span>
-        </Button>
-        <Button variant='secondary' onClick={reset} disabled={!isReady}>
-          <ResetIcon />
-          <span>Reset</span>
-        </Button>
-      </Flex>
-
-      <Flex gap='var(--spacing-sm)' align='center'>
-        <span className={styles.label}>View:</span>
-        <Select
-          value={viewMode}
-          onValueChange={(v) => setViewMode(v as ViewMode)}
-        >
-          <SelectItem value='split'>Split</SelectItem>
-          <SelectItem value='editor'>Editor</SelectItem>
-          <SelectItem value='emulator'>Emulator</SelectItem>
-        </Select>
-      </Flex>
-    </div>
+    <ToolbarView
+      programManager={<ProgramManager />}
+      outputFormat={outputFormat}
+      onOutputFormatChange={(v) => setOutputFormat(v as OutputFormat)}
+      isReady={isReady}
+      isCompiling={isCompiling}
+      isLibrary={currentProject?.isLibrary ?? false}
+      onRun={handleCompileAndRun}
+      onReset={reset}
+      viewMode={viewMode}
+      onViewModeChange={(v) => setViewMode(v as ViewMode)}
+    />
   )
 }

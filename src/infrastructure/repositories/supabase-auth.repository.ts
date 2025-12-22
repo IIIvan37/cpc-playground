@@ -15,44 +15,44 @@ import type { Database } from '@/types/database.types'
 type UserProfileRow = Database['public']['Tables']['user_profiles']['Row']
 
 /**
+ * Map Supabase user to domain User
+ */
+function mapToDomainUser(
+  supabaseUser: { id: string; email?: string },
+  profile?: UserProfile
+): User {
+  return createUser({
+    id: supabaseUser.id,
+    email: supabaseUser.email ?? '',
+    profile: profile
+      ? {
+          id: profile.id,
+          username: profile.username,
+          createdAt: profile.createdAt,
+          updatedAt: profile.updatedAt
+        }
+      : undefined
+  })
+}
+
+/**
+ * Map Supabase profile row to domain UserProfile
+ */
+function mapToUserProfile(row: UserProfileRow): UserProfile {
+  return createUserProfile({
+    id: row.id,
+    username: row.username,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at)
+  })
+}
+
+/**
  * Factory function that creates a Supabase implementation of IAuthRepository
  */
 export function createSupabaseAuthRepository(
   supabase: SupabaseClient<Database>
 ): IAuthRepository {
-  /**
-   * Map Supabase user to domain User
-   */
-  function mapToDomainUser(
-    supabaseUser: { id: string; email?: string },
-    profile?: UserProfile
-  ): User {
-    return createUser({
-      id: supabaseUser.id,
-      email: supabaseUser.email ?? '',
-      profile: profile
-        ? {
-            id: profile.id,
-            username: profile.username,
-            createdAt: profile.createdAt,
-            updatedAt: profile.updatedAt
-          }
-        : undefined
-    })
-  }
-
-  /**
-   * Map Supabase profile row to domain UserProfile
-   */
-  function mapToUserProfile(row: UserProfileRow): UserProfile {
-    return createUserProfile({
-      id: row.id,
-      username: row.username,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at)
-    })
-  }
-
   return {
     async signIn(credentials: SignInCredentials): Promise<AuthResult> {
       try {
@@ -131,7 +131,7 @@ export function createSupabaseAuthRepository(
         const { error } = await supabase.auth.signInWithOAuth({
           provider,
           options: {
-            redirectTo: window.location.origin
+            redirectTo: globalThis.location.origin
           }
         })
 

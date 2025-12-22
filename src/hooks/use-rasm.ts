@@ -15,9 +15,7 @@ let worker: Worker | null = null
 let messageId = 0
 
 function getWorker(): Worker {
-  if (!worker) {
-    worker = new RasmWorker()
-  }
+  worker ??= new RasmWorker()
   return worker
 }
 

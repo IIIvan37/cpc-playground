@@ -79,26 +79,24 @@ export type ProjectBrowserViewProps = Readonly<{
 // Sub-components
 // ============================================================================
 
+type ProjectListItemProps = Readonly<{
+  project: Project
+  isActive: boolean
+  onSelect: () => void
+  onDelete: () => void
+}>
+
 function ProjectListItem({
   project,
   isActive,
   onSelect,
   onDelete
-}: {
-  project: Project
-  isActive: boolean
-  onSelect: () => void
-  onDelete: () => void
-}) {
+}: ProjectListItemProps) {
   return (
-    <div
+    <button
+      type='button'
       className={`${styles.project} ${isActive ? styles.active : ''}`}
       onClick={onSelect}
-      role='button'
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onSelect()
-      }}
     >
       <div className={styles.projectMeta}>
         <div className={styles.projectName}>
@@ -142,9 +140,18 @@ function ProjectListItem({
           <TrashIcon />
         </Button>
       )}
-    </div>
+    </button>
   )
 }
+
+type FileListItemProps = Readonly<{
+  file: { id: string; name: { value: string }; isMain: boolean }
+  isActive: boolean
+  isLibrary: boolean
+  onSelect: () => void
+  onSetMain: (e: React.MouseEvent) => void
+  onDelete: (e: React.MouseEvent) => void
+}>
 
 function FileListItem({
   file,
@@ -153,16 +160,10 @@ function FileListItem({
   onSelect,
   onSetMain,
   onDelete
-}: {
-  file: { id: string; name: { value: string }; isMain: boolean }
-  isActive: boolean
-  isLibrary: boolean
-  onSelect: () => void
-  onSetMain: (e: React.MouseEvent) => void
-  onDelete: (e: React.MouseEvent) => void
-}) {
+}: FileListItemProps) {
   return (
-    <div
+    <button
+      type='button'
       className={`${styles.file} ${isActive ? styles.active : ''}`}
       onClick={onSelect}
     >
@@ -193,16 +194,11 @@ function FileListItem({
           <TrashIcon />
         </Button>
       )}
-    </div>
+    </button>
   )
 }
 
-function DependencyFolder({
-  dependency,
-  isExpanded,
-  onToggle,
-  onSelectFile
-}: {
+type DependencyFolderProps = Readonly<{
   dependency: DependencyProject
   isExpanded: boolean
   onToggle: () => void
@@ -211,25 +207,37 @@ function DependencyFolder({
     content: string
     projectId: string
   }) => void
-}) {
+}>
+
+function DependencyFolder({
+  dependency,
+  isExpanded,
+  onToggle,
+  onSelectFile
+}: DependencyFolderProps) {
   return (
     <div className={styles.dependency}>
-      <div className={styles.dependencyFolder} onClick={onToggle}>
+      <button
+        type='button'
+        className={styles.dependencyFolder}
+        onClick={onToggle}
+      >
         {isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
         <span className={styles.dependencyName}>/{dependency.name}</span>
         <span className={styles.readOnly}>(read-only)</span>
-      </div>
+      </button>
       {isExpanded && (
         <div className={styles.dependencyFiles}>
           {dependency.files.map((file) => (
-            <div
+            <button
+              type='button'
               key={file.id}
               className={`${styles.file} ${styles.dependencyFile}`}
               onClick={() => onSelectFile(file)}
             >
               <FileIcon />
               <span className={styles.fileName}>{file.name}</span>
-            </div>
+            </button>
           ))}
         </div>
       )}

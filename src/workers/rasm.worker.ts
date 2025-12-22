@@ -97,7 +97,9 @@ async function createFreshRasmModule(): Promise<RasmModule> {
 }
 
 function prepareDskSource(source: string): string {
-  const orgMatch = source.match(/org\s+[&$#]?([0-9a-fA-F]+)/i)
+  // [&$#]? matches optional prefix, [\\da-f]+ matches hex digits (case insensitive via /i flag)
+  const orgPattern = /org\s+[&$#]?([\da-f]+)/i
+  const orgMatch = orgPattern.exec(source)
   const orgAddress = orgMatch ? `#${orgMatch[1]}` : '#4000'
 
   return `
@@ -337,5 +339,3 @@ self.onmessage = async (e: MessageEvent) => {
     }
   }
 }
-
-export {}

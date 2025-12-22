@@ -32,7 +32,7 @@ export function Modal({
   actions,
   className
 }: ModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDialogElement>(null)
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -66,23 +66,13 @@ export function Modal({
     styles[`size${size.charAt(0).toUpperCase()}${size.slice(1)}`]
 
   return (
-    <div
+    <dialog
       ref={overlayRef}
-      className={styles.overlay}
-      onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') {
-          e.preventDefault()
-          onClose()
-        }
-      }}
-      role='dialog'
-      aria-modal='true'
+      open
+      className={`${styles.overlay} ${styles.nativeDialog}`}
+      onClose={onClose}
     >
-      <div
-        className={`${styles.modal} ${sizeClass} ${className ?? ''}`}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={`${styles.modal} ${sizeClass} ${className ?? ''}`}>
         {(title || showCloseButton) && (
           <div className={styles.header}>
             {title && <h3 className={styles.title}>{title}</h3>}
@@ -101,6 +91,6 @@ export function Modal({
         <div className={styles.content}>{children}</div>
         {actions && <div className={styles.actions}>{actions}</div>}
       </div>
-    </div>
+    </dialog>
   )
 }

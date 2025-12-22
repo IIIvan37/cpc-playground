@@ -118,8 +118,11 @@ export function ProjectSettingsModalView({
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Basic Information</h3>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Name</label>
+          <label htmlFor='project-name' className={styles.label}>
+            Name
+          </label>
           <input
+            id='project-name'
             type='text'
             className={styles.input}
             value={name}
@@ -127,8 +130,11 @@ export function ProjectSettingsModalView({
           />
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Description</label>
+          <label htmlFor='project-description' className={styles.label}>
+            Description
+          </label>
           <textarea
+            id='project-description'
             className={styles.textarea}
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
@@ -150,7 +156,7 @@ export function ProjectSettingsModalView({
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Visibility & Sharing</h3>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Visibility</label>
+          <span className={styles.label}>Visibility</span>
           <Select
             value={visibility}
             onValueChange={(value) =>
@@ -173,7 +179,7 @@ export function ProjectSettingsModalView({
 
         {visibility === 'shared' && (
           <div className={styles.formGroup}>
-            <label className={styles.label}>Shared with</label>
+            <span className={styles.label}>Shared with</span>
             {currentUserShares.length > 0 ? (
               <div className={styles.sharesList}>
                 {currentUserShares.map((share) => (

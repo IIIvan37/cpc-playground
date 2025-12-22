@@ -11,7 +11,7 @@ export function useSharedCode() {
   const { getSharedCode } = container
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(globalThis.location.search)
     const shareId = params.get('share')
 
     if (!shareId) return
@@ -28,8 +28,8 @@ export function useSharedCode() {
         })
 
         // Clean URL without reloading
-        const newUrl = window.location.pathname
-        window.history.replaceState({}, '', newUrl)
+        const newUrl = globalThis.location.pathname
+        globalThis.history.replaceState({}, '', newUrl)
       } catch (error) {
         addMessage({
           type: 'error',
