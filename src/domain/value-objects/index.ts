@@ -1,3 +1,5 @@
 export type { FileName } from './file-name.vo'
+export type { ProgramName } from './program-name.vo'
+export { createProgramName } from './program-name.vo'
 export type { ProjectName } from './project-name.vo'
 export type { Visibility, VisibilityValue } from './visibility.vo'
