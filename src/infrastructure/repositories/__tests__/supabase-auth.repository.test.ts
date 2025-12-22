@@ -36,6 +36,8 @@ function createMockSupabase() {
       signOut: vi.fn(),
       signInWithOAuth: vi.fn(),
       getUser: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
       onAuthStateChange: vi.fn(() => ({
         data: {
           subscription: createMockSubscription()
@@ -622,6 +624,136 @@ describe('SupabaseAuthRepository', () => {
       })
 
       expect(result.error?.message).toBe('Failed to update profile')
+    })
+  })
+
+  describe('resetPasswordForEmail', () => {
+    it('should send password reset email successfully', async () => {
+      vi.mocked(mockSupabase.auth.resetPasswordForEmail).mockResolvedValue({
+        data: {},
+        error: null
+      })
+
+      const result = await repository.resetPasswordForEmail(
+        'test@example.com',
+        'https://example.com/reset'
+      )
+
+      expect(result.error).toBeNull()
+      expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        {
+          redirectTo: 'https://example.com/reset'
+        }
+      )
+    })
+
+    it('should use default redirectTo when not provided', async () => {
+      vi.mocked(mockSupabase.auth.resetPasswordForEmail).mockResolvedValue({
+        data: {},
+        error: null
+      })
+
+      // Mock globalThis.location.origin
+      const originalLocation = globalThis.location
+      Object.defineProperty(globalThis, 'location', {
+        value: { origin: 'https://myapp.com' },
+        writable: true
+      })
+
+      const result = await repository.resetPasswordForEmail('test@example.com')
+
+      expect(result.error).toBeNull()
+      expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        {
+          redirectTo: 'https://myapp.com/reset-password'
+        }
+      )
+
+      // Restore
+      Object.defineProperty(globalThis, 'location', {
+        value: originalLocation,
+        writable: true
+      })
+    })
+
+    it('should return error on failure', async () => {
+      vi.mocked(mockSupabase.auth.resetPasswordForEmail).mockResolvedValue({
+        data: null,
+        error: { message: 'Email not found' }
+      } as never)
+
+      const result = await repository.resetPasswordForEmail(
+        'unknown@example.com'
+      )
+
+      expect(result.error?.message).toBe('Email not found')
+    })
+
+    it('should handle exceptions', async () => {
+      vi.mocked(mockSupabase.auth.resetPasswordForEmail).mockRejectedValue(
+        new Error('Network error')
+      )
+
+      const result = await repository.resetPasswordForEmail('test@example.com')
+
+      expect(result.error?.message).toBe('Network error')
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      vi.mocked(mockSupabase.auth.resetPasswordForEmail).mockRejectedValue(
+        'Unknown error'
+      )
+
+      const result = await repository.resetPasswordForEmail('test@example.com')
+
+      expect(result.error?.message).toBe('Failed to send password reset email')
+    })
+  })
+
+  describe('updatePassword', () => {
+    it('should update password successfully', async () => {
+      vi.mocked(mockSupabase.auth.updateUser).mockResolvedValue({
+        data: { user: createMockUser() },
+        error: null
+      })
+
+      const result = await repository.updatePassword('newSecurePassword123')
+
+      expect(result.error).toBeNull()
+      expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({
+        password: 'newSecurePassword123'
+      })
+    })
+
+    it('should return error on failure', async () => {
+      vi.mocked(mockSupabase.auth.updateUser).mockResolvedValue({
+        data: { user: null },
+        error: { message: 'Password too weak' }
+      } as never)
+
+      const result = await repository.updatePassword('123')
+
+      expect(result.error?.message).toBe('Password too weak')
+    })
+
+    it('should handle exceptions', async () => {
+      vi.mocked(mockSupabase.auth.updateUser).mockRejectedValue(
+        new Error('Session expired')
+      )
+
+      const result = await repository.updatePassword('newPassword123')
+
+      expect(result.error?.message).toBe('Session expired')
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      vi.mocked(mockSupabase.auth.updateUser).mockRejectedValue('Unknown error')
+
+      const result = await repository.updatePassword('newPassword123')
+
+      expect(result.error?.message).toBe('Failed to update password')
     })
   })
 })

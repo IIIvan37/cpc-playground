@@ -3,10 +3,12 @@ import type { User, UserProfile } from '@/domain/entities/user.entity'
 import type { IAuthRepository } from '@/domain/repositories/auth.repository.interface'
 import { createGetCurrentUserUseCase } from '../get-current-user.use-case'
 import { createGetUserProfileUseCase } from '../get-user-profile.use-case'
+import { createRequestPasswordResetUseCase } from '../request-password-reset.use-case'
 import { createSignInUseCase } from '../sign-in.use-case'
 import { createSignInWithOAuthUseCase } from '../sign-in-with-oauth.use-case'
 import { createSignOutUseCase } from '../sign-out.use-case'
 import { createSignUpUseCase } from '../sign-up.use-case'
+import { createUpdatePasswordUseCase } from '../update-password.use-case'
 import { createUpdateUserProfileUseCase } from '../update-user-profile.use-case'
 
 // Mock repository
@@ -308,6 +310,84 @@ describe('Auth Use Cases', () => {
       const result = await useCase.execute({
         userId: 'user-123',
         username: 'newusername'
+      })
+
+      expect(result.error).toBe(error)
+    })
+  })
+
+  describe('RequestPasswordResetUseCase', () => {
+    it('should request password reset successfully', async () => {
+      vi.mocked(mockRepo.resetPasswordForEmail).mockResolvedValue({
+        error: null
+      })
+
+      const useCase = createRequestPasswordResetUseCase(mockRepo)
+      const result = await useCase.execute({
+        email: 'test@example.com'
+      })
+
+      expect(result.error).toBeNull()
+      expect(mockRepo.resetPasswordForEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        undefined
+      )
+    })
+
+    it('should pass custom redirectTo', async () => {
+      vi.mocked(mockRepo.resetPasswordForEmail).mockResolvedValue({
+        error: null
+      })
+
+      const useCase = createRequestPasswordResetUseCase(mockRepo)
+      await useCase.execute({
+        email: 'test@example.com',
+        redirectTo: 'https://example.com/reset'
+      })
+
+      expect(mockRepo.resetPasswordForEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        'https://example.com/reset'
+      )
+    })
+
+    it('should return error on failure', async () => {
+      const error = new Error('Email not found')
+      vi.mocked(mockRepo.resetPasswordForEmail).mockResolvedValue({ error })
+
+      const useCase = createRequestPasswordResetUseCase(mockRepo)
+      const result = await useCase.execute({
+        email: 'unknown@example.com'
+      })
+
+      expect(result.error).toBe(error)
+    })
+  })
+
+  describe('UpdatePasswordUseCase', () => {
+    it('should update password successfully', async () => {
+      vi.mocked(mockRepo.updatePassword).mockResolvedValue({
+        error: null
+      })
+
+      const useCase = createUpdatePasswordUseCase(mockRepo)
+      const result = await useCase.execute({
+        newPassword: 'newSecurePassword123'
+      })
+
+      expect(result.error).toBeNull()
+      expect(mockRepo.updatePassword).toHaveBeenCalledWith(
+        'newSecurePassword123'
+      )
+    })
+
+    it('should return error on failure', async () => {
+      const error = new Error('Password too weak')
+      vi.mocked(mockRepo.updatePassword).mockResolvedValue({ error })
+
+      const useCase = createUpdatePasswordUseCase(mockRepo)
+      const result = await useCase.execute({
+        newPassword: '123'
       })
 
       expect(result.error).toBe(error)
