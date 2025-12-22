@@ -1,6 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { ProgramManager } from '@/components/program/program-manager'
-import { useEmulator, useRasm } from '@/hooks'
+import { useAssembler, useEmulator } from '@/hooks'
 import {
   codeAtom,
   compilationStatusAtom,
@@ -30,7 +30,7 @@ export function Toolbar() {
   const fetchProjectWithDependencies = useSetAtom(
     fetchProjectWithDependenciesAtom
   )
-  const { compile } = useRasm()
+  const { compile } = useAssembler()
   const { isReady, loadSna, loadDsk, reset } = useEmulator()
 
   const handleCompileAndRun = async () => {

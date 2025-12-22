@@ -9,6 +9,13 @@ export type {
   SourcePreparationOptions
 } from './assembler.interface'
 export type {
+  AssemblerAdapterFactory,
+  CompilationFile,
+  CompilationOptions,
+  CompilationResult,
+  IAssemblerAdapter
+} from './assembler-adapter.interface'
+export type {
   AssemblerErrorParser,
   ParsedAssemblerError
 } from './assembler-error-parser.interface'
