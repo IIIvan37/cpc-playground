@@ -79,10 +79,10 @@ export function EmulatorCanvas() {
 
       // Map Shift+0-9 to CPC function keys F0-F9
       // Calls C functions em_press_fn / em_release_fn directly
-      if (e.shiftKey && e.code && e.code.startsWith('Digit')) {
+      if (e.shiftKey && e.code?.startsWith('Digit')) {
         e.preventDefault()
         e.stopPropagation()
-        const fnNum = parseInt(e.code.charAt(5), 10) // 'Digit0' -> 0, etc.
+        const fnNum = Number.parseInt(e.code.charAt(5), 10) // 'Digit0' -> 0, etc.
         if (Module._em_press_fn) {
           Module._em_press_fn(fnNum)
         }
@@ -104,7 +104,7 @@ export function EmulatorCanvas() {
 
       // Handle Shift+number key release for CPC function keys
       if (e.code?.startsWith('Digit')) {
-        const fnNum = parseInt(e.code.charAt(5), 10)
+        const fnNum = Number.parseInt(e.code.charAt(5), 10)
         if (Module._em_release_fn) {
           Module._em_release_fn(fnNum)
         }
@@ -130,17 +130,16 @@ export function EmulatorCanvas() {
     setHasFocus(false)
   }
 
+  const getStatusText = () => {
+    if (!isReady) return '○ Loading...'
+    return hasFocus ? '● Active' : '○ Click to type'
+  }
+
   return (
     <div className={styles.container} ref={containerRef}>
       <div className={styles.header}>
         <span className={styles.title}>CPC Emulator</span>
-        <span className={styles.status}>
-          {isReady
-            ? hasFocus
-              ? '● Active'
-              : '○ Click to type'
-            : '○ Loading...'}
-        </span>
+        <span className={styles.status}>{getStatusText()}</span>
       </div>
       <button
         type='button'

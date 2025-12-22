@@ -27,7 +27,7 @@ export interface ShareData {
   expiresAt: number
 }
 
-export default async (request: Request, _context: Context) => {
+async function handler(request: Request, _context: Context) {
   // Handle preflight first (no store needed)
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
@@ -142,3 +142,5 @@ export default async (request: Request, _context: Context) => {
     headers: { 'Content-Type': 'application/json', ...corsHeaders }
   })
 }
+
+export default handler
