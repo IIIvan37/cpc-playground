@@ -1,10 +1,6 @@
 export { useAuth } from './use-auth'
 export { useEmulator } from './use-emulator'
-export {
-  useCreateFile,
-  useDeleteFile,
-  useUpdateFile
-} from './use-files'
+export { useCreateFile, useDeleteFile, useUpdateFile } from './use-files'
 // Clean Architecture hooks
 export {
   useCreateProject,
@@ -15,4 +11,5 @@ export {
   useUpdateProject
 } from './use-projects'
 export { useRasm } from './use-rasm'
+export { useUseCase, useUseCaseWithoutInput } from './use-use-case'
 export { useUserProfile } from './use-user-profile'
