@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { OutputFormat } from '@/domain/services'
 import {
   createAssemblerRegistry,
   getAssemblerRegistry
@@ -45,13 +46,14 @@ describe('AssemblerRegistry', () => {
           type: 'pasmo' as const,
           name: 'PASMO',
           description: 'Portable Z80 assembler',
-          supportedFormats: ['bin'] as const,
+          supportedFormats: ['bin'] as OutputFormat[],
           defaultFormat: 'bin' as const,
           wasmUrl: '/pasmo.wasm',
           jsUrl: '/pasmo.js',
           errorParser: {
             extractLineNumber: () => undefined,
             extractRawLineNumber: () => undefined,
+            hasError: () => false,
             parseError: (text: string) => ({
               text,
               line: undefined,

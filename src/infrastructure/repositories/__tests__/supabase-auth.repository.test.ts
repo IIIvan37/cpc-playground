@@ -1,7 +1,31 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Subscription, SupabaseClient, User } from '@supabase/supabase-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Database } from '@/types/database.types'
 import { createSupabaseAuthRepository } from '../supabase-auth.repository'
+
+// Helper to create a mock User with all required properties
+function createMockUser(overrides: Partial<User> = {}): User {
+  return {
+    id: 'user-123',
+    email: 'test@example.com',
+    app_metadata: {},
+    user_metadata: {},
+    aud: 'authenticated',
+    created_at: new Date().toISOString(),
+    ...overrides
+  }
+}
+
+// Helper to create a mock Subscription with all required properties
+function createMockSubscription(
+  unsubscribeFn: () => void = vi.fn()
+): Subscription {
+  return {
+    id: 'subscription-123',
+    callback: vi.fn() as never,
+    unsubscribe: unsubscribeFn
+  }
+}
 
 // Mock Supabase client
 function createMockSupabase() {
@@ -14,9 +38,7 @@ function createMockSupabase() {
       getUser: vi.fn(),
       onAuthStateChange: vi.fn(() => ({
         data: {
-          subscription: {
-            unsubscribe: vi.fn()
-          }
+          subscription: createMockSubscription()
         }
       }))
     },
@@ -45,7 +67,7 @@ describe('SupabaseAuthRepository', () => {
 
   describe('signIn', () => {
     it('should sign in successfully', async () => {
-      const mockUser = { id: 'user-123', email: 'test@example.com' }
+      const mockUser = createMockUser()
       vi.mocked(mockSupabase.auth.signInWithPassword).mockResolvedValue({
         data: { user: mockUser, session: {} as never },
         error: null
@@ -85,7 +107,7 @@ describe('SupabaseAuthRepository', () => {
       vi.mocked(mockSupabase.auth.signInWithPassword).mockResolvedValue({
         data: { user: null, session: null },
         error: null
-      })
+      } as never)
 
       const result = await repository.signIn({
         email: 'test@example.com',
@@ -127,7 +149,7 @@ describe('SupabaseAuthRepository', () => {
 
   describe('signUp', () => {
     it('should sign up successfully', async () => {
-      const mockUser = { id: 'user-123', email: 'test@example.com' }
+      const mockUser = createMockUser()
       vi.mocked(mockSupabase.auth.signUp).mockResolvedValue({
         data: { user: mockUser, session: {} as never },
         error: null
@@ -152,7 +174,7 @@ describe('SupabaseAuthRepository', () => {
     })
 
     it('should sign up without username', async () => {
-      const mockUser = { id: 'user-123', email: 'test@example.com' }
+      const mockUser = createMockUser()
       vi.mocked(mockSupabase.auth.signUp).mockResolvedValue({
         data: { user: mockUser, session: {} as never },
         error: null
@@ -328,7 +350,7 @@ describe('SupabaseAuthRepository', () => {
 
   describe('getCurrentUser', () => {
     it('should return current user', async () => {
-      const mockUser = { id: 'user-123', email: 'test@example.com' }
+      const mockUser = createMockUser()
       vi.mocked(mockSupabase.auth.getUser).mockResolvedValue({
         data: { user: mockUser },
         error: null
@@ -356,7 +378,7 @@ describe('SupabaseAuthRepository', () => {
       vi.mocked(mockSupabase.auth.getUser).mockResolvedValue({
         data: { user: null },
         error: null
-      })
+      } as never)
 
       const result = await repository.getCurrentUser()
 
@@ -395,9 +417,7 @@ describe('SupabaseAuthRepository', () => {
           capturedCallback = cb as typeof capturedCallback
           return {
             data: {
-              subscription: {
-                unsubscribe: vi.fn()
-              }
+              subscription: createMockSubscription()
             }
           }
         }
@@ -430,9 +450,7 @@ describe('SupabaseAuthRepository', () => {
           capturedCallback = cb as typeof capturedCallback
           return {
             data: {
-              subscription: {
-                unsubscribe: vi.fn()
-              }
+              subscription: createMockSubscription()
             }
           }
         }
@@ -450,9 +468,7 @@ describe('SupabaseAuthRepository', () => {
       const unsubscribeMock = vi.fn()
       vi.mocked(mockSupabase.auth.onAuthStateChange).mockReturnValue({
         data: {
-          subscription: {
-            unsubscribe: unsubscribeMock
-          }
+          subscription: createMockSubscription(unsubscribeMock)
         }
       })
 
