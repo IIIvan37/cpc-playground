@@ -119,6 +119,56 @@ const name = createProjectName('My Project')  // OK
 const name = createProjectName('ab')          // Throws ValidationError
 ```
 
+### Immutability Pattern (Object.freeze)
+
+All domain objects (entities and value objects) are frozen with `Object.freeze()` to ensure runtime immutability:
+
+```typescript
+// Entity factory - returns frozen object
+export function createProject(params: CreateProjectParams): Project {
+  const now = new Date()
+  
+  return Object.freeze({
+    id: params.id ?? crypto.randomUUID(),
+    userId: params.userId,
+    name: params.name,
+    files: Object.freeze(params.files ?? []),  // Nested arrays also frozen
+    tags: Object.freeze(params.tags ?? []),
+    // ...
+  })
+}
+
+// Update returns a new frozen object (immutable update)
+export function updateProject(
+  project: Project,
+  updates: Partial<Project>
+): Project {
+  return Object.freeze({
+    ...project,
+    ...updates,
+    updatedAt: new Date()
+  })
+}
+```
+
+**Why Object.freeze?**
+- **Runtime safety**: TypeScript's `readonly` only enforces at compile time
+- **Predictable state**: Prevents accidental mutations in complex flows
+- **Debug-friendly**: Throws errors in strict mode when mutation is attempted
+- **Consistent pattern**: All domain objects behave the same way
+
+**Type pattern:**
+
+```typescript
+// Use Readonly<{}> for type definition
+export type Project = Readonly<{
+  id: string
+  name: ProjectName
+  files: readonly ProjectFile[]  // Use readonly for arrays
+  // ...
+}>
+```
+
 ### Authorization Service
 
 Centralized authorization logic:
