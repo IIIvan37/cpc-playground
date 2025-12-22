@@ -64,7 +64,9 @@ describe('useUseCase', () => {
 
       let executeResult: typeof expectedResult | undefined
       await act(async () => {
-        executeResult = await result.current.execute({ input: 'test' })
+        executeResult = (await result.current.execute({ input: 'test' })) as
+          | typeof expectedResult
+          | undefined
       })
 
       expect(executeResult).toEqual(expectedResult)

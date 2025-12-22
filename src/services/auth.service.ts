@@ -1,6 +1,12 @@
-// TODO: Remove @ts-nocheck - Migrate to Clean Architecture use-cases instead of direct Supabase calls
-// This file will be replaced by use-cases/auth/* once authentication is migrated
-// @ts-nocheck
+/**
+ * Authentication Service
+ * Handles all authentication-related operations with Supabase
+ *
+ * Note: This could be migrated to Clean Architecture with:
+ * - Auth use-cases in use-cases/auth
+ * - IAuthRepository in domain/repositories
+ */
+import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type {
   AuthResponse,
@@ -8,6 +14,10 @@ import type {
   SignUpCredentials,
   UserProfile
 } from '@/types/auth.types'
+import type { Database } from '@/types/database.types'
+
+type UserProfileRow = Database['public']['Tables']['user_profiles']['Row']
+type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
 
 /**
  * Authentication Service
@@ -150,12 +160,14 @@ export class AuthService {
         .single()
 
       if (error) throw error
+      if (!data) return null
 
+      const row = data as UserProfileRow
       return {
-        id: data.id,
-        username: data.username,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
+        id: row.id,
+        username: row.username,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
       }
     } catch (error) {
       console.error('Failed to fetch user profile:', error)
@@ -171,9 +183,10 @@ export class AuthService {
     updates: { username?: string }
   ): Promise<{ error: { message: string } | null }> {
     try {
+      const updateData: UserProfileUpdate = updates
       const { error } = await supabase
         .from('user_profiles')
-        .update(updates)
+        .update(updateData)
         .eq('id', userId)
 
       if (error) {
@@ -194,7 +207,7 @@ export class AuthService {
   /**
    * Subscribe to auth state changes
    */
-  onAuthStateChange(callback: (user: any) => void) {
+  onAuthStateChange(callback: (user: User | null) => void) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {

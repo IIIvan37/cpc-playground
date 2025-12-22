@@ -1,5 +1,3 @@
-// TODO: Remove @ts-nocheck once ProjectDependency entity and proper types are implemented
-// @ts-nocheck
 import type {
   Project,
   ProjectShare,

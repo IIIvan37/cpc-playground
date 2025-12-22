@@ -1,4 +1,7 @@
-import type { ProjectVisibility } from './database.types'
+import type { Database } from './database.types'
+
+export type ProjectVisibility =
+  Database['public']['Enums']['project_visibility']
 
 export interface ProjectFile {
   id: string

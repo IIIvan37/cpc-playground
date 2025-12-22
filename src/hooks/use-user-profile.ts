@@ -1,15 +1,34 @@
-// TODO: Remove @ts-nocheck - Migrate to Clean Architecture use-cases instead of direct Supabase calls
-// This file will be replaced by use-cases/users/* once user management is migrated
-// @ts-nocheck
+/**
+ * User profile hook
+ * Fetches and updates user profile from Supabase
+ *
+ * Note: This could be migrated to Clean Architecture with:
+ * - UserProfile entity in domain/entities
+ * - IUserProfilesRepository in domain/repositories
+ * - GetUserProfile and UpdateUsername use-cases
+ */
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/types/database.types'
 import { useAuth } from './use-auth'
+
+type UserProfileRow = Database['public']['Tables']['user_profiles']['Row']
+type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
 
 export interface UserProfile {
   id: string
   username: string
   createdAt: string
   updatedAt: string
+}
+
+function mapToUserProfile(row: UserProfileRow): UserProfile {
+  return {
+    id: row.id,
+    username: row.username,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }
 }
 
 export function useUserProfile() {
@@ -46,12 +65,7 @@ export function useUserProfile() {
           return
         }
 
-        setProfile({
-          id: data.id,
-          username: data.username,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        })
+        setProfile(mapToUserProfile(data))
       } catch (err) {
         setError(
           err instanceof Error ? err : new Error('Failed to fetch profile')
@@ -81,14 +95,14 @@ export function useUserProfile() {
     }
 
     try {
+      const updateData: UserProfileUpdate = {
+        username: normalizedUsername,
+        updated_at: new Date().toISOString()
+      }
       const { error } = await supabase
         .from('user_profiles')
-        .update({
-          username: normalizedUsername,
-          updated_at: new Date().toISOString()
-        } as const)
+        .update(updateData)
         .eq('id', user.id)
-        .select()
 
       if (error) {
         console.error('Supabase error:', error)
