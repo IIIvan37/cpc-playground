@@ -5,6 +5,7 @@ import {
   codeAtom,
   currentProgramIdAtom,
   deleteProgramAtom,
+  fetchProgramsAtom,
   newProgramAtom,
   savedProgramsAtom,
   saveProgramAtom
@@ -26,6 +27,7 @@ export function ProgramManager() {
   const [currentProgramId, setCurrentProgramId] = useAtom(currentProgramIdAtom)
   const saveProgram = useSetAtom(saveProgramAtom)
   const deleteProgram = useSetAtom(deleteProgramAtom)
+  const fetchPrograms = useSetAtom(fetchProgramsAtom)
   const newProgram = useSetAtom(newProgramAtom)
   const setCurrentProjectId = useSetAtom(currentProjectIdAtom)
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
@@ -39,6 +41,11 @@ export function ProgramManager() {
 
   const currentProgram = savedPrograms.find((p) => p.id === currentProgramId)
   const currentProject = useAtomValue(currentProjectAtom)
+
+  // Load programs from localStorage on mount
+  useEffect(() => {
+    fetchPrograms()
+  }, [fetchPrograms])
 
   // Focus input when dialog opens
   useEffect(() => {
