@@ -11,13 +11,12 @@ import type {
 } from '@/domain/services/assembler-adapter.interface'
 import RasmWorker from '@/workers/rasm.worker?worker'
 
-// Message ID counter for request/response matching
-let messageId = 0
-
 /**
  * Create a RASM worker adapter
  */
 export function createRasmWorkerAdapter(): IAssemblerAdapter {
+  // Message ID counter for request/response matching (per-adapter instance)
+  let messageId = 0
   let worker: Worker | null = null
   let isInitialized = false
   const pendingRequests = new Map<
@@ -78,10 +77,14 @@ export function createRasmWorkerAdapter(): IAssemblerAdapter {
         }, 30000) // 30 second timeout
 
         const handler = (e: MessageEvent) => {
-          if (e.data.id === id && e.data.type === 'init-complete') {
+          if (e.data.id === id && e.data.type === 'init') {
             clearTimeout(timeout)
             w.removeEventListener('message', handler)
-            resolve()
+            if (e.data.success) {
+              resolve()
+            } else {
+              reject(new Error(e.data.error || 'RASM initialization failed'))
+            }
           }
         }
 

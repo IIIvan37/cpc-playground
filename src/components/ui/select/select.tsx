@@ -21,7 +21,7 @@ export function Select({
 }: Props) {
   return (
     <RadixSelect.Root
-      value={value || undefined}
+      value={value}
       onValueChange={onValueChange}
       disabled={disabled}
     >

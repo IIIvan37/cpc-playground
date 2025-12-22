@@ -1,12 +1,12 @@
 // RASM Web Worker - Isolated from main thread to avoid Module conflicts
 /// <reference lib="webworker" />
 
-declare const self: DedicatedWorkerGlobalScope
+const worker = globalThis.self as DedicatedWorkerGlobalScope
 
 // In workers, we can't use import.meta.env, so check location
 const IS_DEV =
-  self.location.hostname === 'localhost' ||
-  self.location.hostname === '127.0.0.1'
+  worker.location.hostname === 'localhost' ||
+  worker.location.hostname === '127.0.0.1'
 const CDN_BASE = IS_DEV ? 'https://cpcec-web.iiivan.org' : '/cdn'
 const RASM_WASM_URL = `${CDN_BASE}/rasm.wasm`
 const RASM_JS_URL = `${CDN_BASE}/rasm.js`
@@ -53,9 +53,8 @@ async function loadResources(): Promise<void> {
   const indirectEval = eval
   indirectEval(rasmJsCode)
 
-  createRASM = (self as unknown as Record<string, unknown>).createRASM as (
-    config: Record<string, unknown>
-  ) => Promise<RasmModule>
+  createRASM = (globalThis as unknown as Record<string, unknown>)
+    .createRASM as (config: Record<string, unknown>) => Promise<RasmModule>
 
   if (!createRASM || typeof createRASM !== 'function') {
     throw new Error('createRASM factory not found after loading rasm.js')
@@ -138,204 +137,220 @@ interface CompileResult {
   stderr: string[]
 }
 
+function createSuccessResult(binary: Uint8Array): CompileResult {
+  return { success: true, binary, stdout: stdoutLines, stderr: stderrLines }
+}
+
+function createErrorResult(error: string): CompileResult {
+  return { success: false, error, stdout: stdoutLines, stderr: stderrLines }
+}
+
+function writeAdditionalFiles(
+  FS: RasmModule['FS'],
+  additionalFiles?: ProjectFile[]
+): void {
+  if (!additionalFiles || additionalFiles.length === 0) return
+
+  for (const file of additionalFiles) {
+    const filePath = file.projectName
+      ? `/${file.projectName}/${file.name}`
+      : `/${file.name}`
+    FS.writeFile(filePath, file.content)
+    console.log('[RASM Worker] Wrote additional file:', filePath)
+  }
+}
+
+function tryReadOutputFile(
+  FS: RasmModule['FS'],
+  outputFile: string,
+  outputFormat: 'sna' | 'dsk'
+): CompileResult {
+  try {
+    const files = FS.readdir('/')
+    console.log('[RASM Worker] Files in /:', files)
+
+    const binary = FS.readFile(outputFile) as Uint8Array
+    console.log(
+      '[RASM Worker] Read output file:',
+      outputFile,
+      'size:',
+      binary.length
+    )
+    return createSuccessResult(binary)
+  } catch (e) {
+    console.error('[RASM Worker] Failed to read output:', e)
+    return tryAlternateOutputPaths(FS, outputFormat)
+  }
+}
+
+function tryAlternateOutputPaths(
+  FS: RasmModule['FS'],
+  outputFormat: 'sna' | 'dsk'
+): CompileResult {
+  const files = FS.readdir('/')
+  const alternateNames =
+    outputFormat === 'dsk'
+      ? ['program.dsk', '/program.dsk', 'output.dsk']
+      : ['output.sna', '/output.sna']
+
+  for (const name of alternateNames) {
+    try {
+      const path = name.startsWith('/') ? name : `/${name}`
+      const binary = FS.readFile(path) as Uint8Array
+      console.log('[RASM Worker] Found at alternate path:', path)
+      return createSuccessResult(binary)
+    } catch {
+      // Continue trying
+    }
+  }
+
+  return createErrorResult(
+    `Output file not found. Available: ${files.join(', ')}`
+  )
+}
+
+function tryRecoverOutputAfterCrash(
+  FS: RasmModule['FS'] | null,
+  outputFile: string
+): CompileResult | null {
+  if (!FS) return null
+
+  try {
+    console.log(
+      '[RASM Worker] Attempting to recover output file after crash...'
+    )
+    const files = FS.readdir('/')
+    console.log('[RASM Worker] Files available after crash:', files)
+
+    const outputFileName = outputFile.replace('/', '')
+    if (files.includes(outputFileName) || files.includes(outputFile)) {
+      const binary = FS.readFile(outputFile) as Uint8Array
+      if (binary && binary.length > 0) {
+        console.log(
+          '[RASM Worker] Successfully recovered output file, size:',
+          binary.length
+        )
+        return createSuccessResult(binary)
+      }
+    }
+  } catch (recoveryError) {
+    console.error('[RASM Worker] Recovery failed:', recoveryError)
+  }
+
+  return null
+}
+
 async function compile(
   source: string,
   outputFormat: 'sna' | 'dsk',
   additionalFiles?: ProjectFile[]
 ): Promise<CompileResult> {
-  // Reset output capture
   stdoutLines = []
   stderrLines = []
 
-  // Keep reference to FS for recovery after crash
   let FS: RasmModule['FS'] | null = null
   const outputFile = outputFormat === 'dsk' ? '/output.dsk' : '/output.sna'
 
   try {
-    // Create a fresh module for each compilation
     const rasmModule = await createFreshRasmModule()
     FS = rasmModule.FS
 
-    // Write all additional files to the virtual filesystem
-    if (additionalFiles && additionalFiles.length > 0) {
-      for (const file of additionalFiles) {
-        // If file has a projectName, write it in a subdirectory
-        const filePath = file.projectName
-          ? `/${file.projectName}/${file.name}`
-          : `/${file.name}`
-
-        FS.writeFile(filePath, file.content)
-        console.log('[RASM Worker] Wrote additional file:', filePath)
-      }
-    }
+    writeAdditionalFiles(FS, additionalFiles)
 
     const finalSource =
       outputFormat === 'sna'
         ? prepareSnaSource(source)
         : prepareDskSource(source)
 
-    const sourceFile = '/input.asm'
-    FS.writeFile(sourceFile, finalSource)
+    FS.writeFile('/input.asm', finalSource)
 
-    const args: string[] = [sourceFile, '-o', '/output']
-
+    const args = ['/input.asm', '-o', '/output']
     console.log('[RASM Worker] Running RASM with args:', args)
     const exitCode = rasmModule.callMain(args)
     console.log('[RASM Worker] RASM exit code:', exitCode)
 
     if (exitCode !== 0) {
-      return {
-        success: false,
-        error:
-          stderrLines.join('\n') || `RASM failed with exit code ${exitCode}`,
-        stdout: stdoutLines,
-        stderr: stderrLines
-      }
+      const error =
+        stderrLines.join('\n') || `RASM failed with exit code ${exitCode}`
+      return createErrorResult(error)
     }
 
-    let binary: Uint8Array
-    try {
-      const files = FS.readdir('/')
-      console.log('[RASM Worker] Files in /:', files)
-
-      binary = FS.readFile(outputFile) as Uint8Array
-      console.log(
-        '[RASM Worker] Read output file:',
-        outputFile,
-        'size:',
-        binary.length
-      )
-    } catch (e) {
-      console.error('[RASM Worker] Failed to read output:', e)
-      const files = FS.readdir('/')
-
-      const alternateNames =
-        outputFormat === 'dsk'
-          ? ['program.dsk', '/program.dsk', 'output.dsk']
-          : ['output.sna', '/output.sna']
-
-      for (const name of alternateNames) {
-        try {
-          const path = name.startsWith('/') ? name : `/${name}`
-          binary = FS.readFile(path) as Uint8Array
-          console.log('[RASM Worker] Found at alternate path:', path)
-          return {
-            success: true,
-            binary,
-            stdout: stdoutLines,
-            stderr: stderrLines
-          }
-        } catch {
-          // Continue trying
-        }
-      }
-
-      return {
-        success: false,
-        error: `Output file not found. Available: ${files.join(', ')}`,
-        stdout: stdoutLines,
-        stderr: stderrLines
-      }
-    }
-
-    return { success: true, binary, stdout: stdoutLines, stderr: stderrLines }
+    return tryReadOutputFile(FS, outputFile, outputFormat)
   } catch (e) {
     console.error('[RASM Worker] Compile error:', e)
 
-    // RASM may crash after writing the output file (e.g., during symbol file generation)
-    // Try to recover the output file if it was written before the crash
-    if (FS) {
-      try {
-        console.log(
-          '[RASM Worker] Attempting to recover output file after crash...'
-        )
-        const files = FS.readdir('/')
-        console.log('[RASM Worker] Files available after crash:', files)
+    const recovered = tryRecoverOutputAfterCrash(FS, outputFile)
+    if (recovered) return recovered
 
-        if (
-          files.includes(outputFile.replace('/', '')) ||
-          files.includes(outputFile)
-        ) {
-          const binary = FS.readFile(outputFile) as Uint8Array
-          if (binary && binary.length > 0) {
-            console.log(
-              '[RASM Worker] Successfully recovered output file, size:',
-              binary.length
-            )
-            return {
-              success: true,
-              binary,
-              stdout: stdoutLines,
-              stderr: stderrLines
-            }
-          }
-        }
-      } catch (recoveryError) {
-        console.error('[RASM Worker] Recovery failed:', recoveryError)
-      }
-    }
-
-    return {
-      success: false,
-      error: e instanceof Error ? e.message : String(e),
-      stdout: stdoutLines,
-      stderr: stderrLines
-    }
+    return createErrorResult(e instanceof Error ? e.message : String(e))
   }
 }
 
-// Message handler
-self.onmessage = async (e: MessageEvent) => {
-  const { type, id, source, outputFormat, additionalFiles } = e.data
+// Message handlers
+async function handleInit(id: number): Promise<void> {
+  try {
+    await loadResources()
+    worker.postMessage({ type: 'init', id, success: true })
+  } catch (error) {
+    console.error('[RASM Worker] Init error:', error)
+    worker.postMessage({
+      type: 'init',
+      id,
+      success: false,
+      error: error instanceof Error ? error.message : 'Init failed'
+    })
+  }
+}
 
-  if (type === 'init') {
-    try {
-      await loadResources()
-      self.postMessage({ type: 'init', id, success: true })
-    } catch (error) {
-      console.error('[RASM Worker] Init error:', error)
-      self.postMessage({
-        type: 'init',
-        id,
-        success: false,
-        error: error instanceof Error ? error.message : 'Init failed'
-      })
-    }
-  } else if (type === 'compile') {
-    try {
-      const result = await compile(source, outputFormat, additionalFiles)
-      if (result.success && result.binary) {
-        self.postMessage(
-          {
-            type: 'compile',
-            id,
-            success: true,
-            binary: result.binary,
-            stdout: result.stdout,
-            stderr: result.stderr
-          },
-          { transfer: [result.binary.buffer] }
-        )
-      } else {
-        self.postMessage({
+async function handleCompile(
+  id: number,
+  source: string,
+  outputFormat: 'sna' | 'dsk',
+  additionalFiles?: ProjectFile[]
+): Promise<void> {
+  try {
+    const result = await compile(source, outputFormat, additionalFiles)
+    if (result.success && result.binary) {
+      worker.postMessage(
+        {
           type: 'compile',
           id,
-          success: false,
-          error: result.error,
+          success: true,
+          binary: result.binary,
           stdout: result.stdout,
           stderr: result.stderr
-        })
-      }
-    } catch (error) {
-      console.error('[RASM Worker] Compile error:', error)
-      self.postMessage({
+        },
+        { transfer: [result.binary.buffer] }
+      )
+    } else {
+      worker.postMessage({
         type: 'compile',
         id,
         success: false,
-        error: `Compilation failed: ${error instanceof Error ? error.message : String(error)}`,
-        stdout: stdoutLines,
-        stderr: stderrLines
+        error: result.error,
+        stdout: result.stdout,
+        stderr: result.stderr
       })
     }
+  } catch (error) {
+    console.error('[RASM Worker] Compile error:', error)
+    worker.postMessage({
+      type: 'compile',
+      id,
+      success: false,
+      error: `Compilation failed: ${error instanceof Error ? error.message : String(error)}`,
+      stdout: stdoutLines,
+      stderr: stderrLines
+    })
+  }
+}
+
+worker.onmessage = async (e: MessageEvent) => {
+  const { type, id, source, outputFormat, additionalFiles } = e.data
+
+  if (type === 'init') {
+    await handleInit(id)
+  } else if (type === 'compile') {
+    await handleCompile(id, source, outputFormat, additionalFiles)
   }
 }

@@ -311,7 +311,7 @@ describe('SupabaseAuthRepository', () => {
       expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
         provider: 'github',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: globalThis.location.origin
         }
       })
     })

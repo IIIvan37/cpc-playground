@@ -11,7 +11,5 @@ export {
   useGetProjectWithDependencies,
   useUpdateProject
 } from './use-projects'
-/** @deprecated Use useAssembler instead */
-export { useRasm } from './use-rasm'
 export { useUseCase, useUseCaseWithoutInput } from './use-use-case'
 export { useUserProfile } from './use-user-profile'

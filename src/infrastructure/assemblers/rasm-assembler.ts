@@ -11,18 +11,7 @@ import type {
 } from '@/domain/services/assembler.interface'
 import { createRasmErrorParser } from './rasm-error-parser'
 
-// In workers, we can't use import.meta.env, so check location for CDN base
-function getCdnBase(): string {
-  if (typeof self !== 'undefined' && 'location' in self) {
-    const isDev =
-      self.location.hostname === 'localhost' ||
-      self.location.hostname === '127.0.0.1'
-    return isDev ? 'https://cpcec-web.iiivan.org' : '/cdn'
-  }
-  return '/cdn'
-}
-
-const CDN_BASE = getCdnBase()
+const CDN_BASE = import.meta.env.VITE_CDN_BASE ?? '/cdn'
 
 /**
  * RASM adds offset lines for directives we prepend:
