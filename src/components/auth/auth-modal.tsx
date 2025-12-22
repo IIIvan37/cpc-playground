@@ -1,17 +1,17 @@
-import { GitHubLogoIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
-import Button from '@/components/ui/button/button'
-import { Input } from '@/components/ui/input'
-import { Modal } from '@/components/ui/modal'
 import { useAuth } from '@/hooks/use-auth'
-import styles from './auth-modal.module.css'
+import { AuthModalView, type AuthMode } from './auth-modal.view'
 
 interface AuthModalProps {
   onClose: () => void
 }
 
+/**
+ * Container component for authentication modal
+ * Handles business logic and delegates rendering to AuthModalView
+ */
 export function AuthModal({ onClose }: AuthModalProps) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [mode, setMode] = useState<AuthMode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -56,82 +56,18 @@ export function AuthModal({ onClose }: AuthModalProps) {
   }
 
   return (
-    <Modal
-      open={true}
+    <AuthModalView
+      mode={mode}
+      email={email}
+      password={password}
+      error={error}
+      loading={loading}
       onClose={onClose}
-      title={mode === 'signin' ? 'Sign In' : 'Sign Up'}
-    >
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {error && <div className={styles.error}>{error}</div>}
-
-        <Input
-          label='Email'
-          id='email'
-          type='email'
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          disabled={loading}
-        />
-
-        <Input
-          label='Password'
-          id='password'
-          type='password'
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          disabled={loading}
-        />
-
-        <Button type='submit' disabled={loading} fullWidth>
-          {loading ? 'Loading...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
-        </Button>
-
-        <div className={styles.divider}>
-          <span>or</span>
-        </div>
-
-        <Button
-          type='button'
-          variant='outline'
-          onClick={handleGithub}
-          disabled={loading}
-          fullWidth
-        >
-          <GitHubLogoIcon />
-          Continue with GitHub
-        </Button>
-
-        <div className={styles.toggle}>
-          {mode === 'signin' ? (
-            <>
-              Don't have an account?{' '}
-              <Button
-                type='button'
-                variant='link'
-                onClick={() => setMode('signup')}
-                disabled={loading}
-              >
-                Sign up
-              </Button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <Button
-                type='button'
-                variant='link'
-                onClick={() => setMode('signin')}
-                disabled={loading}
-              >
-                Sign in
-              </Button>
-            </>
-          )}
-        </div>
-      </form>
-    </Modal>
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onSubmit={handleSubmit}
+      onGithubAuth={handleGithub}
+      onModeChange={setMode}
+    />
   )
 }

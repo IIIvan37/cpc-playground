@@ -1,13 +1,14 @@
 import { useAtomValue } from 'jotai'
 import { useState } from 'react'
-import Button from '@/components/ui/button/button'
-import { Input } from '@/components/ui/input'
-import { Modal } from '@/components/ui/modal'
 import { userAtom } from '../../hooks/use-auth'
 import { useUserProfile } from '../../hooks/use-user-profile'
 import { supabase } from '../../lib/supabase'
-import styles from './user-profile.module.css'
+import { UserProfileView } from './user-profile.view'
 
+/**
+ * Container component for user profile management
+ * Handles business logic and delegates rendering to UserProfileView
+ */
 export function UserProfile() {
   const user = useAtomValue(userAtom)
   const { profile, loading, updateUsername } = useUserProfile()
@@ -48,70 +49,19 @@ export function UserProfile() {
   }
 
   return (
-    <>
-      <Button
-        type='button'
-        variant='outline'
-        className={styles.profileButton}
-        onClick={handleOpenModal}
-      >
-        <span>👤</span>
-        <span className={styles.username}>
-          {loading ? '...' : profile?.username || 'User'}
-        </span>
-      </Button>
-
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title='User Profile'
-        actions={
-          <>
-            <Button
-              type='button'
-              onClick={handleSaveUsername}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save Username'}
-            </Button>
-            <Button
-              type='button'
-              variant='secondary'
-              onClick={handleSignOut}
-              disabled={saving}
-            >
-              Sign Out
-            </Button>
-          </>
-        }
-      >
-        <div className={styles.info}>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Email</span>
-            <span className={styles.infoValue}>{user.email}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>User ID</span>
-            <span className={styles.infoValue}>
-              {user.id.substring(0, 8)}...
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.section}>
-          <Input
-            label='Username'
-            type='text'
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
-            placeholder='Enter username'
-          />
-          <div className={styles.helpText}>
-            Username must be 3-30 characters and can only contain letters,
-            numbers, hyphens and underscores
-          </div>
-        </div>
-      </Modal>
-    </>
+    <UserProfileView
+      username={profile?.username || ''}
+      email={user.email}
+      userId={user.id}
+      loading={loading}
+      saving={saving}
+      modalOpen={showModal}
+      newUsername={newUsername}
+      onOpenModal={handleOpenModal}
+      onCloseModal={() => setShowModal(false)}
+      onUsernameChange={setNewUsername}
+      onSaveUsername={handleSaveUsername}
+      onSignOut={handleSignOut}
+    />
   )
 }
