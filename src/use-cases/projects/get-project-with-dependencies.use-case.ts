@@ -93,8 +93,8 @@ export const createGetProjectWithDependenciesUseCase = (
         allFiles.push(...projectFiles)
 
         // Recursively fetch dependencies
-        for (const dependencyId of project.dependencies) {
-          await fetchProjectFiles(dependencyId)
+        for (const dependency of project.dependencies) {
+          await fetchProjectFiles(dependency.id)
         }
       }
 

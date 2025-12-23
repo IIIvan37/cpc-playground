@@ -20,6 +20,13 @@
   justify-content: space-between;
 }
 
+.projectNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  overflow: hidden;
+}
+
 .projectName {
   padding: var(--spacing-xs);
   font-size: var(--font-size-sm);
@@ -52,6 +59,11 @@
 .badgeLibrary {
   background: var(--color-info-bg);
   color: var(--color-info);
+}
+
+.badgeReadOnly {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 .fileList {
@@ -190,4 +202,101 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-sm);
+}
+
+/* Dependencies Section */
+.dependenciesSection {
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+.sectionHeader:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.collapseIcon {
+  transition: transform 0.2s ease;
+}
+
+.collapseIcon.expanded {
+  transform: rotate(90deg);
+}
+
+.dependencyProject {
+  padding-left: var(--spacing-sm);
+}
+
+.dependencyHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  user-select: none;
+}
+
+.dependencyHeader:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.dependencyIcon {
+  color: var(--color-info);
+  flex-shrink: 0;
+}
+
+.dependencyName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dependencyFiles {
+  padding-left: var(--spacing-md);
+}
+
+.dependencyFileItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.dependencyFileItem:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.dependencyFileItem.active {
+  background: var(--color-bg-active);
+  color: var(--color-text);
+}
+
+.noDependencies {
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
 }

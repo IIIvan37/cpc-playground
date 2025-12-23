@@ -1,11 +1,13 @@
 import {
+  ChevronRightIcon,
+  CubeIcon,
   FileIcon,
   FilePlusIcon,
   StarFilledIcon,
   StarIcon,
   TrashIcon
 } from '@radix-ui/react-icons'
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import Button from '@/components/ui/button/button'
 import type { VisibilityValue } from '@/domain/value-objects'
 import styles from './file-browser.module.css'
@@ -27,6 +29,19 @@ type ProjectInfo = Readonly<{
   tags: readonly string[]
 }>
 
+type DependencyFileItem = Readonly<{
+  id: string
+  name: string
+  content: string
+  projectId: string
+}>
+
+type DependencyProjectItem = Readonly<{
+  id: string
+  name: string
+  files: readonly DependencyFileItem[]
+}>
+
 // ============================================================================
 // Sub-component Props (Interface Segregation)
 // ============================================================================
@@ -34,6 +49,7 @@ type ProjectInfo = Readonly<{
 type ProjectHeaderViewProps = Readonly<{
   projectName: string
   canEdit: boolean
+  isReadOnly: boolean
   onNewFile: () => void
 }>
 
@@ -67,6 +83,24 @@ type TagsViewProps = Readonly<{
   tags: readonly string[]
 }>
 
+type DependencyFileViewProps = Readonly<{
+  file: DependencyFileItem
+  isSelected: boolean
+  onSelect: () => void
+}>
+
+type DependencyProjectViewProps = Readonly<{
+  project: DependencyProjectItem
+  selectedFileId: string | null
+  onSelectFile: (file: DependencyFileItem) => void
+}>
+
+type DependenciesSectionViewProps = Readonly<{
+  dependencies: readonly DependencyProjectItem[]
+  selectedDependencyFileId: string | null
+  onSelectDependencyFile: (file: DependencyFileItem) => void
+}>
+
 // ============================================================================
 // Main View Props (reduced via composition)
 // ============================================================================
@@ -76,7 +110,11 @@ export type FileBrowserViewProps = Readonly<{
   files: readonly FileItem[]
   selectedFileId: string | null
   canEdit: boolean
+  isReadOnly: boolean
+  dependencies?: readonly DependencyProjectItem[]
+  selectedDependencyFileId?: string | null
   onSelectFile: (fileId: string) => void
+  onSelectDependencyFile?: (file: DependencyFileItem) => void
   onNewFileClick: () => void
   onSetMainFile: (fileId: string) => void
   onDeleteFile: (fileId: string) => void
@@ -91,11 +129,19 @@ export type FileBrowserViewProps = Readonly<{
 function ProjectHeaderView({
   projectName,
   canEdit,
+  isReadOnly,
   onNewFile
 }: ProjectHeaderViewProps) {
   return (
     <div className={styles.headerRow}>
-      <div className={styles.projectName}>{projectName}</div>
+      <div className={styles.projectNameRow}>
+        <div className={styles.projectName}>{projectName}</div>
+        {isReadOnly && (
+          <span className={`${styles.badge} ${styles.badgeReadOnly}`}>
+            Read-only
+          </span>
+        )}
+      </div>
       {canEdit && (
         <Button variant='ghost' size='sm' onClick={onNewFile} title='New File'>
           <FilePlusIcon />
@@ -218,6 +264,105 @@ function TagsView({ tags }: TagsViewProps) {
   )
 }
 
+function DependencyFileView({
+  file,
+  isSelected,
+  onSelect
+}: DependencyFileViewProps) {
+  return (
+    <div
+      className={`${styles.dependencyFileItem} ${
+        isSelected ? styles.active : ''
+      }`}
+      onClick={onSelect}
+      onKeyDown={(e) => e.key === 'Enter' && onSelect()}
+      role='button'
+      tabIndex={0}
+    >
+      <FileIcon className={styles.fileIcon} />
+      <span className={styles.fileName}>{file.name}</span>
+    </div>
+  )
+}
+
+function DependencyProjectView({
+  project,
+  selectedFileId,
+  onSelectFile
+}: DependencyProjectViewProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  return (
+    <div className={styles.dependencyProject}>
+      <div
+        className={styles.dependencyHeader}
+        onClick={() => setIsExpanded(!isExpanded)}
+        onKeyDown={(e) => e.key === 'Enter' && setIsExpanded(!isExpanded)}
+        role='button'
+        tabIndex={0}
+      >
+        <ChevronRightIcon
+          className={`${styles.collapseIcon} ${
+            isExpanded ? styles.expanded : ''
+          }`}
+        />
+        <CubeIcon className={styles.dependencyIcon} />
+        <span className={styles.dependencyName}>{project.name}</span>
+      </div>
+      {isExpanded && (
+        <div className={styles.dependencyFiles}>
+          {project.files.map((file) => (
+            <DependencyFileView
+              key={file.id}
+              file={file}
+              isSelected={selectedFileId === file.id}
+              onSelect={() => onSelectFile(file)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DependenciesSectionView({
+  dependencies,
+  selectedDependencyFileId,
+  onSelectDependencyFile
+}: DependenciesSectionViewProps) {
+  const [isExpanded, setIsExpanded] = useState(true)
+
+  if (dependencies.length === 0) return null
+
+  return (
+    <div className={styles.dependenciesSection}>
+      <div
+        className={styles.sectionHeader}
+        onClick={() => setIsExpanded(!isExpanded)}
+        onKeyDown={(e) => e.key === 'Enter' && setIsExpanded(!isExpanded)}
+        role='button'
+        tabIndex={0}
+      >
+        <ChevronRightIcon
+          className={`${styles.collapseIcon} ${
+            isExpanded ? styles.expanded : ''
+          }`}
+        />
+        <span>Dependencies ({dependencies.length})</span>
+      </div>
+      {isExpanded &&
+        dependencies.map((dep) => (
+          <DependencyProjectView
+            key={dep.id}
+            project={dep}
+            selectedFileId={selectedDependencyFileId ?? null}
+            onSelectFile={onSelectDependencyFile}
+          />
+        ))}
+    </div>
+  )
+}
+
 // ============================================================================
 // Main View Component
 // ============================================================================
@@ -227,7 +372,11 @@ export function FileBrowserView({
   files,
   selectedFileId,
   canEdit,
+  isReadOnly,
+  dependencies = [],
+  selectedDependencyFileId = null,
   onSelectFile,
+  onSelectDependencyFile,
   onNewFileClick,
   onSetMainFile,
   onDeleteFile,
@@ -239,6 +388,7 @@ export function FileBrowserView({
         <ProjectHeaderView
           projectName={project.name}
           canEdit={canEdit}
+          isReadOnly={isReadOnly}
           onNewFile={onNewFileClick}
         />
         <ProjectBadgesView
@@ -258,6 +408,14 @@ export function FileBrowserView({
       />
 
       <TagsView tags={project.tags} />
+
+      {dependencies.length > 0 && onSelectDependencyFile && (
+        <DependenciesSectionView
+          dependencies={dependencies}
+          selectedDependencyFileId={selectedDependencyFileId}
+          onSelectDependencyFile={onSelectDependencyFile}
+        />
+      )}
 
       {newFileDialog}
     </div>

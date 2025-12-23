@@ -66,7 +66,7 @@ describe('Project Entity', () => {
         isLibrary: true,
         files: [],
         tags: ['tag1', 'tag2'],
-        dependencies: ['dep-1'],
+        dependencies: [{ id: 'dep-1', name: 'Library 1' }],
         shares: [],
         userShares: [],
         createdAt: customDate,
@@ -77,7 +77,7 @@ describe('Project Entity', () => {
       expect(project.description).toBe('A description')
       expect(project.isLibrary).toBe(true)
       expect(project.tags).toEqual(['tag1', 'tag2'])
-      expect(project.dependencies).toEqual(['dep-1'])
+      expect(project.dependencies).toEqual([{ id: 'dep-1', name: 'Library 1' }])
       expect(project.createdAt).toBe(customDate)
       expect(project.updatedAt).toBe(customDate)
     })
@@ -151,10 +151,16 @@ describe('Project Entity', () => {
     it('should update dependencies', () => {
       const project = createTestProject()
       const updated = updateProject(project, {
-        dependencies: ['dep-1', 'dep-2']
+        dependencies: [
+          { id: 'dep-1', name: 'Library 1' },
+          { id: 'dep-2', name: 'Library 2' }
+        ]
       })
 
-      expect(updated.dependencies).toEqual(['dep-1', 'dep-2'])
+      expect(updated.dependencies).toEqual([
+        { id: 'dep-1', name: 'Library 1' },
+        { id: 'dep-2', name: 'Library 2' }
+      ])
     })
 
     it('should freeze the updated project', () => {

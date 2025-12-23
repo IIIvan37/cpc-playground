@@ -14,10 +14,19 @@ import {
   createFileAtom,
   currentProjectIdAtom,
   deleteFileAtom,
+  dependencyFilesAtom,
+  fetchDependencyFilesAtom,
   setMainFileAtom
 } from '@/store/projects'
 import styles from './file-browser.module.css'
 import { FileBrowserView } from './file-browser.view'
+
+type DependencyFile = {
+  id: string
+  name: string
+  content: string
+  projectId: string
+}
 
 /**
  * Container component for file browser
@@ -29,26 +38,37 @@ export function FileBrowser() {
   const project = useAtomValue(activeProjectAtom)
   const isReadOnlyMode = useAtomValue(isReadOnlyModeAtom)
   const currentProjectId = useAtomValue(currentProjectIdAtom)
+  const dependencyFiles = useAtomValue(dependencyFilesAtom)
   const setCode = useSetAtom(codeAtom)
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
   const createFile = useSetAtom(createFileAtom)
   const deleteFile = useSetAtom(deleteFileAtom)
   const setMainFile = useSetAtom(setMainFileAtom)
+  const fetchDependencies = useSetAtom(fetchDependencyFilesAtom)
 
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
+  const [selectedDependencyFileId, setSelectedDependencyFileId] = useState<
+    string | null
+  >(null)
   const [showNewFileDialog, setShowNewFileDialog] = useState(false)
   const [newFileName, setNewFileName] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Auto-select main file on project change
+  // Auto-select main file on project change and fetch dependencies
   useEffect(() => {
     if (project && project.files.length > 0) {
       const mainFile = project.files.find((f) => f.isMain) || project.files[0]
       setSelectedFileId(mainFile.id)
       setCurrentFileId(mainFile.id)
       setCode(mainFile.content.value)
+      setSelectedDependencyFileId(null) // Reset dependency selection
+
+      // Fetch dependencies when project changes
+      if (project.dependencies.length > 0) {
+        fetchDependencies()
+      }
     }
-  }, [project, setCurrentFileId, setCode])
+  }, [project, setCurrentFileId, setCode, fetchDependencies])
 
   const handleSelectFile = useCallback(
     (fileId: string) => {
@@ -56,11 +76,22 @@ export function FileBrowser() {
       const file = project.files.find((f) => f.id === fileId)
       if (file) {
         setSelectedFileId(file.id)
+        setSelectedDependencyFileId(null) // Clear dependency selection
         setCurrentFileId(file.id)
         setCode(file.content.value)
       }
     },
     [project, setCurrentFileId, setCode]
+  )
+
+  const handleSelectDependencyFile = useCallback(
+    (file: DependencyFile) => {
+      setSelectedFileId(null) // Clear project file selection
+      setSelectedDependencyFileId(file.id)
+      setCurrentFileId(file.id)
+      setCode(file.content)
+    },
+    [setCurrentFileId, setCode]
   )
 
   const handleCreateFile = useCallback(async () => {
@@ -183,7 +214,11 @@ export function FileBrowser() {
       files={files}
       selectedFileId={selectedFileId}
       canEdit={canEdit}
+      isReadOnly={isReadOnlyMode}
+      dependencies={dependencyFiles}
+      selectedDependencyFileId={selectedDependencyFileId}
       onSelectFile={handleSelectFile}
+      onSelectDependencyFile={handleSelectDependencyFile}
       onNewFileClick={openNewFileDialog}
       onSetMainFile={handleSetMainFile}
       onDeleteFile={handleDeleteFile}

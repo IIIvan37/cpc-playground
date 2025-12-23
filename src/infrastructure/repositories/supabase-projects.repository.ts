@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
+  DependencyInfo,
   Project,
   ProjectShare,
   UserShare
@@ -105,10 +106,13 @@ function mapToDomain(data: ProjectWithRelations): Project {
     .map((pt) => pt.tags?.name || '')
     .filter(Boolean)
 
-  // Map dependencies
-  const dependencies: string[] = (data.project_dependencies || [])
-    .map((pd) => pd.dependency?.id || '')
-    .filter(Boolean)
+  // Map dependencies with full info (id + name)
+  const dependencies: DependencyInfo[] = (data.project_dependencies || [])
+    .filter((pd) => pd.dependency?.id && pd.dependency?.name)
+    .map((pd) => ({
+      id: pd.dependency!.id,
+      name: pd.dependency!.name
+    }))
 
   return createProject({
     id: data.id,

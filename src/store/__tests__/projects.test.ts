@@ -73,7 +73,7 @@ function createTestProject(
     name: string
     files: any[]
     tags: string[]
-    dependencies: string[]
+    dependencies: { id: string; name: string }[]
     isLibrary: boolean
     userShares: any[]
   }> = {}
@@ -1043,7 +1043,7 @@ describe('Projects Store', () => {
       it('should fetch and group dependency files by project', async () => {
         const project = createTestProject({
           id: 'proj-1',
-          dependencies: ['dep-1']
+          dependencies: [{ id: 'dep-1', name: 'Dep Project' }]
         })
         store.set(projectsAtom, [project])
         store.set(currentProjectIdAtom, 'proj-1')
@@ -1085,7 +1085,7 @@ describe('Projects Store', () => {
       it('should handle error and return empty', async () => {
         const project = createTestProject({
           id: 'proj-1',
-          dependencies: ['dep-1']
+          dependencies: [{ id: 'dep-1', name: 'Dep Project' }]
         })
         store.set(projectsAtom, [project])
         store.set(currentProjectIdAtom, 'proj-1')
@@ -1112,10 +1112,14 @@ describe('Projects Store', () => {
 
         await store.set(addDependencyToProjectAtom, {
           projectId: 'proj-1',
-          dependencyId: 'dep-1'
+          dependencyId: 'dep-1',
+          dependencyName: 'Library 1'
         })
 
-        expect(store.get(projectsAtom)[0].dependencies).toContain('dep-1')
+        expect(store.get(projectsAtom)[0].dependencies).toContainEqual({
+          id: 'dep-1',
+          name: 'Library 1'
+        })
       })
 
       it('should throw error when project not found', async () => {
@@ -1124,7 +1128,8 @@ describe('Projects Store', () => {
         await expect(
           store.set(addDependencyToProjectAtom, {
             projectId: 'invalid',
-            dependencyId: 'dep-1'
+            dependencyId: 'dep-1',
+            dependencyName: 'Library 1'
           })
         ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('invalid'))
       })
@@ -1134,7 +1139,10 @@ describe('Projects Store', () => {
       it('should remove dependency from project', async () => {
         const project = createTestProject({
           id: 'proj-1',
-          dependencies: ['dep-1', 'dep-2']
+          dependencies: [
+            { id: 'dep-1', name: 'Library 1' },
+            { id: 'dep-2', name: 'Library 2' }
+          ]
         })
         store.set(projectsAtom, [project])
         mockContainer.removeDependency.execute.mockResolvedValue({})
@@ -1144,7 +1152,9 @@ describe('Projects Store', () => {
           dependencyId: 'dep-1'
         })
 
-        expect(store.get(projectsAtom)[0].dependencies).toEqual(['dep-2'])
+        expect(store.get(projectsAtom)[0].dependencies).toEqual([
+          { id: 'dep-2', name: 'Library 2' }
+        ])
       })
 
       it('should throw error when project not found', async () => {

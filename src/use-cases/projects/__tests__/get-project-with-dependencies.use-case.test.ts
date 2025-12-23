@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createProject } from '@/domain/entities/project.entity'
+import {
+  createProject,
+  type DependencyInfo
+} from '@/domain/entities/project.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
@@ -35,7 +38,7 @@ describe('GetProjectWithDependenciesUseCase', () => {
     isLibrary?: boolean
     visibility?: 'private' | 'public' | 'unlisted'
     files?: Array<{ name: string; content: string; isMain?: boolean }>
-    dependencies?: string[]
+    dependencies?: DependencyInfo[]
   }) {
     const files =
       overrides.files?.map((f, index) =>
@@ -100,7 +103,7 @@ describe('GetProjectWithDependenciesUseCase', () => {
     await createTestProject({
       id: mainProjectId,
       files: [{ name: 'main.asm', content: 'INCLUDE "lib.asm"' }],
-      dependencies: [libraryId]
+      dependencies: [{ id: libraryId, name: 'Library' }]
     })
 
     const result = await useCase.execute({
@@ -151,14 +154,14 @@ describe('GetProjectWithDependenciesUseCase', () => {
       isLibrary: true,
       visibility: 'public',
       files: [{ name: 'lib.asm', content: '; lib' }],
-      dependencies: [nestedLibId]
+      dependencies: [{ id: nestedLibId, name: 'Nested Library' }]
     })
 
     // Create main project
     await createTestProject({
       id: mainProjectId,
       files: [{ name: 'main.asm', content: '; main' }],
-      dependencies: [libraryId]
+      dependencies: [{ id: libraryId, name: 'Library' }]
     })
 
     const result = await useCase.execute({
@@ -182,7 +185,7 @@ describe('GetProjectWithDependenciesUseCase', () => {
       isLibrary: true,
       visibility: 'public',
       files: [{ name: 'lib1.asm', content: '; lib1' }],
-      dependencies: [lib2Id]
+      dependencies: [{ id: lib2Id, name: 'Library 2' }]
     })
 
     await createTestProject({
@@ -190,14 +193,14 @@ describe('GetProjectWithDependenciesUseCase', () => {
       isLibrary: true,
       visibility: 'public',
       files: [{ name: 'lib2.asm', content: '; lib2' }],
-      dependencies: [lib1Id]
+      dependencies: [{ id: lib1Id, name: 'Library 1' }]
     })
 
     // Main project depends on lib1
     await createTestProject({
       id: mainProjectId,
       files: [{ name: 'main.asm', content: '; main' }],
-      dependencies: [lib1Id]
+      dependencies: [{ id: lib1Id, name: 'Library 1' }]
     })
 
     // Should not infinite loop
@@ -287,7 +290,7 @@ describe('GetProjectWithDependenciesUseCase', () => {
     await createTestProject({
       id: mainProjectId,
       files: [{ name: 'main.asm', content: '; main' }],
-      dependencies: [libraryId]
+      dependencies: [{ id: libraryId, name: 'Private Library' }]
     })
 
     await expect(

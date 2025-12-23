@@ -16,7 +16,7 @@ export type Project = Readonly<{
   isLibrary: boolean
   files: readonly ProjectFile[]
   tags: readonly string[]
-  dependencies: readonly string[]
+  dependencies: readonly DependencyInfo[]
   shares: readonly ProjectShare[]
   userShares: readonly UserShare[]
   createdAt: Date
@@ -39,6 +39,14 @@ export type UserShare = Readonly<{
   createdAt: Date
 }>
 
+/**
+ * Dependency info - information about a project dependency
+ */
+export type DependencyInfo = Readonly<{
+  id: string
+  name: string
+}>
+
 export type CreateProjectParams = {
   id?: string
   userId: string
@@ -48,7 +56,7 @@ export type CreateProjectParams = {
   isLibrary?: boolean
   files?: readonly ProjectFile[]
   tags?: readonly string[]
-  dependencies?: readonly string[]
+  dependencies?: readonly DependencyInfo[]
   shares?: readonly ProjectShare[]
   userShares?: readonly UserShare[]
   createdAt?: Date
@@ -84,7 +92,7 @@ export function updateProject(
     isLibrary?: boolean
     files?: readonly ProjectFile[]
     tags?: readonly string[]
-    dependencies?: readonly string[]
+    dependencies?: readonly DependencyInfo[]
   }
 ): Project {
   return Object.freeze({

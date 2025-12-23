@@ -105,11 +105,18 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
 
   const handleAddDependency = async () => {
     if (!selectedDependency) return
+    // Find the selected library to get its name
+    const selectedLib = availableDependencies.find(
+      (d) => d.id === selectedDependency
+    )
+    if (!selectedLib) return
+
     setLoading(true)
     try {
       await addDependency({
         projectId: currentProject.id,
-        dependencyId: selectedDependency
+        dependencyId: selectedDependency,
+        dependencyName: selectedLib.name
       })
       setSelectedDependency('')
       await fetchProjects(user.id)
@@ -175,23 +182,23 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     }
   }
 
+  // Get current dependency IDs for filtering
+  const currentDependencyIds = new Set(
+    (currentProject.dependencies || []).map((d) => d.id)
+  )
+
   // Filter available dependencies (libraries not already added)
   const availableDependencies = projects
     .filter(
       (p) =>
         p.isLibrary &&
         p.id !== currentProject.id &&
-        !currentProject.dependencies?.includes(p.id)
+        !currentDependencyIds.has(p.id)
     )
     .map((p) => ({ id: p.id, name: p.name.value }))
 
-  // Map current dependencies to display format
-  const currentDependencies = (currentProject.dependencies || [])
-    .map((depId) => {
-      const dep = projects.find((p) => p.id === depId)
-      return dep ? { id: dep.id, name: dep.name.value } : null
-    })
-    .filter((dep): dep is { id: string; name: string } => dep !== null)
+  // Current dependencies already have name info from the entity
+  const currentDependencies = currentProject.dependencies || []
 
   return (
     <ProjectSettingsModalView

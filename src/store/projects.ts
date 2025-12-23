@@ -558,11 +558,18 @@ export const dependencyFilesAtom = atom<DependencyProject[]>([])
 /**
  * Fetch dependency files for the current project
  * Groups files by their parent project
+ * Works in both normal mode (currentProjectAtom) and read-only mode (viewOnlyProjectAtom)
  */
 export const fetchDependencyFilesAtom = atom(null, async (get, set) => {
+  const isReadOnly = get(isReadOnlyModeAtom)
   const currentProjectId = get(currentProjectIdAtom)
+  const viewOnlyProject = get(viewOnlyProjectAtom)
   const projects = get(projectsAtom)
-  const currentProject = projects.find((p) => p.id === currentProjectId)
+
+  // Get the active project based on mode
+  const currentProject = isReadOnly
+    ? viewOnlyProject
+    : projects.find((p) => p.id === currentProjectId)
 
   if (!currentProject || currentProject.dependencies.length === 0) {
     set(dependencyFilesAtom, [])
@@ -580,7 +587,7 @@ export const fetchDependencyFilesAtom = atom(null, async (get, set) => {
 
     for (const file of result.files) {
       // Skip files from the current project
-      if (file.projectId === currentProjectId) continue
+      if (file.projectId === currentProject.id) continue
 
       if (!projectsMap.has(file.projectId)) {
         projectsMap.set(file.projectId, {
@@ -613,8 +620,12 @@ export const fetchDependencyFilesAtom = atom(null, async (get, set) => {
  */
 export const addDependencyToProjectAtom = atom(
   null,
-  async (get, set, params: { projectId: string; dependencyId: string }) => {
-    const { projectId, dependencyId } = params
+  async (
+    get,
+    set,
+    params: { projectId: string; dependencyId: string; dependencyName: string }
+  ) => {
+    const { projectId, dependencyId, dependencyName } = params
 
     // Get current project to obtain userId
     const projects = get(projectsAtom)
@@ -629,11 +640,17 @@ export const addDependencyToProjectAtom = atom(
       dependencyId
     })
 
-    // Update local state - add dependency to project
+    // Update local state - add dependency info to project
     set(projectsAtom, (prev) =>
       prev.map((p) =>
         p.id === projectId
-          ? { ...p, dependencies: [...p.dependencies, dependencyId] }
+          ? {
+              ...p,
+              dependencies: [
+                ...p.dependencies,
+                { id: dependencyId, name: dependencyName }
+              ]
+            }
           : p
       )
     )
@@ -667,7 +684,7 @@ export const removeDependencyFromProjectAtom = atom(
         p.id === projectId
           ? {
               ...p,
-              dependencies: p.dependencies.filter((d) => d !== dependencyId)
+              dependencies: p.dependencies.filter((d) => d.id !== dependencyId)
             }
           : p
       )
