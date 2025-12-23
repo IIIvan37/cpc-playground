@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useRef } from 'react'
 import styles from './modal.module.css'
 
-type ModalSize = 'sm' | 'md' | 'lg' | 'xl'
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
 type ModalProps = Readonly<{
   /** Whether the modal is open */

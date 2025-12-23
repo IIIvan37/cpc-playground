@@ -31,7 +31,8 @@ describe('ProjectSettingsModalView', () => {
     onAddDependency: vi.fn(),
     onRemoveDependency: vi.fn(),
     onAddShare: vi.fn(),
-    onRemoveShare: vi.fn()
+    onRemoveShare: vi.fn(),
+    onDelete: vi.fn()
   }
 
   describe('modal rendering', () => {
@@ -75,14 +76,12 @@ describe('ProjectSettingsModalView', () => {
 
     it('renders library checkbox', () => {
       render(<ProjectSettingsModalView {...defaultProps} />)
-      expect(
-        screen.getByLabelText('This is a library project')
-      ).toBeInTheDocument()
+      expect(screen.getByLabelText('Library project')).toBeInTheDocument()
     })
 
     it('shows library checkbox as checked when isLibrary is true', () => {
       render(<ProjectSettingsModalView {...defaultProps} isLibrary={true} />)
-      expect(screen.getByLabelText('This is a library project')).toBeChecked()
+      expect(screen.getByLabelText('Library project')).toBeChecked()
     })
   })
 
@@ -240,7 +239,7 @@ describe('ProjectSettingsModalView', () => {
         />
       )
 
-      await user.click(screen.getByLabelText('This is a library project'))
+      await user.click(screen.getByLabelText('Library project'))
 
       expect(handleIsLibraryChange).toHaveBeenCalledWith(true)
     })
@@ -265,6 +264,35 @@ describe('ProjectSettingsModalView', () => {
       await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
       expect(handleClose).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('danger zone section', () => {
+    it('renders danger zone section with delete button', () => {
+      render(<ProjectSettingsModalView {...defaultProps} />)
+      expect(screen.getByText('Danger Zone')).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Delete Project' })
+      ).toBeInTheDocument()
+    })
+
+    it('calls onDelete when delete button is clicked', async () => {
+      const user = userEvent.setup()
+      const handleDelete = vi.fn()
+      render(
+        <ProjectSettingsModalView {...defaultProps} onDelete={handleDelete} />
+      )
+
+      await user.click(screen.getByRole('button', { name: 'Delete Project' }))
+
+      expect(handleDelete).toHaveBeenCalledTimes(1)
+    })
+
+    it('disables delete button when loading', () => {
+      render(<ProjectSettingsModalView {...defaultProps} loading={true} />)
+      expect(
+        screen.getByRole('button', { name: 'Delete Project' })
+      ).toBeDisabled()
     })
   })
 })
