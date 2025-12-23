@@ -1,11 +1,15 @@
-import { useAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import { container } from '@/infrastructure/container'
 import { addConsoleMessageAtom, codeAtom } from '@/store/editor'
+import { currentProgramIdAtom } from '@/store/programs'
+import { currentFileIdAtom } from '@/store/projects'
 
 export function useSharedCode() {
   const [, setCode] = useAtom(codeAtom)
   const [, addMessage] = useAtom(addConsoleMessageAtom)
+  const setCurrentFileId = useSetAtom(currentFileIdAtom)
+  const setCurrentProgramId = useSetAtom(currentProgramIdAtom)
   const [isLoading, setIsLoading] = useState(false)
 
   const { getSharedCode } = container
@@ -35,6 +39,10 @@ export function useSharedCode() {
         )
 
         if (code) {
+          // Reset to "new program" mode - neither a project file nor an existing program
+          // This ensures the editor uses codeAtom directly
+          setCurrentFileId(null)
+          setCurrentProgramId(null)
           setCode(code)
           addMessage({
             type: 'info',
@@ -61,7 +69,13 @@ export function useSharedCode() {
     }
 
     loadSharedCode(shareId)
-  }, [setCode, addMessage, getSharedCode])
+  }, [
+    setCode,
+    addMessage,
+    getSharedCode,
+    setCurrentFileId,
+    setCurrentProgramId
+  ])
 
   return { isLoading }
 }
