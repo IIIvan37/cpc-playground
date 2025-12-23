@@ -1,7 +1,7 @@
 import { getDefaultStore, useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
-import { currentProgramAtom } from '@/store/programs'
+import { currentProgramAtom, currentProgramIdAtom } from '@/store/programs'
 import { currentFileAtom } from '@/store/projects'
 import { CodeEditorView } from './code-editor.view'
 
@@ -22,6 +22,7 @@ export function CodeEditor() {
   const errorLines = useAtomValue(errorLinesAtom)
   const currentFile = useAtomValue(currentFileAtom)
   const currentProgram = useAtomValue(currentProgramAtom)
+  const currentProgramId = useAtomValue(currentProgramIdAtom)
   const globalCode = useAtomValue(codeAtom)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
@@ -32,8 +33,12 @@ export function CodeEditor() {
     currentFile?.content.value ?? globalCode
   )
 
-  // File ID for key-based remount
+  // Editor key for remounting textarea on content source change
+  // - fileId: remount when switching project files
+  // - programId: remount when switching saved programs
+  // - 'scratch-{length}': remount when loading shared code (new scratch with different content)
   const fileId = currentFile?.id
+  const editorKey = fileId ?? currentProgramId ?? `scratch-${globalCode.length}`
 
   // Track current fileId to prevent stale syncs
   const currentFileIdRef = useRef(fileId)
@@ -170,7 +175,7 @@ export function CodeEditor() {
     <CodeEditorView
       fileName={fileName}
       fileType={fileType}
-      fileId={fileId}
+      fileId={editorKey}
       code={initialCode}
       lines={lines}
       errorLines={errorLines}

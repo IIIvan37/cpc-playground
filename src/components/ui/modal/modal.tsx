@@ -54,14 +54,24 @@ export function Modal({
   }, [open, handleKeyDown])
 
   // Focus trap: ensure focus stays within modal
-  // Don't focus the dialog itself - let autoFocus on children work
+  // Focus the first input/button inside the modal after it opens
   useEffect(() => {
     if (open && overlayRef.current) {
-      // Only focus the dialog if nothing inside it has autoFocus
-      const hasAutoFocus = overlayRef.current.querySelector('[autofocus]')
-      if (!hasAutoFocus) {
-        overlayRef.current.focus()
-      }
+      // Use requestAnimationFrame to ensure React has finished rendering
+      requestAnimationFrame(() => {
+        if (!overlayRef.current) return
+
+        // Find the first focusable element (preferring inputs)
+        const focusableElement = overlayRef.current.querySelector<HTMLElement>(
+          'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])'
+        )
+
+        if (focusableElement) {
+          focusableElement.focus()
+        } else {
+          overlayRef.current.focus()
+        }
+      })
     }
   }, [open])
 
