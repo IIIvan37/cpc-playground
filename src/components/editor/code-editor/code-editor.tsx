@@ -167,9 +167,10 @@ export function CodeEditor() {
   }
   const fileType = getFileType()
 
-  // Use currentFile.content.value for initial render to avoid stale content
-  // localCode is used for line numbers and sync to codeAtom
-  const initialCode = currentFile?.content.value ?? localCode
+  // Use the correct source for initial code based on mode:
+  // - Project file mode: use currentFile.content.value
+  // - Program/Scratch mode: use globalCode directly (not localCode which updates async via useEffect)
+  const initialCode = currentFile?.content.value ?? globalCode
 
   return (
     <CodeEditorView
