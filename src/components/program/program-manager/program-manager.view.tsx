@@ -1,5 +1,7 @@
 import { FileIcon, GearIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import Button from '@/components/ui/button/button'
+import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
 import { Select, SelectItem } from '@/components/ui/select/select'
 import styles from './program-manager.module.css'
 
@@ -32,56 +34,46 @@ export type ProgramManagerViewProps = Readonly<{
   onCloseSaveDialog: () => void
   onCloseDeleteDialog: () => void
   onProgramNameChange: (value: string) => void
-
-  // Refs
-  inputRef: React.RefObject<HTMLInputElement | null>
 }>
 
 /**
  * Sub-component for save dialog
  */
 type SaveDialogProps = Readonly<{
+  open: boolean
   programName: string
   onProgramNameChange: (value: string) => void
   onSaveConfirm: () => void
   onClose: () => void
-  inputRef: React.RefObject<HTMLInputElement | null>
 }>
 
 function SaveDialog({
+  open,
   programName,
   onProgramNameChange,
   onSaveConfirm,
-  onClose,
-  inputRef
+  onClose
 }: SaveDialogProps) {
   return (
-    <dialog
-      open
-      aria-labelledby='save-dialog-title'
-      className={styles.dialogOverlay}
-    >
-      <div className={styles.dialog}>
-        <h3 id='save-dialog-title' className={styles.dialogTitle}>
-          Save Program
-        </h3>
-        <input
-          ref={inputRef}
-          className={styles.dialogInput}
-          type='text'
+    <Modal open={open} title='Save Program' onClose={onClose}>
+      <div className={styles.modalContent}>
+        <Input
           placeholder='Program name'
           value={programName}
           onChange={(e) => onProgramNameChange(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onSaveConfirm()}
+          autoFocus
         />
-        <div className={styles.dialogActions}>
-          <Button variant='secondary' onClick={onClose}>
+        <div className={styles.modalActions}>
+          <Button variant='outline' onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={onSaveConfirm}>Save</Button>
+          <Button onClick={onSaveConfirm} disabled={!programName.trim()}>
+            Save
+          </Button>
         </div>
       </div>
-    </dialog>
+    </Modal>
   )
 }
 
@@ -89,38 +81,32 @@ function SaveDialog({
  * Sub-component for delete dialog
  */
 type DeleteDialogProps = Readonly<{
+  open: boolean
   programName: string | undefined
   onDeleteConfirm: () => void
   onClose: () => void
 }>
 
 function DeleteDialog({
+  open,
   programName,
   onDeleteConfirm,
   onClose
 }: DeleteDialogProps) {
   return (
-    <dialog
-      open
-      aria-labelledby='delete-dialog-title'
-      className={`${styles.dialogOverlay} ${styles.nativeDialog}`}
-      onClose={onClose}
-    >
-      <div className={styles.dialog}>
-        <h3 id='delete-dialog-title' className={styles.dialogTitle}>
-          Delete Program
-        </h3>
+    <Modal open={open} title='Delete Program' onClose={onClose}>
+      <div className={styles.modalContent}>
         <p className={styles.deleteConfirm}>
           Are you sure you want to delete &quot;{programName}&quot;?
         </p>
-        <div className={styles.dialogActions}>
-          <Button variant='secondary' onClick={onClose}>
+        <div className={styles.modalActions}>
+          <Button variant='outline' onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={onDeleteConfirm}>Delete</Button>
         </div>
       </div>
-    </dialog>
+    </Modal>
   )
 }
 
@@ -146,8 +132,7 @@ export function ProgramManagerView({
   onDeleteConfirm,
   onCloseSaveDialog,
   onCloseDeleteDialog,
-  onProgramNameChange,
-  inputRef
+  onProgramNameChange
 }: ProgramManagerViewProps) {
   return (
     <>
@@ -194,16 +179,17 @@ export function ProgramManagerView({
 
       {showSaveDialog && (
         <SaveDialog
+          open={showSaveDialog}
           programName={programName}
           onProgramNameChange={onProgramNameChange}
           onSaveConfirm={onSaveConfirm}
           onClose={onCloseSaveDialog}
-          inputRef={inputRef}
         />
       )}
 
       {showDeleteDialog && (
         <DeleteDialog
+          open={showDeleteDialog}
           programName={currentProgramName}
           onDeleteConfirm={onDeleteConfirm}
           onClose={onCloseDeleteDialog}

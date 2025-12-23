@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ProjectSettingsModal } from '@/components/project'
 import {
   codeAtom,
@@ -37,7 +37,6 @@ export function ProgramManager() {
   const [showSettings, setShowSettings] = useState(false)
   const [programName, setProgramName] = useState('')
   const [selectKey, setSelectKey] = useState(0)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const currentProgram = savedPrograms.find((p) => p.id === currentProgramId)
   const currentProject = useAtomValue(currentProjectAtom)
@@ -46,13 +45,6 @@ export function ProgramManager() {
   useEffect(() => {
     fetchPrograms()
   }, [fetchPrograms])
-
-  // Focus input when dialog opens
-  useEffect(() => {
-    if (showSaveDialog && inputRef.current) {
-      inputRef.current.focus()
-    }
-  }, [showSaveDialog])
 
   const handleNew = () => {
     newProgram()
@@ -141,7 +133,6 @@ start:
         onCloseSaveDialog={closeSaveDialog}
         onCloseDeleteDialog={closeDeleteDialog}
         onProgramNameChange={setProgramName}
-        inputRef={inputRef}
       />
 
       {showSettings && currentProject && (
