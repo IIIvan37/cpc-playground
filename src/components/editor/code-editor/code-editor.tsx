@@ -22,12 +22,15 @@ export function CodeEditor() {
   const errorLines = useAtomValue(errorLinesAtom)
   const currentFile = useAtomValue(currentFileAtom)
   const currentProgram = useAtomValue(currentProgramAtom)
+  const globalCode = useAtomValue(codeAtom)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
 
   // Local state for display (line numbers, etc.)
-  const [localCode, setLocalCode] = useState(currentFile?.content.value ?? '')
+  const [localCode, setLocalCode] = useState(
+    currentFile?.content.value ?? globalCode
+  )
 
   // File ID for key-based remount
   const fileId = currentFile?.id
@@ -64,8 +67,11 @@ export function CodeEditor() {
     }
     if (currentFile) {
       setLocalCode(currentFile.content.value)
+    } else {
+      // No currentFile - switch to program mode, use globalCode
+      setLocalCode(globalCode)
     }
-  }, [fileId, currentFile])
+  }, [fileId, currentFile, globalCode])
 
   const lines = localCode.split('\n')
 
