@@ -4,6 +4,7 @@ export * from './programs'
 export {
   activeProjectAtom,
   currentFileIdAtom,
+  dependencyFilesAtom,
   isReadOnlyModeAtom,
   viewOnlyProjectAtom
 } from './projects'

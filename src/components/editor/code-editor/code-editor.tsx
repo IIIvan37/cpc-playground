@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue } from 'jotai'
+import { getDefaultStore, useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
 import { currentProgramAtom } from '@/store/programs'
@@ -7,12 +7,17 @@ import { CodeEditorView } from './code-editor.view'
 
 const LINE_HEIGHT = 21
 
+// Store reference for external sync (bypasses React re-renders)
+const store = getDefaultStore()
+
 /**
  * Container component for code editor
  * Handles business logic and delegates rendering to CodeEditorView
+ *
+ * Uses uncontrolled textarea with key-based remount to avoid React Concurrent
+ * Mode issues where controlled inputs can lose input events.
  */
 export function CodeEditor() {
-  const [code, setCode] = useAtom(codeAtom)
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
   const errorLines = useAtomValue(errorLinesAtom)
   const currentFile = useAtomValue(currentFileAtom)
@@ -21,21 +26,52 @@ export function CodeEditor() {
   const lineNumbersRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
 
-  // Synchronize code with current file when it changes
+  // Local state for display (line numbers, etc.)
+  const [localCode, setLocalCode] = useState(currentFile?.content.value ?? '')
+
+  // File ID for key-based remount
+  const fileId = currentFile?.id
+
+  // Track current fileId to prevent stale syncs
+  const currentFileIdRef = useRef(fileId)
+
+  // Sync local -> global using store.set (bypasses React subscription)
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
-    if (currentFile) {
-      setCode(currentFile.content.value)
+    const syncFileId = fileId // Capture current fileId
+    syncTimeoutRef.current = setTimeout(() => {
+      // Only sync if we're still on the same file
+      if (currentFileIdRef.current === syncFileId) {
+        store.set(codeAtom, localCode)
+      }
+    }, 300)
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current)
+      }
     }
-  }, [currentFile, setCode])
+  }, [localCode, fileId])
 
-  const lines = code.split('\n')
+  // Reset local code when file changes (codeAtom is synced by setCurrentFileAtom)
+  useEffect(() => {
+    // Update ref immediately
+    currentFileIdRef.current = fileId
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setCode(e.target.value)
-    },
-    [setCode]
-  )
+    // Cancel any pending sync to prevent stale content from overwriting
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current)
+      syncTimeoutRef.current = null
+    }
+    if (currentFile) {
+      setLocalCode(currentFile.content.value)
+    }
+  }, [fileId, currentFile])
+
+  const lines = localCode.split('\n')
+
+  const handleInput = useCallback((value: string) => {
+    setLocalCode(value)
+  }, [])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -53,7 +89,9 @@ export function CodeEditor() {
           const after = value.substring(end)
           // Indent each line in selection
           const indented = selected.replaceAll(/^/gm, '    ')
-          setCode(before + indented + after)
+          const newValue = before + indented + after
+          textarea.value = newValue
+          setLocalCode(newValue)
           setTimeout(() => {
             textarea.selectionStart = start
             textarea.selectionEnd = end + (indented.length - selected.length)
@@ -63,14 +101,15 @@ export function CodeEditor() {
           const newValue = `${value.substring(0, start)}    ${value.substring(
             end
           )}`
-          setCode(newValue)
+          textarea.value = newValue
+          setLocalCode(newValue)
           setTimeout(() => {
             textarea.selectionStart = textarea.selectionEnd = start + 4
           }, 0)
         }
       }
     },
-    [setCode]
+    []
   )
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
@@ -106,23 +145,28 @@ export function CodeEditor() {
     if (currentFile) return 'project'
     if (currentProgram) {
       // Check if code has been modified from saved version
-      return code === currentProgram.code ? 'saved' : 'modified'
+      return localCode === currentProgram.code ? 'saved' : 'modified'
     }
     return 'scratch'
   }
   const fileType = getFileType()
 
+  // Use currentFile.content.value for initial render to avoid stale content
+  // localCode is used for line numbers and sync to codeAtom
+  const initialCode = currentFile?.content.value ?? localCode
+
   return (
     <CodeEditorView
       fileName={fileName}
       fileType={fileType}
-      code={code}
+      fileId={fileId}
+      code={initialCode}
       lines={lines}
       errorLines={errorLines}
       scrollTop={scrollTop}
       textareaRef={textareaRef}
       lineNumbersRef={lineNumbersRef}
-      onChange={handleChange}
+      onInput={handleInput}
       onKeyDown={handleKeyDown}
       onScroll={handleScroll}
     />

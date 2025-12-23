@@ -1,5 +1,5 @@
 import { useAtomValue, useSetAtom } from 'jotai'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/button/button'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
@@ -54,18 +54,25 @@ export function FileBrowser() {
   const [newFileName, setNewFileName] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Track last project ID to only trigger on project change, not on every update
+  const lastProjectIdRef = useRef<string | null>(null)
+
   // Auto-select main file on project change and fetch dependencies
   useEffect(() => {
     if (project && project.files.length > 0) {
-      const mainFile = project.files.find((f) => f.isMain) || project.files[0]
-      setSelectedFileId(mainFile.id)
-      setCurrentFileId(mainFile.id)
-      setCode(mainFile.content.value)
-      setSelectedDependencyFileId(null) // Reset dependency selection
+      // Only reset selection when project ID actually changes
+      if (project.id !== lastProjectIdRef.current) {
+        lastProjectIdRef.current = project.id
+        const mainFile = project.files.find((f) => f.isMain) || project.files[0]
+        setSelectedFileId(mainFile.id)
+        setCurrentFileId(mainFile.id)
+        setCode(mainFile.content.value)
+        setSelectedDependencyFileId(null) // Reset dependency selection
 
-      // Fetch dependencies when project changes
-      if (project.dependencies.length > 0) {
-        fetchDependencies()
+        // Fetch dependencies when project changes
+        if (project.dependencies.length > 0) {
+          fetchDependencies()
+        }
       }
     }
   }, [project, setCurrentFileId, setCode, fetchDependencies])

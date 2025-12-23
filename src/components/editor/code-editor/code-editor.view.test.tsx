@@ -83,8 +83,9 @@ describe('ErrorHighlightsView', () => {
 describe('EditorTextareaView', () => {
   const defaultProps = {
     code: 'test code',
+    fileId: 'test-file-id',
     textareaRef: createRef<HTMLTextAreaElement>(),
-    onChange: vi.fn(),
+    onInput: vi.fn(),
     onKeyDown: vi.fn(),
     onScroll: vi.fn()
   }
@@ -104,15 +105,15 @@ describe('EditorTextareaView', () => {
     expect(screen.getByRole('textbox')).toHaveAttribute('spellcheck', 'false')
   })
 
-  it('calls onChange when text changes', () => {
-    const handleChange = vi.fn()
-    render(<EditorTextareaView {...defaultProps} onChange={handleChange} />)
+  it('calls onInput when text changes', () => {
+    const handleInput = vi.fn()
+    render(<EditorTextareaView {...defaultProps} onInput={handleInput} />)
 
-    fireEvent.change(screen.getByRole('textbox'), {
+    fireEvent.input(screen.getByRole('textbox'), {
       target: { value: 'new code' }
     })
 
-    expect(handleChange).toHaveBeenCalled()
+    expect(handleInput).toHaveBeenCalled()
   })
 
   it('calls onKeyDown when key is pressed', () => {
@@ -176,13 +177,14 @@ describe('CodeEditorView', () => {
   const defaultProps = {
     fileName: 'test.asm',
     fileType: 'project' as const,
+    fileId: 'test-file-id',
     code: 'LD A, 0\nLD B, 1',
     lines: ['LD A, 0', 'LD B, 1'],
     errorLines: [] as readonly number[],
     scrollTop: 0,
     textareaRef: createRef<HTMLTextAreaElement>(),
     lineNumbersRef: createRef<HTMLDivElement>(),
-    onChange: vi.fn(),
+    onInput: vi.fn(),
     onKeyDown: vi.fn(),
     onScroll: vi.fn()
   }

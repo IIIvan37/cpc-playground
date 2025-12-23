@@ -68,25 +68,30 @@ export function ErrorHighlightsView({
 // --- EditorTextareaView ---
 type EditorTextareaViewProps = Readonly<{
   code: string
+  fileId: string | undefined
   textareaRef: RefObject<HTMLTextAreaElement | null>
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  onInput: (value: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
   onScroll: (e: React.UIEvent<HTMLTextAreaElement>) => void
 }>
 
 export function EditorTextareaView({
   code,
+  fileId,
   textareaRef,
-  onChange,
+  onInput,
   onKeyDown,
   onScroll
 }: EditorTextareaViewProps) {
+  // Use key to force remount when file changes
+  // This allows us to use defaultValue (uncontrolled) while still updating on file switch
   return (
     <textarea
+      key={fileId ?? 'scratch'}
       ref={textareaRef}
       className={styles.editor}
-      value={code}
-      onChange={onChange}
+      defaultValue={code}
+      onInput={(e) => onInput(e.currentTarget.value)}
       onKeyDown={onKeyDown}
       onScroll={onScroll}
       spellCheck={false}
@@ -133,6 +138,7 @@ export type CodeEditorViewProps = Readonly<{
   // Header props
   fileName: string | undefined
   fileType: 'project' | 'saved' | 'modified' | 'scratch'
+  fileId: string | undefined
 
   // Editor state
   code: string
@@ -145,7 +151,7 @@ export type CodeEditorViewProps = Readonly<{
   lineNumbersRef: RefObject<HTMLDivElement | null>
 
   // Handlers
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  onInput: (value: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
   onScroll: (e: React.UIEvent<HTMLTextAreaElement>) => void
 }>
@@ -153,13 +159,14 @@ export type CodeEditorViewProps = Readonly<{
 export function CodeEditorView({
   fileName,
   fileType,
+  fileId,
   code,
   lines,
   errorLines,
   scrollTop,
   textareaRef,
   lineNumbersRef,
-  onChange,
+  onInput,
   onKeyDown,
   onScroll
 }: CodeEditorViewProps) {
@@ -177,8 +184,9 @@ export function CodeEditorView({
           <ErrorHighlightsView errorLines={errorLines} scrollTop={scrollTop} />
           <EditorTextareaView
             code={code}
+            fileId={fileId}
             textareaRef={textareaRef}
-            onChange={onChange}
+            onInput={onInput}
             onKeyDown={onKeyDown}
             onScroll={onScroll}
           />

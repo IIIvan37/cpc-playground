@@ -7,6 +7,7 @@ import { atom } from 'jotai'
 import type { Project } from '@/domain/entities/project.entity'
 import { PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import { container } from '@/infrastructure/container'
+import { codeAtom } from './editor'
 
 // ============================================================================
 // State Atoms (Simple data holders)
@@ -274,12 +275,21 @@ export const setCurrentProjectAtom = atom(
 )
 
 /**
- * Set the current file
+ * Set the current file and sync codeAtom with the file content
  */
 export const setCurrentFileAtom = atom(
   null,
-  (_get, set, fileId: string | null) => {
+  (get, set, fileId: string | null) => {
     set(currentFileIdAtom, fileId)
+
+    // Sync codeAtom with the new file content
+    if (fileId) {
+      const project = get(currentProjectAtom)
+      const file = project?.files.find((f) => f.id === fileId)
+      if (file) {
+        set(codeAtom, file.content.value)
+      }
+    }
   }
 )
 
