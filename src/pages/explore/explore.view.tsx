@@ -20,12 +20,16 @@ export interface ExploreListViewProps {
   }>
   readonly loading?: boolean
   readonly error?: string | null
+  readonly searchQuery?: string
+  readonly onSearchChange?: (query: string) => void
 }
 
 export function ExploreListView({
   projects,
   loading,
-  error
+  error,
+  searchQuery = '',
+  onSearchChange
 }: ExploreListViewProps) {
   if (loading) {
     return (
@@ -38,20 +42,38 @@ export function ExploreListView({
   if (error) {
     return <div className={styles.error}>{error}</div>
   }
-  if (!projects.length) {
-    return (
-      <div className={styles.empty}>
-        <p>No projects found</p>
-        <p>Be the first to share a project!</p>
-      </div>
-    )
-  }
+
   return (
-    <div className={styles.list}>
-      {projects.map((project) => (
-        <ProjectListItem key={project.id} {...project} />
-      ))}
-    </div>
+    <>
+      {onSearchChange && (
+        <div className={styles.searchContainer}>
+          <input
+            type='text'
+            placeholder='Search by name, author, or tag...'
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className={styles.searchInput}
+            data-testid='search-input'
+          />
+        </div>
+      )}
+      {projects.length === 0 ? (
+        <div className={styles.empty}>
+          <p>No projects found</p>
+          {searchQuery ? (
+            <p>Try a different search term</p>
+          ) : (
+            <p>Be the first to share a project!</p>
+          )}
+        </div>
+      ) : (
+        <div className={styles.list}>
+          {projects.map((project) => (
+            <ProjectListItem key={project.id} {...project} />
+          ))}
+        </div>
+      )}
+    </>
   )
 }
 

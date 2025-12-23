@@ -23,3 +23,8 @@ export {
   type AuthorizationService,
   createAuthorizationService
 } from './authorization.service'
+export {
+  filterProjects,
+  type ProjectFilterCriteria,
+  type SearchableProject
+} from './project-filter.service'

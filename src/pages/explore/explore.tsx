@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import type { Project } from '@/domain/entities/project.entity'
+import { filterProjects } from '@/domain/services'
 import { useAuth } from '@/hooks/use-auth'
 import { useFetchVisibleProjects } from '@/hooks/use-fetch-visible-projects'
 import { createProjectAtom } from '@/store/projects'
@@ -24,6 +25,7 @@ export function ExplorePage() {
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -70,13 +72,28 @@ export function ExplorePage() {
     navigate(`/?project=${project.id}`)
   }
 
-  // Prepare data for dumb view
-  const listProjects = projects.map((project) => {
+  // Prepare searchable projects for domain filter
+  const searchableProjects = projects.map((project) => {
+    const isOwner = user?.id === project.userId
+    return {
+      project,
+      authorName: isOwner ? 'Owned' : project.authorUsername || 'Unknown'
+    }
+  })
+
+  // Filter projects using domain service
+  const filteredProjects = filterProjects(searchableProjects, {
+    query: searchQuery,
+    userId: user?.id
+  })
+
+  // Map to view props
+  const listProjects = filteredProjects.map(({ project, authorName }) => {
     const isOwner = user?.id === project.userId
     return {
       id: project.id,
       name: project.name.value,
-      authorName: isOwner ? 'Owned' : project.authorUsername || 'Unknown',
+      authorName,
       description: project.description,
       tags: [...project.tags],
       isOwner,
@@ -113,6 +130,8 @@ export function ExplorePage() {
           projects={listProjects}
           loading={loading}
           error={error}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
       </div>
 

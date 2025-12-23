@@ -66,4 +66,54 @@ describe('ExploreListView', () => {
     expect(screen.getAllByText('Shared')[0]).toBeInTheDocument()
     expect(screen.getAllByText('Public')[0]).toBeInTheDocument()
   })
+
+  it('renders search input when onSearchChange is provided', () => {
+    const onSearchChange = vi.fn()
+    render(
+      <ExploreListView
+        projects={[baseProject]}
+        searchQuery=''
+        onSearchChange={onSearchChange}
+      />
+    )
+    const searchInput = screen.getByTestId('search-input')
+    expect(searchInput).toBeInTheDocument()
+    expect(searchInput).toHaveAttribute(
+      'placeholder',
+      'Search by name, author, or tag...'
+    )
+  })
+
+  it('does not render search input when onSearchChange is not provided', () => {
+    render(<ExploreListView projects={[baseProject]} />)
+    expect(screen.queryByTestId('search-input')).not.toBeInTheDocument()
+  })
+
+  it('calls onSearchChange when user types in search input', () => {
+    const onSearchChange = vi.fn()
+    render(
+      <ExploreListView
+        projects={[baseProject]}
+        searchQuery=''
+        onSearchChange={onSearchChange}
+      />
+    )
+    const searchInput = screen.getByTestId('search-input')
+    fireEvent.change(searchInput, { target: { value: 'test' } })
+    expect(onSearchChange).toHaveBeenCalledWith('test')
+  })
+
+  it('shows "Try a different search term" when no results found with search query', () => {
+    const onSearchChange = vi.fn()
+    render(
+      <ExploreListView
+        projects={[]}
+        searchQuery='nonexistent'
+        onSearchChange={onSearchChange}
+      />
+    )
+    expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
+    expect(screen.getByText(/try a different search term/i)).toBeInTheDocument()
+    expect(screen.queryByText(/be the first to share/i)).not.toBeInTheDocument()
+  })
 })
