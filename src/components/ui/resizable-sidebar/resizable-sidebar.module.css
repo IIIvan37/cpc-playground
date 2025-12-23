@@ -1,0 +1,76 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+.wrapper.collapsed {
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+}
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.collapsed .content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Resize handle */
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 10;
+  transition: background 0.15s ease;
+}
+
+.resizeHandle:hover,
+.resizeHandle.resizing {
+  background: var(--color-primary);
+}
+
+/* Collapse button */
+.collapseButton {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  z-index: 11;
+  transition: all 0.15s ease;
+}
+
+.collapseButton:hover {
+  color: var(--color-text);
+  background: var(--color-bg-hover);
+}
+
+.collapsed .collapseButton {
+  right: 8px;
+}
+
+.collapseIcon {
+  transition: transform 0.15s ease;
+}
+
+.collapsed .collapseIcon {
+  transform: rotate(180deg);
+}

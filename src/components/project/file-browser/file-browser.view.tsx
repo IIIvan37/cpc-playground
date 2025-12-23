@@ -8,6 +8,7 @@ import {
   TrashIcon
 } from '@radix-ui/react-icons'
 import { type ReactNode, useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 import Button from '@/components/ui/button/button'
 import type { VisibilityValue } from '@/domain/value-objects'
 import styles from './file-browser.module.css'
@@ -136,11 +137,7 @@ function ProjectHeaderView({
     <div className={styles.headerRow}>
       <div className={styles.projectNameRow}>
         <div className={styles.projectName}>{projectName}</div>
-        {isReadOnly && (
-          <span className={`${styles.badge} ${styles.badgeReadOnly}`}>
-            Read-only
-          </span>
-        )}
+        {isReadOnly && <Badge variant='readOnly'>Read-only</Badge>}
       </div>
       {canEdit && (
         <Button variant='ghost' size='sm' onClick={onNewFile} title='New File'>
@@ -157,12 +154,8 @@ function ProjectBadgesView({ visibility, isLibrary }: ProjectBadgesViewProps) {
 
   return (
     <div className={styles.badges}>
-      {visibility === 'public' && (
-        <span className={`${styles.badge} ${styles.badgePublic}`}>Public</span>
-      )}
-      {isLibrary && (
-        <span className={`${styles.badge} ${styles.badgeLibrary}`}>Lib</span>
-      )}
+      {visibility === 'public' && <Badge variant='public'>Public</Badge>}
+      {isLibrary && <Badge variant='library'>Library</Badge>}
     </div>
   )
 }

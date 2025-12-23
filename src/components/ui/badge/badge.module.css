@@ -1,0 +1,55 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Variant colors */
+.public {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.shared {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.owner {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.library {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.readOnly {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
+.info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.warning {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}

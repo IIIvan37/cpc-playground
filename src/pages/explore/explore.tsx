@@ -2,6 +2,7 @@ import { FileIcon, PersonIcon, PlusIcon } from '@radix-ui/react-icons'
 import { useSetAtom } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Badge } from '@/components/ui/badge'
 import Button from '@/components/ui/button/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -129,26 +130,14 @@ export function ExplorePage() {
             <div className={styles.cardHeader}>
               <h2 className={styles.cardTitle}>{project.name.value}</h2>
               <div className={styles.badges}>
-                {isOwner(project) && (
-                  <span className={`${styles.badge} ${styles.badgeOwner}`}>
-                    Owner
-                  </span>
-                )}
+                {isOwner(project) && <Badge variant='owner'>Owner</Badge>}
                 {isShared(project) && !isOwner(project) && (
-                  <span className={`${styles.badge} ${styles.badgeShared}`}>
-                    Shared
-                  </span>
+                  <Badge variant='shared'>Shared</Badge>
                 )}
                 {project.visibility.value === 'public' && (
-                  <span className={`${styles.badge} ${styles.badgePublic}`}>
-                    Public
-                  </span>
+                  <Badge variant='public'>Public</Badge>
                 )}
-                {project.isLibrary && (
-                  <span className={`${styles.badge} ${styles.badgeLibrary}`}>
-                    Library
-                  </span>
-                )}
+                {project.isLibrary && <Badge variant='library'>Library</Badge>}
               </div>
             </div>
 

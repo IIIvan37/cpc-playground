@@ -3,6 +3,7 @@ import { ConsolePanel } from '@/components/console'
 import { CodeEditor } from '@/components/editor'
 import { EmulatorCanvas } from '@/components/emulator'
 import { FileBrowser } from '@/components/project/file-browser'
+import { ResizableSidebar } from '@/components/ui/resizable-sidebar'
 import { useProjectFromUrl } from '@/hooks'
 import { useAutoSaveFile } from '@/hooks/use-auto-save-file'
 import { useSharedCode } from '@/hooks/use-shared-code'
@@ -32,7 +33,11 @@ export function MainLayout() {
       viewMode={viewMode}
       showSidebar={!!activeProject}
       toolbar={<Toolbar />}
-      sidebar={<FileBrowser />}
+      sidebar={
+        <ResizableSidebar storageKey='file-browser-width'>
+          <FileBrowser />
+        </ResizableSidebar>
+      }
       editor={<CodeEditor />}
       emulator={<EmulatorCanvas />}
       console={<ConsolePanel />}

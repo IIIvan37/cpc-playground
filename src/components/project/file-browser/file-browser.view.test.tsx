@@ -93,19 +93,19 @@ describe('FileBrowserView', () => {
       expect(screen.queryByText('Public')).not.toBeInTheDocument()
     })
 
-    it('shows Lib badge for library projects', () => {
+    it('shows Library badge for library projects', () => {
       render(
         <FileBrowserView
           {...defaultProps}
           project={{ ...defaultProject, isLibrary: true }}
         />
       )
-      expect(screen.getByText('Lib')).toBeInTheDocument()
+      expect(screen.getByText('Library')).toBeInTheDocument()
     })
 
-    it('does not show Lib badge for non-library projects', () => {
+    it('does not show Library badge for non-library projects', () => {
       render(<FileBrowserView {...defaultProps} />)
-      expect(screen.queryByText('Lib')).not.toBeInTheDocument()
+      expect(screen.queryByText('Library')).not.toBeInTheDocument()
     })
   })
 
