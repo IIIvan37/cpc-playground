@@ -6,9 +6,15 @@
   overflow-y: auto;
 }
 
-.pageHeader {
+.wrapper {
   max-width: 1200px;
-  margin: 0 auto 2rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.pageHeader {
+  margin-bottom: 2rem;
+  text-align: left;
 }
 
 .headerRow {
@@ -18,22 +24,24 @@
   gap: 1rem;
 }
 
+.headerContent {
+  flex: 1;
+  min-width: 0;
+}
+
 .title {
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
   color: var(--color-foreground);
+  text-align: left;
 }
 
 .subtitle {
   margin: 0.5rem 0 0;
   color: var(--color-disabled-text);
   font-size: 1rem;
-}
-
-.content {
-  max-width: 1200px;
-  margin: 0 auto;
+  text-align: left;
 }
 
 .list {
@@ -78,16 +86,24 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
 }
 .typeBadges {
   display: flex;
   gap: 0.5rem;
+}
+.authorName {
+  font-size: 0.85rem;
+  color: var(--color-disabled-text);
+  margin: 0.3rem 0 0.1rem 0;
+  text-align: left;
 }
 .description {
   color: var(--color-disabled-text);
   font-size: 0.95rem;
   margin: 0.1rem 0 0.2rem 0;
   line-height: 1.5;
+  text-align: left;
 }
 .tags {
   display: flex;
@@ -118,7 +134,6 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  text-align: center;
   color: var(--color-disabled-text);
 }
 
@@ -148,7 +163,6 @@
   color: var(--color-error);
   padding: 1rem;
   border-radius: 0.5rem;
-  text-align: center;
 }
 
 .modalContent {

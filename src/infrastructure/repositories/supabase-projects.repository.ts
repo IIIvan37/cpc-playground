@@ -117,6 +117,7 @@ function mapToDomain(data: ProjectWithRelations): Project {
   return createProject({
     id: data.id,
     userId: data.user_id,
+    authorUsername: null, // Will be enriched separately
     name: createProjectName(data.name),
     description: data.description,
     visibility: createVisibility(data.visibility),
@@ -129,6 +130,43 @@ function mapToDomain(data: ProjectWithRelations): Project {
     createdAt: new Date(data.created_at),
     updatedAt: new Date(data.updated_at)
   })
+}
+
+/**
+ * Enrich projects with author usernames
+ * Fetches usernames from user_profiles and updates projects
+ */
+async function enrichWithAuthorUsernames(
+  supabase: SupabaseClient<Database>,
+  projects: readonly Project[]
+): Promise<readonly Project[]> {
+  if (projects.length === 0) return projects
+
+  // Get unique user IDs
+  const userIds = [...new Set(projects.map((p) => p.userId))]
+
+  // Fetch all usernames in one query
+  const { data: profiles, error } = await supabase
+    .from('user_profiles')
+    .select('id, username')
+    .in('id', userIds)
+
+  if (error) {
+    // If we can't fetch usernames, just return projects without them
+    console.warn('Failed to fetch author usernames:', error)
+    return projects
+  }
+
+  // Create a map of userId -> username
+  const usernameMap = new Map((profiles || []).map((p) => [p.id, p.username]))
+
+  // Update projects with usernames
+  return projects.map((project) =>
+    createProject({
+      ...project,
+      authorUsername: usernameMap.get(project.userId) ?? null
+    })
+  )
 }
 
 /**
@@ -205,9 +243,11 @@ export function createSupabaseProjectsRepository(
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       )
 
-      return allProjects.map((p) =>
+      const projects = allProjects.map((p) =>
         mapToDomain(p as unknown as ProjectWithRelations)
       )
+
+      return enrichWithAuthorUsernames(supabase, projects)
     },
 
     async findVisible(userId?: string): Promise<readonly Project[]> {
@@ -254,12 +294,14 @@ export function createSupabaseProjectsRepository(
         if (publicError) throw publicError
 
         // Map with empty shares for anonymous users
-        return (publicProjects || []).map((p) =>
+        const projects = (publicProjects || []).map((p) =>
           mapToDomain({
             ...p,
             project_shares: []
           } as unknown as ProjectWithRelations)
         )
+
+        return enrichWithAuthorUsernames(supabase, projects)
       }
 
       // Get public projects
@@ -336,9 +378,11 @@ export function createSupabaseProjectsRepository(
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       )
 
-      return allProjects.map((p) =>
+      const projects = allProjects.map((p) =>
         mapToDomain(p as unknown as ProjectWithRelations)
       )
+
+      return enrichWithAuthorUsernames(supabase, projects)
     },
 
     async findById(projectId: string): Promise<Project | null> {
@@ -369,7 +413,9 @@ export function createSupabaseProjectsRepository(
         throw error
       }
 
-      return mapToDomain(data)
+      const project = mapToDomain(data)
+      const enriched = await enrichWithAuthorUsernames(supabase, [project])
+      return enriched[0] ?? null
     },
 
     async findByShareCode(shareCode: string): Promise<Project | null> {
@@ -402,7 +448,9 @@ export function createSupabaseProjectsRepository(
         throw error
       }
 
-      return mapToDomain((data as unknown as ShareWithProject).project)
+      const project = mapToDomain((data as unknown as ShareWithProject).project)
+      const enriched = await enrichWithAuthorUsernames(supabase, [project])
+      return enriched[0] ?? null
     },
 
     async create(project: Project): Promise<Project> {

@@ -318,6 +318,7 @@ describe('SupabaseProjectsRepository', () => {
       const project = {
         id: '',
         userId: 'user-123',
+        authorUsername: null,
         name: createProjectName('New Project'),
         description: 'Description',
         visibility: createVisibility('private'),
@@ -347,6 +348,7 @@ describe('SupabaseProjectsRepository', () => {
       const project = {
         id: '',
         userId: 'user-123',
+        authorUsername: null,
         name: createProjectName('New Project'),
         description: null,
         visibility: createVisibility('private'),
@@ -391,6 +393,7 @@ describe('SupabaseProjectsRepository', () => {
       const project = {
         id: '',
         userId: 'user-123',
+        authorUsername: null,
         name: createProjectName('New Project'),
         description: 'Description',
         visibility: createVisibility('private'),
@@ -441,6 +444,7 @@ describe('SupabaseProjectsRepository', () => {
       const project = {
         id: '',
         userId: 'user-123',
+        authorUsername: null,
         name: createProjectName('New Project'),
         description: null,
         visibility: createVisibility('private'),

@@ -71,37 +71,50 @@ export function ExplorePage() {
   }
 
   // Prepare data for dumb view
-  const listProjects = projects.map((project) => ({
-    id: project.id,
-    name: project.name.value,
-    description: project.description,
-    tags: [...project.tags],
-    isOwner: user?.id === project.userId,
-    isShared: project.userShares.some((share) => share.userId === user?.id),
-    visibility: project.visibility.value,
-    isLibrary: project.isLibrary,
-    filesCount: project.files.length,
-    sharesCount: project.userShares.length,
-    updatedAt: project.updatedAt,
-    onClick: () => handleProjectClick(project)
-  }))
+  const listProjects = projects.map((project) => {
+    const isOwner = user?.id === project.userId
+    return {
+      id: project.id,
+      name: project.name.value,
+      authorName: isOwner ? 'Owned' : project.authorUsername || 'Unknown',
+      description: project.description,
+      tags: [...project.tags],
+      isOwner,
+      isShared: project.userShares.some((share) => share.userId === user?.id),
+      visibility: project.visibility.value,
+      isLibrary: project.isLibrary,
+      filesCount: project.files.length,
+      sharesCount: project.userShares.length,
+      updatedAt: project.updatedAt,
+      onClick: () => handleProjectClick(project)
+    }
+  })
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Explore Projects</h1>
-        {user && (
-          <Button onClick={() => setShowNewProjectDialog(true)}>
-            <PlusIcon /> New Project
-          </Button>
-        )}
-      </div>
+      <div className={styles.wrapper}>
+        <div className={styles.pageHeader}>
+          <div className={styles.headerRow}>
+            <div className={styles.headerContent}>
+              <h1 className={styles.title}>Explore Projects</h1>
+              <p className={styles.subtitle}>
+                Discover public projects and libraries from the community
+              </p>
+            </div>
+            {user && (
+              <Button onClick={() => setShowNewProjectDialog(true)}>
+                <PlusIcon /> New Project
+              </Button>
+            )}
+          </div>
+        </div>
 
-      <ExploreListView
-        projects={listProjects}
-        loading={loading}
-        error={error}
-      />
+        <ExploreListView
+          projects={listProjects}
+          loading={loading}
+          error={error}
+        />
+      </div>
 
       {showNewProjectDialog && (
         <Modal

@@ -10,6 +10,7 @@ import type { ProjectFile } from './project-file.entity'
 export type Project = Readonly<{
   id: string
   userId: string
+  authorUsername: string | null
   name: ProjectName
   description: string | null
   visibility: Visibility
@@ -50,6 +51,7 @@ export type DependencyInfo = Readonly<{
 export type CreateProjectParams = {
   id?: string
   userId: string
+  authorUsername?: string | null
   name: ProjectName
   description?: string | null
   visibility: Visibility
@@ -69,6 +71,7 @@ export function createProject(params: CreateProjectParams): Project {
   return Object.freeze({
     id: params.id ?? crypto.randomUUID(),
     userId: params.userId,
+    authorUsername: params.authorUsername ?? null,
     name: params.name,
     description: params.description ?? null,
     visibility: params.visibility,

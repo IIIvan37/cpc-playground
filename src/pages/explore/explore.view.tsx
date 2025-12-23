@@ -5,6 +5,7 @@ export interface ExploreListViewProps {
   readonly projects: ReadonlyArray<{
     id: string
     name: string
+    authorName: string
     description?: string | null
     tags: string[]
     isOwner: boolean
@@ -55,6 +56,7 @@ export function ExploreListView({
 
 export type ProjectListItemProps = {
   readonly name: string
+  readonly authorName: string
   readonly description?: string | null
   readonly tags: string[]
   readonly isOwner: boolean
@@ -69,6 +71,7 @@ export type ProjectListItemProps = {
 
 export function ProjectListItem({
   name,
+  authorName,
   description,
   tags,
   isOwner,
@@ -91,12 +94,18 @@ export function ProjectListItem({
       <div className={styles.rowTop}>
         <span className={styles.projectName}>{name}</span>
         <span className={styles.typeBadges}>
-          {isOwner && <Badge variant='owner'>Owner</Badge>}
           {isShared && !isOwner && <Badge variant='shared'>Shared</Badge>}
           {visibility === 'public' && <Badge variant='public'>Public</Badge>}
           {isLibrary && <Badge variant='library'>Library</Badge>}
         </span>
       </div>
+      {isOwner ? (
+        <div className={styles.authorName}>
+          <Badge variant='owner'>Owner</Badge>
+        </div>
+      ) : (
+        <div className={styles.authorName}>by {authorName}</div>
+      )}
       {description && <div className={styles.description}>{description}</div>}
       {tags.length > 0 && (
         <div className={styles.tags}>

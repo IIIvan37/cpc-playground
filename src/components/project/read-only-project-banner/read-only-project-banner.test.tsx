@@ -11,6 +11,7 @@ import styles from './read-only-project-banner.module.css'
 const mockProject: Project = {
   id: 'test-id',
   userId: 'user-id',
+  authorUsername: 'testuser',
   name: { value: 'Test Project' } as Project['name'],
   description: null,
   visibility: { value: 'public' } as Project['visibility'],

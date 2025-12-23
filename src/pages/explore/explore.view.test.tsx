@@ -6,6 +6,7 @@ describe('ExploreListView', () => {
   const baseProject = {
     id: '1',
     name: 'Test Project',
+    authorName: 'testuser',
     description: 'A test project',
     tags: ['asm', 'demo'],
     isOwner: false,
