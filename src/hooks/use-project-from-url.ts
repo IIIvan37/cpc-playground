@@ -1,5 +1,5 @@
 import { useSetAtom } from 'jotai'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { codeAtom } from '@/store'
 import {
   fetchProjectAtom,
@@ -19,9 +19,6 @@ export function useProjectFromUrl() {
   const setIsReadOnlyMode = useSetAtom(isReadOnlyModeAtom)
   const setCode = useSetAtom(codeAtom)
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
   useEffect(() => {
     // Wait for auth to be ready
     if (authLoading) return
@@ -36,16 +33,11 @@ export function useProjectFromUrl() {
       return
     }
 
-    async function loadProject() {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const project = await fetchProject({
-          projectId: projectId as string,
-          userId: user?.id
-        })
-
+    fetchProject({
+      projectId,
+      userId: user?.id
+    })
+      .then((project) => {
         // Load the main file content into the editor
         if (project) {
           const mainFile = project.files.find((f) => f.isMain)
@@ -55,15 +47,10 @@ export function useProjectFromUrl() {
             setCode(project.files[0].content.value)
           }
         }
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error('Failed to load project from URL:', err)
-        setError('Project not found or not accessible')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadProject()
+      })
   }, [
     authLoading,
     user?.id,
@@ -72,6 +59,4 @@ export function useProjectFromUrl() {
     setViewOnlyProject,
     setIsReadOnlyMode
   ])
-
-  return { loading, error }
 }

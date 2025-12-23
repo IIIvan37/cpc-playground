@@ -1,6 +1,6 @@
 import { PlusIcon } from '@radix-ui/react-icons'
 import { useSetAtom } from 'jotai'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/button/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import type { Project } from '@/domain/entities/project.entity'
 import { useAuth } from '@/hooks/use-auth'
-import { container } from '@/infrastructure/container'
+import { useFetchVisibleProjects } from '@/hooks/use-fetch-visible-projects'
 import { createProjectAtom } from '@/store/projects'
 import styles from './explore.module.css'
 import { ExploreListView } from './explore.view'
@@ -20,9 +20,6 @@ import { ExploreListView } from './explore.view'
  * - Anonymous users: only public projects
  */
 export function ExplorePage() {
-  const [projects, setProjects] = useState<readonly Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
@@ -32,25 +29,7 @@ export function ExplorePage() {
   const navigate = useNavigate()
   const createProject = useSetAtom(createProjectAtom)
 
-  const fetchProjects = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const result = await container.getVisibleProjects.execute({
-        userId: user?.id
-      })
-      setProjects(result.projects)
-    } catch {
-      setError('Failed to load projects')
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id])
-
-  useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
+  const { projects, loading, error } = useFetchVisibleProjects(user?.id)
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return

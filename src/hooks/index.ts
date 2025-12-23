@@ -1,6 +1,7 @@
 export { useAssembler } from './use-assembler'
 export { useAuth } from './use-auth'
 export { useEmulator } from './use-emulator'
+export { useFetchVisibleProjects } from './use-fetch-visible-projects'
 export { useCreateFile, useDeleteFile, useUpdateFile } from './use-files'
 export { useProjectFromUrl } from './use-project-from-url'
 // Clean Architecture hooks
