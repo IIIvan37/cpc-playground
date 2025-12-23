@@ -67,11 +67,16 @@ export function CodeEditor() {
     }
     if (currentFile) {
       setLocalCode(currentFile.content.value)
-    } else {
-      // No currentFile - switch to program mode, use globalCode
+    }
+  }, [fileId, currentFile])
+
+  // Sync from globalCode only when NOT in project file mode
+  // This handles shared code loading and program mode
+  useEffect(() => {
+    if (!currentFile && globalCode) {
       setLocalCode(globalCode)
     }
-  }, [fileId, currentFile, globalCode])
+  }, [currentFile, globalCode])
 
   const lines = localCode.split('\n')
 

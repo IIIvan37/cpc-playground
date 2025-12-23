@@ -39,11 +39,12 @@ export function useSharedCode() {
         )
 
         if (code) {
+          // IMPORTANT: Set code FIRST, then reset IDs
+          // This ensures the editor sees the new code when it reacts to currentFile becoming null
+          setCode(code)
           // Reset to "new program" mode - neither a project file nor an existing program
-          // This ensures the editor uses codeAtom directly
           setCurrentFileId(null)
           setCurrentProgramId(null)
-          setCode(code)
           addMessage({
             type: 'info',
             text: `Loaded shared code (ID: ${id})`
