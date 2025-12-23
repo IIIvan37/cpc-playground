@@ -16,10 +16,11 @@ import type { Database } from '@/types/database.types'
 import { createSupabaseProjectsRepository } from '../supabase-projects.repository'
 
 // Test configuration - uses local Supabase by default
+// Supabase local dev demo keys (public, not secrets)
 const SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
 const SUPABASE_SERVICE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU' // NOSONAR - public demo key
 
 // Skip tests if not in integration mode
 const isIntegrationTest = process.env.TEST_INTEGRATION === 'true'
@@ -308,7 +309,12 @@ describeIntegration('SupabaseProjectsRepository Integration', () => {
         email_confirm: true,
         user_metadata: { username: `shareuser${Date.now()}` }
       })
-      const shareUserId = shareUserData!.user.id
+
+      if (!shareUserData?.user) {
+        throw new Error('Failed to create share user')
+      }
+
+      const shareUserId = shareUserData.user.id
 
       // Create user profile for share user
       const shareUsername = `shareuser${Date.now()}`
@@ -362,7 +368,12 @@ describeIntegration('SupabaseProjectsRepository Integration', () => {
         password: 'test-password-123',
         email_confirm: true
       })
-      const shareUserId = shareUserData!.user.id
+
+      if (!shareUserData?.user) {
+        throw new Error('Failed to create share user')
+      }
+
+      const shareUserId = shareUserData.user.id
 
       const shareUsername = `shareuser2${Date.now()}`
       await supabase.from('user_profiles').insert({
@@ -407,17 +418,6 @@ describeIntegration('SupabaseProjectsRepository Integration', () => {
         await supabase.from('user_profiles').delete().eq('id', shareUserId)
         await supabase.auth.admin.deleteUser(shareUserId)
       }
-    })
-
-    // Note: createShare and findByShareCode tests are skipped
-    // because the DB schema doesn't have share_code column in project_shares
-    // The table is designed for user-specific sharing (via user_id), not public link sharing
-    it.skip('should create and get shares (share_code not in schema)', async () => {
-      // This test is skipped because project_shares table has user_id, not share_code
-    })
-
-    it.skip('should find project by share code (share_code not in schema)', async () => {
-      // This test is skipped because project_shares table has user_id, not share_code
     })
   })
 })

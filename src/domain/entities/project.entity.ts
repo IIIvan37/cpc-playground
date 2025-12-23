@@ -10,13 +10,14 @@ import type { ProjectFile } from './project-file.entity'
 export type Project = Readonly<{
   id: string
   userId: string
+  authorUsername: string | null
   name: ProjectName
   description: string | null
   visibility: Visibility
   isLibrary: boolean
   files: readonly ProjectFile[]
   tags: readonly string[]
-  dependencies: readonly string[]
+  dependencies: readonly DependencyInfo[]
   shares: readonly ProjectShare[]
   userShares: readonly UserShare[]
   createdAt: Date
@@ -39,16 +40,25 @@ export type UserShare = Readonly<{
   createdAt: Date
 }>
 
+/**
+ * Dependency info - information about a project dependency
+ */
+export type DependencyInfo = Readonly<{
+  id: string
+  name: string
+}>
+
 export type CreateProjectParams = {
   id?: string
   userId: string
+  authorUsername?: string | null
   name: ProjectName
   description?: string | null
   visibility: Visibility
   isLibrary?: boolean
   files?: readonly ProjectFile[]
   tags?: readonly string[]
-  dependencies?: readonly string[]
+  dependencies?: readonly DependencyInfo[]
   shares?: readonly ProjectShare[]
   userShares?: readonly UserShare[]
   createdAt?: Date
@@ -61,6 +71,7 @@ export function createProject(params: CreateProjectParams): Project {
   return Object.freeze({
     id: params.id ?? crypto.randomUUID(),
     userId: params.userId,
+    authorUsername: params.authorUsername ?? null,
     name: params.name,
     description: params.description ?? null,
     visibility: params.visibility,
@@ -84,7 +95,7 @@ export function updateProject(
     isLibrary?: boolean
     files?: readonly ProjectFile[]
     tags?: readonly string[]
-    dependencies?: readonly string[]
+    dependencies?: readonly DependencyInfo[]
   }
 ): Project {
   return Object.freeze({

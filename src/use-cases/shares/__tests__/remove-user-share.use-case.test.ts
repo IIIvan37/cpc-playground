@@ -3,7 +3,7 @@ import { createProject } from '@/domain/entities/project.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
@@ -22,7 +22,7 @@ describe('RemoveUserShareUseCase', () => {
 
   beforeEach(async () => {
     repository = createInMemoryProjectsRepository() as any
-    authorizationService = createMockAuthorizationService(repository)
+    authorizationService = createAuthorizationService(repository)
     useCase = createRemoveUserShareUseCase(repository, authorizationService)
 
     repository._clear()

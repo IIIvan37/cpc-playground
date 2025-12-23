@@ -76,10 +76,10 @@ function checkIndexFile(indexPath) {
       // Vérifier si le symbole est exporté dans le fichier source
       const exportPatterns = [
         new RegExp(
-          `export\\s+(const|let|var|function|class|type|interface|enum)\\s+${symbol}\\b`
+          String.raw`export\s+(const|let|var|function|class|type|interface|enum)\s+${symbol}\b`
         ),
-        new RegExp(`export\\s*\\{[^}]*\\b${symbol}\\b[^}]*\\}`),
-        new RegExp(`export\\s+default\\s+${symbol}\\b`)
+        new RegExp(String.raw`export\s*\{[^}]*\b${symbol}\b[^}]*\}`),
+        new RegExp(String.raw`export\s+default\s+${symbol}\b`)
       ]
 
       const isExported = exportPatterns.some((pattern) =>

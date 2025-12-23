@@ -1,173 +1,88 @@
 /**
  * React hooks for projects use-cases
  * Provides a clean interface to interact with the domain layer
+ *
+ * Uses the generic useUseCase hook to reduce boilerplate
  */
 
-import { useState } from 'react'
+import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
-import type {
-  CreateProjectInput,
-  GetProjectWithDependenciesInput,
-  UpdateProjectInput
-} from '@/use-cases/projects'
+import { useUseCase } from './use-use-case'
 
 /**
  * Hook to create a new project
  */
 export function useCreateProject() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const create = async (input: CreateProjectInput) => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const result = await container.createProject.execute(input)
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { create, loading, error }
+  const { execute, loading, error, reset, data } = useUseCase(
+    container.createProject
+  )
+  return { create: execute, loading, error, reset, data }
 }
 
 /**
  * Hook to update an existing project
  */
 export function useUpdateProject() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const update = async (input: UpdateProjectInput) => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const result = await container.updateProject.execute(input)
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { update, loading, error }
+  const { execute, loading, error, reset, data } = useUseCase(
+    container.updateProject
+  )
+  return { update: execute, loading, error, reset, data }
 }
 
 /**
  * Hook to delete a project
  */
 export function useDeleteProject() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { execute, loading, error, reset, data } = useUseCase(
+    container.deleteProject
+  )
 
-  const deleteProject = async (projectId: string, userId: string) => {
-    setLoading(true)
-    setError(null)
+  const deleteProject = useCallback(
+    (projectId: string, userId: string) => execute({ projectId, userId }),
+    [execute]
+  )
 
-    try {
-      const result = await container.deleteProject.execute({
-        projectId,
-        userId
-      })
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { deleteProject, loading, error }
+  return { deleteProject, loading, error, reset, data }
 }
 
 /**
  * Hook to fetch all projects for a user
  */
 export function useGetProjects() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { execute, loading, error, reset, data } = useUseCase(
+    container.getProjects
+  )
 
-  const getProjects = async (userId: string) => {
-    setLoading(true)
-    setError(null)
+  const getProjects = useCallback(
+    (userId: string) => execute({ userId }),
+    [execute]
+  )
 
-    try {
-      const result = await container.getProjects.execute({ userId })
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { getProjects, loading, error }
+  return { getProjects, loading, error, reset, data }
 }
 
 /**
  * Hook to fetch a single project by ID
  */
 export function useGetProject() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { execute, loading, error, reset, data } = useUseCase(
+    container.getProject
+  )
 
-  const getProject = async (projectId: string, userId: string) => {
-    setLoading(true)
-    setError(null)
+  const getProject = useCallback(
+    (projectId: string, userId: string) => execute({ projectId, userId }),
+    [execute]
+  )
 
-    try {
-      const result = await container.getProject.execute({ projectId, userId })
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { getProject, loading, error }
+  return { getProject, loading, error, reset, data }
 }
 
 /**
  * Hook to fetch a project with all its dependencies
  */
 export function useGetProjectWithDependencies() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const getProjectWithDependencies = async (
-    input: GetProjectWithDependenciesInput
-  ) => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const result = await container.getProjectWithDependencies.execute(input)
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { getProjectWithDependencies, loading, error }
+  const { execute, loading, error, reset, data } = useUseCase(
+    container.getProjectWithDependencies
+  )
+  return { getProjectWithDependencies: execute, loading, error, reset, data }
 }

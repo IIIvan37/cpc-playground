@@ -19,9 +19,16 @@ export type Tag = {
  */
 export interface IProjectsRepository {
   /**
-   * Find all projects for a user
+   * Find all projects for a user (owned + shared with user)
    */
   findAll(userId: string): Promise<readonly Project[]>
+
+  /**
+   * Find all projects visible to a user
+   * - If userId is provided: public projects + user's own projects + projects shared with user
+   * - If userId is undefined (anonymous): only public projects
+   */
+  findVisible(userId?: string): Promise<readonly Project[]>
 
   /**
    * Find a project by ID

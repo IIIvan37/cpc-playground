@@ -17,8 +17,8 @@
 .modal {
   border-radius: 8px;
   padding: 1.5rem;
-  width: 90%;
-  max-width: 400px;
+  width: 440px;
+  max-width: 90%;
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
 }
@@ -28,7 +28,7 @@
 }
 
 .modal.sizeMd {
-  max-width: 400px;
+  max-width: 440px;
 }
 
 .modal.sizeLg {
@@ -75,6 +75,7 @@
 }
 
 .content {
+  width: 100%;
   color: var(--color-foreground, #a8b5a8);
 }
 

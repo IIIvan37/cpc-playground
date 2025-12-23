@@ -1,4 +1,5 @@
 import { ValidationError } from '@/domain/errors'
+import { TAG_ERRORS } from '@/domain/errors/error-messages'
 import type {
   IProjectsRepository,
   Tag
@@ -47,9 +48,7 @@ export function createAddTagUseCase(
 
       // Validate tag name
       if (!isValidTagName(tagName)) {
-        throw new ValidationError(
-          `Invalid tag name "${tagName}". Tags must be 2-30 characters, lowercase alphanumeric with hyphens only.`
-        )
+        throw new ValidationError(TAG_ERRORS.INVALID(tagName))
       }
 
       // Check user owns the project

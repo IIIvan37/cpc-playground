@@ -8,7 +8,12 @@ export const theme = {
     accentHover: '#5A8A5A',
     accentActive: '#4A7A4A',
     border: '#2a3a2a',
-    error: '#D97373',
+    error: '#f87171',
+    errorBg: 'rgba(239, 68, 68, 0.15)',
+    errorBorder: 'rgba(239, 68, 68, 0.4)',
+    success: '#4ade80',
+    successBg: 'rgba(34, 197, 94, 0.15)',
+    successBorder: 'rgba(34, 197, 94, 0.4)',
     hover: {
       primary: '#5A8A5A',
       secondary: 'rgba(107, 158, 107, 0.08)'

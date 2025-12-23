@@ -1,4 +1,5 @@
 import { ValidationError } from '../errors/domain.error'
+import { PROJECT_NAME_ERRORS } from '../errors/error-messages'
 
 /**
  * Value Object for project name
@@ -13,33 +14,31 @@ export type ProjectName = Readonly<{
   _brand: typeof PROJECT_NAME_BRAND
 }>
 
-const MIN_LENGTH = 3
-const MAX_LENGTH = 100
+export const PROJECT_NAME_MIN_LENGTH = 3
+export const PROJECT_NAME_MAX_LENGTH = 100
 const VALID_PATTERN = /^[a-zA-Z0-9\s\-_]+$/
 
 export function createProjectName(name: string): ProjectName {
   const trimmed = name.trim()
 
   if (trimmed.length === 0) {
-    throw new ValidationError('Project name cannot be empty')
+    throw new ValidationError(PROJECT_NAME_ERRORS.EMPTY)
   }
 
-  if (trimmed.length < MIN_LENGTH) {
+  if (trimmed.length < PROJECT_NAME_MIN_LENGTH) {
     throw new ValidationError(
-      `Project name must be at least ${MIN_LENGTH} characters long`
+      PROJECT_NAME_ERRORS.TOO_SHORT(PROJECT_NAME_MIN_LENGTH)
     )
   }
 
-  if (trimmed.length > MAX_LENGTH) {
+  if (trimmed.length > PROJECT_NAME_MAX_LENGTH) {
     throw new ValidationError(
-      `Project name must be less than ${MAX_LENGTH} characters long`
+      PROJECT_NAME_ERRORS.TOO_LONG(PROJECT_NAME_MAX_LENGTH)
     )
   }
 
   if (!VALID_PATTERN.test(trimmed)) {
-    throw new ValidationError(
-      'Project name can only contain letters, numbers, spaces, hyphens, and underscores'
-    )
+    throw new ValidationError(PROJECT_NAME_ERRORS.INVALID_CHARS)
   }
 
   return Object.freeze({

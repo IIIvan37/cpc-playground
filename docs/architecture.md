@@ -4,19 +4,58 @@
 
 This project follows **Clean Architecture** principles with TypeScript-idiomatic **factory functions**.
 
+## Migration Status
+
+> Last updated: December 22, 2025
+
+### ✅ Completed
+
+| Component | Status | Coverage |
+|-----------|--------|----------|
+| **Domain Layer** | ✅ Complete | 100% |
+| └─ Entities (Project, ProjectFile, User) | ✅ | 100% |
+| └─ Value Objects (ProjectName, FileName, Username...) | ✅ | 100% |
+| └─ Repository Interfaces | ✅ | 100% |
+| └─ AuthorizationService | ✅ | 100% |
+| └─ Domain Errors | ✅ | 100% |
+| **Use Cases - Projects** | ✅ Complete | 100% |
+| **Use Cases - Files** | ✅ Complete | ~97% |
+| **Use Cases - Tags** | ✅ Complete | 100% |
+| **Use Cases - Dependencies** | ✅ Complete | 100% |
+| **Use Cases - Shares** | ✅ Complete | 100% |
+| **Use Cases - Auth** | ✅ Complete | 100% |
+| **Infrastructure** | ✅ Complete | ~91% |
+| └─ SupabaseProjectsRepository | ✅ | 91% |
+| └─ SupabaseAuthRepository | ✅ | 100% |
+| └─ Container (DI) | ✅ | - |
+| **Hooks - useAuth** | ✅ Uses Clean Architecture | - |
+| **Hooks - useProjects** | ✅ Uses useUseCase | - |
+| **Hooks - useUserProfile** | ✅ Uses Clean Architecture | - |
+| **Global Test Coverage** | ✅ | **97.91%** |
+
+### ✅ Cleanup Done
+
+- ~~`src/services/auth.service.ts`~~ - Deleted (replaced by Clean Architecture)
+- ~~`src/services/__tests__/auth.service.test.ts`~~ - Deleted
+
+### 📋 Potential Future Improvements
+
+1. **Increase branch coverage** - Some edge cases in stores not fully covered
+2. **Add E2E tests** - Integration tests with real Supabase
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION                             │
 │  components/ • hooks/ • store/                                  │
 ├─────────────────────────────────────────────────────────────────┤
 │                        USE CASES                                │
-│  use-cases/projects/ • use-cases/files/ • use-cases/tags/       │
+│  projects/ • files/ • tags/ • dependencies/ • shares/ • auth/  │
 ├─────────────────────────────────────────────────────────────────┤
 │                         DOMAIN                                  │
 │  entities/ • value-objects/ • repositories/ • services/         │
 ├─────────────────────────────────────────────────────────────────┤
 │                      INFRASTRUCTURE                             │
-│  repositories/supabase • container.ts                           │
+│  SupabaseProjectsRepository • SupabaseAuthRepository            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -32,13 +71,14 @@ This project follows **Clean Architecture** principles with TypeScript-idiomatic
 ```
 src/
 ├── domain/                    # 🎯 Business logic (no external deps)
-│   ├── entities/              # Project, ProjectFile, ProjectShare
+│   ├── entities/              # Project, ProjectFile, User
 │   ├── value-objects/         # ProjectName, Visibility, FileName, FileContent
-│   ├── repositories/          # Interface definitions (ports)
+│   ├── repositories/          # IProjectsRepository, IAuthRepository
 │   ├── services/              # AuthorizationService
 │   └── errors/                # NotFoundError, UnauthorizedError, ValidationError
 │
 ├── use-cases/                 # 📋 Application business rules
+│   ├── auth/                  # signIn, signUp, signOut, OAuth, profile
 │   ├── projects/              # CRUD, get-with-dependencies
 │   ├── files/                 # Create, update, delete files
 │   ├── tags/                  # Add, remove tags
@@ -46,7 +86,7 @@ src/
 │   └── shares/                # Add, remove user shares
 │
 ├── infrastructure/            # 🔌 Technical implementations
-│   ├── repositories/          # Supabase implementation
+│   ├── repositories/          # SupabaseProjectsRepository, SupabaseAuthRepository
 │   └── container.ts           # Dependency injection
 │
 └── presentation/              # 🎨 UI Layer
@@ -117,6 +157,56 @@ Value objects are immutable and validate their input:
 // Creates a validated ProjectName
 const name = createProjectName('My Project')  // OK
 const name = createProjectName('ab')          // Throws ValidationError
+```
+
+### Immutability Pattern (Object.freeze)
+
+All domain objects (entities and value objects) are frozen with `Object.freeze()` to ensure runtime immutability:
+
+```typescript
+// Entity factory - returns frozen object
+export function createProject(params: CreateProjectParams): Project {
+  const now = new Date()
+  
+  return Object.freeze({
+    id: params.id ?? crypto.randomUUID(),
+    userId: params.userId,
+    name: params.name,
+    files: Object.freeze(params.files ?? []),  // Nested arrays also frozen
+    tags: Object.freeze(params.tags ?? []),
+    // ...
+  })
+}
+
+// Update returns a new frozen object (immutable update)
+export function updateProject(
+  project: Project,
+  updates: Partial<Project>
+): Project {
+  return Object.freeze({
+    ...project,
+    ...updates,
+    updatedAt: new Date()
+  })
+}
+```
+
+**Why Object.freeze?**
+- **Runtime safety**: TypeScript's `readonly` only enforces at compile time
+- **Predictable state**: Prevents accidental mutations in complex flows
+- **Debug-friendly**: Throws errors in strict mode when mutation is attempted
+- **Consistent pattern**: All domain objects behave the same way
+
+**Type pattern:**
+
+```typescript
+// Use Readonly<{}> for type definition
+export type Project = Readonly<{
+  id: string
+  name: ProjectName
+  files: readonly ProjectFile[]  // Use readonly for arrays
+  // ...
+}>
 ```
 
 ### Authorization Service
@@ -208,7 +298,7 @@ export function createContainer(supabase: SupabaseClient) {
 
 ```typescript
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 
 describe('CreateProjectUseCase', () => {
   let repository: IProjectsRepository
@@ -217,7 +307,7 @@ describe('CreateProjectUseCase', () => {
 
   beforeEach(() => {
     repository = createInMemoryProjectsRepository()
-    authService = createMockAuthorizationService(repository)
+    authService = createAuthorizationService(repository)
     useCase = createCreateProjectUseCase(repository, authService)
   })
 

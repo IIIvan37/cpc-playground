@@ -1,4 +1,5 @@
 import { ValidationError } from '../errors/domain.error'
+import { FILE_CONTENT_ERRORS } from '../errors/error-messages'
 
 /**
  * Value Object representing file content
@@ -8,17 +9,18 @@ export type FileContent = {
   readonly _brand: 'FileContent'
 }
 
+// Business rule: content size limit (1MB)
+export const FILE_CONTENT_MAX_SIZE = 1024 * 1024
+
 /**
  * Factory function to create FileContent
  */
 export function createFileContent(content: string): FileContent {
-  // Business rule: content size limit (1MB)
-  const MAX_SIZE = 1024 * 1024
   const byteSize = new Blob([content]).size
 
-  if (byteSize > MAX_SIZE) {
+  if (byteSize > FILE_CONTENT_MAX_SIZE) {
     throw new ValidationError(
-      `File content too large: ${byteSize} bytes (max: ${MAX_SIZE})`
+      FILE_CONTENT_ERRORS.TOO_LARGE(byteSize, FILE_CONTENT_MAX_SIZE)
     )
   }
 

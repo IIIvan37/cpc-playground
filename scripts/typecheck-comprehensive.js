@@ -2,48 +2,29 @@
 
 /**
  * Script de vérification TypeScript avancée
- * Utilise l'API TypeScript pour détecter toutes les erreurs,
- * y compris celles que VSCode remonte dans l'onglet Problèmes
+ * Utilise tsc -b comme le build pour une vérification cohérente
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
 
+console.log('🔍 Running TypeScript checks...')
 console.log('🔍 Running comprehensive TypeScript check...')
-
-const configs = ['tsconfig.json', 'tsconfig.app.json', 'tsconfig.node.json']
 
 let hasErrors = false
 
-for (const config of configs) {
-  if (!existsSync(config)) {
-    console.log(`⏭️  Skipping ${config} (not found)`)
-    continue
-  }
+// Utiliser tsc -b comme le build pour une cohérence totale
+console.log('\n📋 Running tsc -b (same as build)...')
 
-  console.log(`\n📋 Checking ${config}...`)
-
-  try {
-    // Utiliser tsc avec des options strictes
-    const result = execSync(
-      `npx tsc --project ${config} --noEmit --pretty --strict --noImplicitAny --noImplicitReturns --noFallthroughCasesInSwitch`,
-      {
-        encoding: 'utf8',
-        stdio: 'pipe'
-      }
-    )
-
-    if (result.trim()) {
-      console.log(result)
-      hasErrors = true
-    } else {
-      console.log(`✅ ${config} - No TypeScript errors`)
-    }
-  } catch (error) {
-    console.error(`❌ ${config} - TypeScript errors found:`)
-    console.error(error.stdout)
-    hasErrors = true
-  }
+try {
+  execSync('npx tsc -b', {
+    encoding: 'utf8',
+    stdio: 'pipe'
+  })
+  console.log('✅ tsc -b - No TypeScript errors')
+} catch (error) {
+  console.error('❌ TypeScript errors found:')
+  console.error(error.stdout || error.stderr || error.message)
+  hasErrors = true
 }
 
 // Vérification supplémentaire avec diagnostics

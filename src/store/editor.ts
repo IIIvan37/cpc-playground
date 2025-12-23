@@ -1,4 +1,23 @@
 import { atom } from 'jotai'
+import type { AssemblerType } from '@/domain/services/assembler.interface'
+import { getAssemblerRegistry } from '@/infrastructure/assemblers'
+import { activeProjectAtom, currentFileIdAtom } from './projects'
+
+// Current file name (derived from active project and file id)
+export const currentFileNameAtom = atom((get) => {
+  const project = get(activeProjectAtom)
+  const currentFileId = get(currentFileIdAtom)
+  if (!project || !currentFileId) return null
+  const file = project.files.find((f) => f.id === currentFileId)
+  return file?.name.value ?? null
+})
+
+// Check if current file is a markdown file
+export const isMarkdownFileAtom = atom((get) => {
+  const fileName = get(currentFileNameAtom)
+  if (!fileName) return false
+  return fileName.toLowerCase().endsWith('.md')
+})
 
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly
@@ -26,6 +45,9 @@ print_string:
 message:
     db "Hello from CPC Playground!", 0
 `)
+
+// Selected assembler
+export const selectedAssemblerAtom = atom<AssemblerType>('rasm')
 
 // Output format: SNA (snapshot) or DSK (disk)
 export type OutputFormat = 'sna' | 'dsk'
@@ -55,30 +77,18 @@ export const consoleMessagesAtom = atom<ConsoleMessage[]>([])
 
 let messageCounter = 0
 
-// Parse RASM error format: [/input.asm:23] -> extracts line 23
-// RASM adds offset lines for directives we prepend:
-// - SNA: BUILDSNA + BANKSET = 2 lines
-// - DSK: blank line + __cpc_playground_start equ = 2 lines (source starts at line 3)
-const RASM_LINE_OFFSET = 2
-
-function extractLineNumber(text: string): number | undefined {
-  // Match patterns like [/input.asm:23] or [input.asm:23]
-  const match = text.match(/\[\/?\w+\.asm:(\d+)\]/)
-  if (match) {
-    const rawLine = Number.parseInt(match[1], 10)
-    // Subtract the offset from RASM directives we add
-    return Math.max(1, rawLine - RASM_LINE_OFFSET)
-  }
-  return undefined
-}
-
 // Actions
 export const addConsoleMessageAtom = atom(
   null,
   (get, set, message: Omit<ConsoleMessage, 'timestamp' | 'id' | 'line'>) => {
     const messages = get(consoleMessagesAtom)
     messageCounter += 1
-    const line = extractLineNumber(message.text)
+
+    // Get the error parser for the selected assembler
+    const assemblerType = get(selectedAssemblerAtom)
+    const registry = getAssemblerRegistry()
+    const assembler = registry.get(assemblerType) ?? registry.getDefault()
+    const line = assembler.config.errorParser.extractLineNumber(message.text)
 
     // If we extracted a line number, it's an error line - add to highlights
     // (RASM outputs errors to stdout, so we can't rely on message type)

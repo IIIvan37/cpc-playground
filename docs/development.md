@@ -74,7 +74,7 @@ supabase migration repair --status reverted <timestamp>
 ### Generate Types
 
 ```bash
-supabase gen types typescript --linked > src/types/database-generated.ts
+supabase gen types typescript --linked > src/types/database.types.ts
 ```
 
 ---
@@ -119,7 +119,7 @@ Test domain logic and use cases with in-memory repositories:
 
 ```typescript
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 
 describe('MyUseCase', () => {
   let repository: IProjectsRepository
@@ -128,7 +128,7 @@ describe('MyUseCase', () => {
 
   beforeEach(() => {
     repository = createInMemoryProjectsRepository()
-    authService = createMockAuthorizationService(repository)
+    authService = createAuthorizationService(repository)
     useCase = createMyUseCase(repository, authService)
   })
 
@@ -225,14 +225,16 @@ export function useMyFeature() {
 
 ### Error Messages
 
-Use constants from AuthorizationService:
+Use centralized error constants:
 
 ```typescript
-import { AUTH_ERROR_MESSAGES } from '@/domain/services/authorization.service'
+import { AUTH_ERRORS, PROJECT_ERRORS, FILE_ERRORS } from '@/domain/errors/error-messages'
 
 // In tests
-expect(fn).rejects.toThrow(AUTH_ERROR_MESSAGES.PROJECT_NOT_FOUND)
-expect(fn).rejects.toThrow(AUTH_ERROR_MESSAGES.UNAUTHORIZED_MODIFY)
+expect(fn).rejects.toThrow(AUTH_ERRORS.PROJECT_NOT_FOUND)
+expect(fn).rejects.toThrow(AUTH_ERRORS.UNAUTHORIZED_MODIFY)
+expect(fn).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND(projectId))
+expect(fn).rejects.toThrow(FILE_ERRORS.NOT_FOUND)
 ```
 
 ### Creating Test Data

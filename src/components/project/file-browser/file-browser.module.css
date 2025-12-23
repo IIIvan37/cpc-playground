@@ -1,0 +1,270 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-sm);
+  padding-top: calc(var(--spacing-sm) + 28px);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--spacing-xs);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.projectNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  overflow: hidden;
+}
+
+.projectName {
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badges {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding-left: calc(var(--spacing-xs) + 15px);
+}
+
+.fileList {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xs);
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.fileItem:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.fileItem.active {
+  background: var(--color-bg-active);
+  color: var(--color-text);
+}
+
+.fileButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.fileActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.fileItem:hover .fileActions {
+  opacity: 1;
+}
+
+.fileItem .mainIcon {
+  opacity: 1;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.actionButton:hover {
+  color: var(--color-text);
+  background: var(--color-bg-hover);
+}
+
+.fileIcon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.fileName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mainIcon {
+  flex-shrink: 0;
+  color: var(--color-warning);
+}
+
+.tags {
+  padding: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.ownerInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.ownerLabel {
+  color: var(--color-text-muted);
+}
+
+.ownerName {
+  color: var(--color-text-secondary);
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+/* Dependencies Section */
+.dependenciesSection {
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+.sectionHeader:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.collapseIcon {
+  transition: transform 0.2s ease;
+}
+
+.collapseIcon.expanded {
+  transform: rotate(90deg);
+}
+
+.dependencyProject {
+  padding-left: var(--spacing-sm);
+}
+
+.dependencyHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  user-select: none;
+}
+
+.dependencyHeader:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.dependencyIcon {
+  color: var(--color-info);
+  flex-shrink: 0;
+}
+
+.dependencyName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dependencyFiles {
+  padding-left: var(--spacing-md);
+}
+
+.dependencyFileItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.dependencyFileItem:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.dependencyFileItem.active {
+  background: var(--color-bg-active);
+  color: var(--color-text);
+}
+
+.noDependencies {
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+}

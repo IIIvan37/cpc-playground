@@ -1,4 +1,6 @@
+export * from './auth'
 export * from './dependencies'
 export * from './files'
 export * from './projects'
+export * from './shared-code'
 export * from './tags'

@@ -1,4 +1,5 @@
 import { ValidationError } from '../errors/domain.error'
+import { FILE_NAME_ERRORS } from '../errors/error-messages'
 
 /**
  * Value Object for file name
@@ -13,7 +14,7 @@ export type FileName = Readonly<{
   _brand: typeof FILE_NAME_BRAND
 }>
 
-const MAX_LENGTH = 255
+export const FILE_NAME_MAX_LENGTH = 255
 const INVALID_CHARS = /[<>:"|?*]/
 
 function extractExtension(filename: string): string | null {
@@ -28,19 +29,15 @@ export function createFileName(name: string): FileName {
   const trimmed = name.trim()
 
   if (trimmed.length === 0) {
-    throw new ValidationError('File name cannot be empty')
+    throw new ValidationError(FILE_NAME_ERRORS.EMPTY)
   }
 
-  if (trimmed.length > MAX_LENGTH) {
-    throw new ValidationError(
-      `File name must be less than ${MAX_LENGTH} characters long`
-    )
+  if (trimmed.length > FILE_NAME_MAX_LENGTH) {
+    throw new ValidationError(FILE_NAME_ERRORS.TOO_LONG(FILE_NAME_MAX_LENGTH))
   }
 
   if (INVALID_CHARS.test(trimmed)) {
-    throw new ValidationError(
-      'File name cannot contain special characters: < > : " | ? *'
-    )
+    throw new ValidationError(FILE_NAME_ERRORS.INVALID_CHARS)
   }
 
   const extension = extractExtension(trimmed)

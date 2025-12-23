@@ -4,7 +4,8 @@
  */
 
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
-import { NotFoundError } from '@/domain/errors/domain.error'
+import { NotFoundError, ValidationError } from '@/domain/errors/domain.error'
+import { FILE_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
@@ -41,14 +42,14 @@ export function createUpdateFileUseCase(
 
       // Library projects cannot have a main file
       if (input.isMain && project.isLibrary) {
-        throw new Error('Library projects cannot have a main file')
+        throw new ValidationError(FILE_ERRORS.LIBRARY_NO_MAIN)
       }
 
       // Find the file to update
       const existingFile = project.files.find((f) => f.id === input.fileId)
 
       if (!existingFile) {
-        throw new NotFoundError('File not found')
+        throw new NotFoundError(FILE_ERRORS.NOT_FOUND)
       }
 
       // Build updates object

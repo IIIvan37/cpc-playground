@@ -1,5 +1,6 @@
 import type { UserShare } from '@/domain/entities/project.entity'
 import { NotFoundError, ValidationError } from '@/domain/errors'
+import { SHARE_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
 
@@ -36,7 +37,7 @@ export function createAddUserShareUseCase(
       // Validate username
       const trimmedUsername = username.trim()
       if (!trimmedUsername) {
-        throw new ValidationError('Username cannot be empty')
+        throw new ValidationError(SHARE_ERRORS.USERNAME_EMPTY)
       }
 
       // Check user owns the project
@@ -46,14 +47,12 @@ export function createAddUserShareUseCase(
       const targetUser =
         await projectsRepository.findUserByUsername(trimmedUsername)
       if (!targetUser) {
-        throw new NotFoundError(
-          `User with username "${trimmedUsername}" not found`
-        )
+        throw new NotFoundError(SHARE_ERRORS.USER_NOT_FOUND(trimmedUsername))
       }
 
       // Cannot share with yourself
       if (targetUser.id === userId) {
-        throw new ValidationError('Cannot share project with yourself')
+        throw new ValidationError(SHARE_ERRORS.CANNOT_SHARE_WITH_SELF)
       }
 
       // Add user share

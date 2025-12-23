@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
+import { FILE_ERRORS } from '@/domain/errors/error-messages'
+import { createAuthorizationService } from '@/domain/services'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
 import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
@@ -18,7 +19,7 @@ import { createUpdateFileUseCase } from '../update-file.use-case'
 
 function createTestDependencies() {
   const repository = createInMemoryProjectsRepository()
-  const authorizationService = createMockAuthorizationService(repository)
+  const authorizationService = createAuthorizationService(repository)
   return { repository, authorizationService }
 }
 
@@ -211,6 +212,74 @@ describe('File Use Cases', () => {
       ).rejects.toThrow(UnauthorizedError)
     })
 
+    it('should throw NotFoundError when file does not exist', async () => {
+      const { repository, authorizationService } = createTestDependencies()
+
+      const file = createProjectFile({
+        id: 'file-1',
+        projectId: 'proj-1',
+        name: createFileName('main.asm'),
+        content: createFileContent(''),
+        isMain: true,
+        order: 0
+      })
+
+      const project = createProject({
+        id: 'proj-1',
+        userId: 'user-1',
+        name: createProjectName('Test Project'),
+        visibility: Visibility.PRIVATE,
+        files: [file]
+      })
+
+      await repository.create(project)
+
+      const useCase = createUpdateFileUseCase(repository, authorizationService)
+
+      await expect(
+        useCase.execute({
+          projectId: 'proj-1',
+          userId: 'user-1',
+          fileId: 'nonexistent',
+          content: 'new content'
+        })
+      ).rejects.toThrow(NotFoundError)
+    })
+
+    it('should update file name', async () => {
+      const { repository, authorizationService } = createTestDependencies()
+
+      const file = createProjectFile({
+        id: 'file-1',
+        projectId: 'proj-1',
+        name: createFileName('old-name.asm'),
+        content: createFileContent(''),
+        isMain: true,
+        order: 0
+      })
+
+      const project = createProject({
+        id: 'proj-1',
+        userId: 'user-1',
+        name: createProjectName('Test Project'),
+        visibility: Visibility.PRIVATE,
+        files: [file]
+      })
+
+      await repository.create(project)
+
+      const useCase = createUpdateFileUseCase(repository, authorizationService)
+
+      const result = await useCase.execute({
+        projectId: 'proj-1',
+        userId: 'user-1',
+        fileId: 'file-1',
+        name: 'new-name.asm'
+      })
+
+      expect(result.file.name.value).toBe('new-name.asm')
+    })
+
     it('should throw error when setting isMain on library project', async () => {
       const { repository, authorizationService } = createTestDependencies()
 
@@ -243,7 +312,7 @@ describe('File Use Cases', () => {
           fileId: 'file-1',
           isMain: true
         })
-      ).rejects.toThrow('Library projects cannot have a main file')
+      ).rejects.toThrow(FILE_ERRORS.LIBRARY_NO_MAIN)
     })
   })
 
@@ -367,7 +436,49 @@ describe('File Use Cases', () => {
           userId: 'user-1',
           fileId: 'file-1'
         })
-      ).rejects.toThrow('Cannot delete the last file')
+      ).rejects.toThrow(FILE_ERRORS.CANNOT_DELETE_LAST)
+    })
+
+    it('should throw NotFoundError when file does not exist', async () => {
+      const { repository, authorizationService } = createTestDependencies()
+
+      const file = createProjectFile({
+        id: 'file-1',
+        projectId: 'proj-1',
+        name: createFileName('main.asm'),
+        content: createFileContent(''),
+        isMain: true,
+        order: 0
+      })
+
+      const file2 = createProjectFile({
+        id: 'file-2',
+        projectId: 'proj-1',
+        name: createFileName('utils.asm'),
+        content: createFileContent(''),
+        isMain: false,
+        order: 1
+      })
+
+      const project = createProject({
+        id: 'proj-1',
+        userId: 'user-1',
+        name: createProjectName('Test Project'),
+        visibility: Visibility.PRIVATE,
+        files: [file, file2]
+      })
+
+      await repository.create(project)
+
+      const useCase = createDeleteFileUseCase(repository, authorizationService)
+
+      await expect(
+        useCase.execute({
+          projectId: 'proj-1',
+          userId: 'user-1',
+          fileId: 'nonexistent'
+        })
+      ).rejects.toThrow(NotFoundError)
     })
   })
 })

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { ValidationError } from '@/domain/errors/domain.error'
-import { createProjectName, isProjectName } from '../project-name.vo'
+import { PROJECT_NAME_ERRORS } from '@/domain/errors/error-messages'
+import {
+  createProjectName,
+  isProjectName,
+  PROJECT_NAME_MAX_LENGTH,
+  PROJECT_NAME_MIN_LENGTH
+} from '../project-name.vo'
 
 describe('ProjectName Value Object', () => {
   describe('createProjectName', () => {
@@ -24,15 +30,20 @@ describe('ProjectName Value Object', () => {
     })
 
     it('should reject name too short', () => {
-      expect(() => createProjectName('ab')).toThrow(ValidationError)
-      expect(() => createProjectName('ab')).toThrow('at least 3 characters')
+      const shortName = 'ab'
+      expect(() => createProjectName(shortName)).toThrow(ValidationError)
+      expect(() => createProjectName(shortName)).toThrow(
+        PROJECT_NAME_ERRORS.TOO_SHORT(PROJECT_NAME_MIN_LENGTH)
+      )
     })
 
     it('should reject name too long', () => {
-      const longName = 'a'.repeat(101)
+      const longName = 'a'.repeat(PROJECT_NAME_MAX_LENGTH + 1)
 
       expect(() => createProjectName(longName)).toThrow(ValidationError)
-      expect(() => createProjectName(longName)).toThrow('less than 100')
+      expect(() => createProjectName(longName)).toThrow(
+        PROJECT_NAME_ERRORS.TOO_LONG(PROJECT_NAME_MAX_LENGTH)
+      )
     })
 
     it('should reject empty name', () => {

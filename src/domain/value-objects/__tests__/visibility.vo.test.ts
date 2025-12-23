@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { ValidationError } from '@/domain/errors/domain.error'
+import { VISIBILITY_ERRORS } from '@/domain/errors/error-messages'
 import {
   canBeShared,
   createVisibility,
+  isPrivate,
   isPublic,
   isVisibility,
   VISIBILITY_VALUES,
@@ -32,17 +34,17 @@ describe('Visibility Value Object', () => {
 
     it('should reject invalid visibility', () => {
       expect(() => createVisibility('invalid')).toThrow(ValidationError)
-      expect(() => createVisibility('invalid')).toThrow('Invalid visibility')
+      expect(() => createVisibility('invalid')).toThrow(
+        VISIBILITY_ERRORS.INVALID('invalid', VISIBILITY_VALUES)
+      )
     })
 
     it('should list valid values in error message', () => {
-      try {
-        createVisibility('wrong')
-      } catch (error) {
-        expect((error as Error).message).toContain('private')
-        expect((error as Error).message).toContain('unlisted')
-        expect((error as Error).message).toContain('public')
-      }
+      const expectedMessage = VISIBILITY_ERRORS.INVALID(
+        'wrong',
+        VISIBILITY_VALUES
+      )
+      expect(() => createVisibility('wrong')).toThrow(expectedMessage)
     })
   })
 
@@ -82,6 +84,17 @@ describe('Visibility Value Object', () => {
     it('should return false for non-public visibility', () => {
       expect(isPublic(Visibility.PRIVATE)).toBe(false)
       expect(isPublic(Visibility.UNLISTED)).toBe(false)
+    })
+  })
+
+  describe('isPrivate', () => {
+    it('should return true for private visibility', () => {
+      expect(isPrivate(Visibility.PRIVATE)).toBe(true)
+    })
+
+    it('should return false for non-private visibility', () => {
+      expect(isPrivate(Visibility.PUBLIC)).toBe(false)
+      expect(isPrivate(Visibility.UNLISTED)).toBe(false)
     })
   })
 

@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
-import { ValidationError } from '@/domain/errors'
+import { AUTH_ERRORS, DEPENDENCY_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
-import { AUTH_ERROR_MESSAGES } from '@/domain/services/authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
@@ -20,7 +19,7 @@ describe('AddDependencyUseCase', () => {
 
   beforeEach(async () => {
     repository = createInMemoryProjectsRepository()
-    authorizationService = createMockAuthorizationService(repository)
+    authorizationService = createAuthorizationService(repository)
     useCase = createAddDependencyUseCase(repository, authorizationService)
 
     // Create a test project
@@ -79,7 +78,7 @@ describe('AddDependencyUseCase', () => {
         userId,
         dependencyId: libraryId
       })
-    ).rejects.toThrow(AUTH_ERROR_MESSAGES.PROJECT_NOT_FOUND)
+    ).rejects.toThrow(AUTH_ERRORS.PROJECT_NOT_FOUND)
   })
 
   it('should throw UnauthorizedError when user does not own the project', async () => {
@@ -89,7 +88,7 @@ describe('AddDependencyUseCase', () => {
         userId: 'other-user',
         dependencyId: libraryId
       })
-    ).rejects.toThrow(AUTH_ERROR_MESSAGES.UNAUTHORIZED_MODIFY)
+    ).rejects.toThrow(AUTH_ERRORS.UNAUTHORIZED_MODIFY)
   })
 
   it('should throw ValidationError when trying to depend on itself', async () => {
@@ -102,23 +101,25 @@ describe('AddDependencyUseCase', () => {
         userId,
         dependencyId: projectId
       })
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(DEPENDENCY_ERRORS.SELF_DEPENDENCY)
   })
 
   it('should throw NotFoundError for non-existent dependency', async () => {
+    const nonExistentId = 'non-existent-lib'
     await expect(
       useCase.execute({
         projectId,
         userId,
-        dependencyId: 'non-existent-lib'
+        dependencyId: nonExistentId
       })
-    ).rejects.toThrow('Dependency project with id non-existent-lib not found')
+    ).rejects.toThrow(DEPENDENCY_ERRORS.NOT_FOUND(nonExistentId))
   })
 
   it('should throw ValidationError when dependency is not a library', async () => {
     // Create another non-library project
+    const nonLibraryId = 'non-library-project'
     const nonLibrary = createProject({
-      id: 'non-library-project',
+      id: nonLibraryId,
       userId: 'other-user',
       name: createProjectName('Not A Library'),
       description: null,
@@ -137,9 +138,9 @@ describe('AddDependencyUseCase', () => {
       useCase.execute({
         projectId,
         userId,
-        dependencyId: 'non-library-project'
+        dependencyId: nonLibraryId
       })
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(DEPENDENCY_ERRORS.NOT_A_LIBRARY(nonLibraryId))
   })
 
   it('should allow multiple dependencies', async () => {

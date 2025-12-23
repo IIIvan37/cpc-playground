@@ -5,7 +5,9 @@
 
 import { atom } from 'jotai'
 import type { Project } from '@/domain/entities/project.entity'
+import { PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import { container } from '@/infrastructure/container'
+import { codeAtom } from './editor'
 
 // ============================================================================
 // State Atoms (Simple data holders)
@@ -15,6 +17,17 @@ export const projectsAtom = atom<Project[]>([])
 export const currentProjectIdAtom = atom<string | null>(null)
 export const currentFileIdAtom = atom<string | null>(null)
 
+/**
+ * Read-only project atom for viewing public projects without being the owner
+ * This is separate from the user's projects list
+ */
+export const viewOnlyProjectAtom = atom<Project | null>(null)
+
+/**
+ * Flag to indicate if we're in read-only mode (viewing someone else's public project)
+ */
+export const isReadOnlyModeAtom = atom<boolean>(false)
+
 // ============================================================================
 // Derived Atoms (Computed values)
 // ============================================================================
@@ -23,6 +36,18 @@ export const currentProjectAtom = atom((get) => {
   const projects = get(projectsAtom)
   const currentId = get(currentProjectIdAtom)
   return projects.find((p) => p.id === currentId) ?? null
+})
+
+/**
+ * Active project atom - returns either the current user's project or the view-only project
+ * Used by the FileBrowser to display the current project regardless of ownership
+ */
+export const activeProjectAtom = atom((get) => {
+  const isReadOnly = get(isReadOnlyModeAtom)
+  if (isReadOnly) {
+    return get(viewOnlyProjectAtom)
+  }
+  return get(currentProjectAtom)
 })
 
 export const currentFileAtom = atom((get) => {
@@ -58,27 +83,49 @@ export const fetchProjectsAtom = atom(
 
 /**
  * Fetch a single project by ID
+ * If userId is provided and user owns the project, adds it to their projects list
+ * If no userId or user doesn't own it, stores in viewOnlyProjectAtom
  */
 export const fetchProjectAtom = atom(
   null,
-  async (_get, set, params: { projectId: string; userId: string }) => {
+  async (_get, set, params: { projectId: string; userId?: string }) => {
     try {
       const result = await container.getProject.execute(params)
 
       if (!result.project) {
-        throw new Error('Project not found')
+        throw new Error(PROJECT_ERRORS.NOT_FOUND(params.projectId))
       }
 
-      // Update the project in the list or add it
-      set(projectsAtom, (prev) => {
-        const index = prev.findIndex((p) => p.id === result.project.id)
-        if (index >= 0) {
-          const updated = [...prev]
-          updated[index] = result.project
-          return updated
+      const isOwner = params.userId && result.project.userId === params.userId
+
+      if (isOwner) {
+        // User owns this project - add to their list and set as current
+        set(isReadOnlyModeAtom, false)
+        set(viewOnlyProjectAtom, null)
+        set(projectsAtom, (prev) => {
+          const index = prev.findIndex((p) => p.id === result.project.id)
+          if (index >= 0) {
+            const updated = [...prev]
+            updated[index] = result.project
+            return updated
+          }
+          return [...prev, result.project]
+        })
+        // Set the project as the current project
+        set(currentProjectIdAtom, result.project.id)
+        // Select the main file or first file
+        const mainFile =
+          result.project.files.find((f) => f.isMain) || result.project.files[0]
+        if (mainFile) {
+          set(currentFileIdAtom, mainFile.id)
         }
-        return [...prev, result.project]
-      })
+      } else {
+        // User is viewing someone else's public project - read-only mode
+        set(isReadOnlyModeAtom, true)
+        set(viewOnlyProjectAtom, result.project)
+        set(currentProjectIdAtom, null)
+        set(currentFileIdAtom, null)
+      }
 
       return result.project
     } catch (error) {
@@ -228,12 +275,21 @@ export const setCurrentProjectAtom = atom(
 )
 
 /**
- * Set the current file
+ * Set the current file and sync codeAtom with the file content
  */
 export const setCurrentFileAtom = atom(
   null,
-  (_get, set, fileId: string | null) => {
+  (get, set, fileId: string | null) => {
     set(currentFileIdAtom, fileId)
+
+    // Sync codeAtom with the new file content
+    if (fileId) {
+      const project = get(currentProjectAtom)
+      const file = project?.files.find((f) => f.id === fileId)
+      if (file) {
+        set(codeAtom, file.content.value)
+      }
+    }
   }
 )
 
@@ -382,7 +438,7 @@ export const deleteFileAtom = atom(
 export const setMainFileAtom = atom(
   null,
   async (
-    get,
+    _get,
     set,
     params: {
       projectId: string
@@ -391,13 +447,6 @@ export const setMainFileAtom = atom(
     }
   ) => {
     try {
-      // Check if project is a library
-      const projects = get(projectsAtom)
-      const project = projects.find((p) => p.id === params.projectId)
-      if (project?.isLibrary) {
-        throw new Error('Library projects cannot have a main file')
-      }
-
       await container.updateFile.execute({
         ...params,
         isMain: true
@@ -441,7 +490,7 @@ export const addTagToProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     const { tag } = await container.addTag.execute({
@@ -473,7 +522,7 @@ export const removeTagFromProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.removeTag.execute({
@@ -519,11 +568,18 @@ export const dependencyFilesAtom = atom<DependencyProject[]>([])
 /**
  * Fetch dependency files for the current project
  * Groups files by their parent project
+ * Works in both normal mode (currentProjectAtom) and read-only mode (viewOnlyProjectAtom)
  */
 export const fetchDependencyFilesAtom = atom(null, async (get, set) => {
+  const isReadOnly = get(isReadOnlyModeAtom)
   const currentProjectId = get(currentProjectIdAtom)
+  const viewOnlyProject = get(viewOnlyProjectAtom)
   const projects = get(projectsAtom)
-  const currentProject = projects.find((p) => p.id === currentProjectId)
+
+  // Get the active project based on mode
+  const currentProject = isReadOnly
+    ? viewOnlyProject
+    : projects.find((p) => p.id === currentProjectId)
 
   if (!currentProject || currentProject.dependencies.length === 0) {
     set(dependencyFilesAtom, [])
@@ -541,7 +597,7 @@ export const fetchDependencyFilesAtom = atom(null, async (get, set) => {
 
     for (const file of result.files) {
       // Skip files from the current project
-      if (file.projectId === currentProjectId) continue
+      if (file.projectId === currentProject.id) continue
 
       if (!projectsMap.has(file.projectId)) {
         projectsMap.set(file.projectId, {
@@ -574,14 +630,18 @@ export const fetchDependencyFilesAtom = atom(null, async (get, set) => {
  */
 export const addDependencyToProjectAtom = atom(
   null,
-  async (get, set, params: { projectId: string; dependencyId: string }) => {
-    const { projectId, dependencyId } = params
+  async (
+    get,
+    set,
+    params: { projectId: string; dependencyId: string; dependencyName: string }
+  ) => {
+    const { projectId, dependencyId, dependencyName } = params
 
     // Get current project to obtain userId
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.addDependency.execute({
@@ -590,11 +650,17 @@ export const addDependencyToProjectAtom = atom(
       dependencyId
     })
 
-    // Update local state - add dependency to project
+    // Update local state - add dependency info to project
     set(projectsAtom, (prev) =>
       prev.map((p) =>
         p.id === projectId
-          ? { ...p, dependencies: [...p.dependencies, dependencyId] }
+          ? {
+              ...p,
+              dependencies: [
+                ...p.dependencies,
+                { id: dependencyId, name: dependencyName }
+              ]
+            }
           : p
       )
     )
@@ -613,7 +679,7 @@ export const removeDependencyFromProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.removeDependency.execute({
@@ -628,7 +694,7 @@ export const removeDependencyFromProjectAtom = atom(
         p.id === projectId
           ? {
               ...p,
-              dependencies: p.dependencies.filter((d) => d !== dependencyId)
+              dependencies: p.dependencies.filter((d) => d.id !== dependencyId)
             }
           : p
       )
@@ -652,7 +718,7 @@ export const addUserShareToProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     const { share } = await container.addUserShare.execute({
@@ -689,7 +755,7 @@ export const removeUserShareFromProjectAtom = atom(
     const projects = get(projectsAtom)
     const project = projects.find((p) => p.id === projectId)
     if (!project) {
-      throw new Error(`Project ${projectId} not found`)
+      throw new Error(PROJECT_ERRORS.NOT_FOUND(projectId))
     }
 
     await container.removeUserShare.execute({

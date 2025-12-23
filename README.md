@@ -48,8 +48,8 @@ pnpm dev
 
 ## Credits
 
-- **RASM** by Roudoudou - [rasm.music.world](http://rasm.music.world)
-- **CPCEC** by CNGsoft - [cngsoft.no-ip.org](http://cngsoft.no-ip.org/cpcec.htm)
+- **RASM** by Roudoudou - [Rasm]https://github.com/EdouardBERGE/rasm)
+- **CPCEC** by CNGsoft - [CPCEC](https://github.com/cpcitor/cpcec)
 
 ## License
 

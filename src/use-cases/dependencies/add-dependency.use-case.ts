@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from '@/domain/errors'
+import { DEPENDENCY_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
 
@@ -37,22 +38,18 @@ export function createAddDependencyUseCase(
 
       // Prevent self-dependency
       if (projectId === dependencyId) {
-        throw new ValidationError('A project cannot depend on itself')
+        throw new ValidationError(DEPENDENCY_ERRORS.SELF_DEPENDENCY)
       }
 
       // Check dependency exists
       const dependency = await projectsRepository.findById(dependencyId)
       if (!dependency) {
-        throw new NotFoundError(
-          `Dependency project with id ${dependencyId} not found`
-        )
+        throw new NotFoundError(DEPENDENCY_ERRORS.NOT_FOUND(dependencyId))
       }
 
       // Check dependency is a library
       if (!dependency.isLibrary) {
-        throw new ValidationError(
-          `Project ${dependencyId} is not a library and cannot be used as a dependency`
-        )
+        throw new ValidationError(DEPENDENCY_ERRORS.NOT_A_LIBRARY(dependencyId))
       }
 
       // Add dependency

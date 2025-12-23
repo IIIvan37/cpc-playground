@@ -5,14 +5,15 @@ import styles from './button.module.css'
 
 type Variant = 'primary' | 'secondary' | 'icon' | 'outline' | 'ghost' | 'link'
 
-type Props = {
+type Props = Readonly<{
   children: ReactNode
   asChild?: boolean
   variant?: Variant
   size?: 'sm' | 'md'
   fullWidth?: boolean
   className?: string
-} & ButtonHTMLAttributes<HTMLButtonElement>
+}> &
+  ButtonHTMLAttributes<HTMLButtonElement>
 
 export default function Button({
   children,

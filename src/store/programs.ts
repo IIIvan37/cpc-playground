@@ -1,90 +1,122 @@
+/**
+ * Programs Store - Clean Architecture version
+ * Uses use-cases with localStorage repository
+ */
+
 import { atom } from 'jotai'
+import type { Program } from '@/domain/entities/program.entity'
+import { programsContainer } from '@/infrastructure/programs-container'
 
-export interface SavedProgram {
-  id: string
-  name: string
-  code: string
-  createdAt: string
-  updatedAt: string
-}
+// ============================================================================
+// State Atoms
+// ============================================================================
 
-const STORAGE_KEY = 'cpc-playground-programs'
-
-// Load programs from localStorage
-function loadPrograms(): SavedProgram[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch {
-    return []
-  }
-}
-
-// Save programs to localStorage
-function savePrograms(programs: SavedProgram[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(programs))
-}
-
-// Atom with localStorage persistence
-export const savedProgramsAtom = atom<SavedProgram[]>(loadPrograms())
-
-// Current program ID being edited
+export const savedProgramsAtom = atom<Program[]>([])
 export const currentProgramIdAtom = atom<string | null>(null)
 
-// Actions
+// ============================================================================
+// Derived Atoms
+// ============================================================================
+
+export const currentProgramAtom = atom((get) => {
+  const programs = get(savedProgramsAtom)
+  const currentId = get(currentProgramIdAtom)
+  return programs.find((p) => p.id === currentId) ?? null
+})
+
+// ============================================================================
+// Action Atoms
+// ============================================================================
+
+/**
+ * Load all programs from storage
+ */
+export const fetchProgramsAtom = atom(null, async (_get, set) => {
+  try {
+    const { programs } = await programsContainer.getPrograms.execute()
+    set(savedProgramsAtom, [...programs])
+  } catch (error) {
+    console.error('Failed to fetch programs:', error)
+    throw error
+  }
+})
+
+/**
+ * Save a program (create or update)
+ */
 export const saveProgramAtom = atom(
   null,
-  (get, set, { name, code }: { name: string; code: string }) => {
-    const programs = get(savedProgramsAtom)
-    const currentId = get(currentProgramIdAtom)
-    const now = new Date().toISOString()
+  async (get, set, { name, code }: { name: string; code: string }) => {
+    try {
+      const currentId = get(currentProgramIdAtom)
 
-    if (currentId) {
-      // Update existing
-      const updated = programs.map((p) =>
-        p.id === currentId ? { ...p, name, code, updatedAt: now } : p
-      )
-      set(savedProgramsAtom, updated)
-      savePrograms(updated)
-    } else {
-      // Create new
-      const newProgram: SavedProgram = {
-        id: crypto.randomUUID(),
+      const { program } = await programsContainer.saveProgram.execute({
+        id: currentId ?? undefined,
         name,
-        code,
-        createdAt: now,
-        updatedAt: now
+        code
+      })
+
+      // Update local state
+      set(savedProgramsAtom, (prev) => {
+        const index = prev.findIndex((p) => p.id === program.id)
+        if (index >= 0) {
+          const updated = [...prev]
+          updated[index] = program
+          return updated
+        }
+        return [...prev, program]
+      })
+
+      // Set current ID if new program
+      if (!currentId) {
+        set(currentProgramIdAtom, program.id)
       }
-      const updated = [...programs, newProgram]
-      set(savedProgramsAtom, updated)
-      set(currentProgramIdAtom, newProgram.id)
-      savePrograms(updated)
+
+      return program
+    } catch (error) {
+      console.error('Failed to save program:', error)
+      throw error
     }
   }
 )
 
-export const loadProgramAtom = atom(null, (get, set, id: string) => {
-  const programs = get(savedProgramsAtom)
-  const program = programs.find((p) => p.id === id)
-  if (program) {
+/**
+ * Load a program by ID
+ */
+export const loadProgramAtom = atom(null, async (_get, set, id: string) => {
+  try {
+    const { program } = await programsContainer.loadProgram.execute({ id })
     set(currentProgramIdAtom, id)
     return program
-  }
-  return null
-})
-
-export const deleteProgramAtom = atom(null, (get, set, id: string) => {
-  const programs = get(savedProgramsAtom)
-  const currentId = get(currentProgramIdAtom)
-  const updated = programs.filter((p) => p.id !== id)
-  set(savedProgramsAtom, updated)
-  savePrograms(updated)
-
-  if (currentId === id) {
-    set(currentProgramIdAtom, null)
+  } catch (error) {
+    console.error('Failed to load program:', error)
+    throw error
   }
 })
 
+/**
+ * Delete a program
+ */
+export const deleteProgramAtom = atom(null, async (get, set, id: string) => {
+  try {
+    await programsContainer.deleteProgram.execute({ id })
+
+    // Update local state
+    set(savedProgramsAtom, (prev) => prev.filter((p) => p.id !== id))
+
+    // Clear current ID if deleted
+    if (get(currentProgramIdAtom) === id) {
+      set(currentProgramIdAtom, null)
+    }
+  } catch (error) {
+    console.error('Failed to delete program:', error)
+    throw error
+  }
+})
+
+/**
+ * Create a new (empty) program
+ */
 export const newProgramAtom = atom(null, (_get, set) => {
   set(currentProgramIdAtom, null)
 })

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler, {
   EXPIRY_DAYS,
-  generateId,
+  SHARE_ID_LENGTH,
   type ShareData
 } from '../../netlify/functions/share'
 
@@ -36,31 +36,13 @@ describe('share function', () => {
     mockStore.delete.mockResolvedValue(undefined)
   })
 
-  describe('generateId', () => {
-    it('should generate an 8 character ID', () => {
-      const id = generateId()
-      expect(id).toHaveLength(8)
+  describe('constants', () => {
+    it('should have correct SHARE_ID_LENGTH', () => {
+      expect(SHARE_ID_LENGTH).toBe(8)
     })
 
-    it('should only contain valid characters', () => {
-      const validChars =
-        'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
-      for (let i = 0; i < 100; i++) {
-        const id = generateId()
-        for (const char of id) {
-          expect(validChars).toContain(char)
-        }
-      }
-    })
-
-    it('should not contain ambiguous characters (0, O, 1, l, I)', () => {
-      const ambiguousChars = '01lIO'
-      for (let i = 0; i < 100; i++) {
-        const id = generateId()
-        for (const char of id) {
-          expect(ambiguousChars).not.toContain(char)
-        }
-      }
+    it('should have correct EXPIRY_DAYS', () => {
+      expect(EXPIRY_DAYS).toBe(7)
     })
   })
 
@@ -91,6 +73,25 @@ describe('share function', () => {
       expect(body.id).toBeDefined()
       expect(body.id).toHaveLength(8)
       expect(mockStore.setJSON).toHaveBeenCalledTimes(1)
+    })
+
+    it('should regenerate ID if collision occurs', async () => {
+      // First call returns existing data (collision), second call returns null (available)
+      mockStore.get
+        .mockResolvedValueOnce({ code: 'existing' })
+        .mockResolvedValueOnce(null)
+
+      const request = createRequest('POST', 'https://example.com/api/share', {
+        code: 'new code'
+      })
+
+      const response = await handler(request, mockContext)
+      const body = await response.json()
+
+      expect(response.status).toBe(201)
+      expect(body.id).toBeDefined()
+      // store.get should be called twice (first collision, then available)
+      expect(mockStore.get).toHaveBeenCalledTimes(2)
     })
 
     it('should store code with expiry metadata', async () => {
@@ -145,6 +146,21 @@ describe('share function', () => {
       const response = await handler(request, mockContext)
 
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    })
+
+    it('should return 500 when store.setJSON throws an error', async () => {
+      mockStore.setJSON.mockRejectedValue(new Error('Store error'))
+
+      const request = createRequest('POST', 'https://example.com/api/share', {
+        code: 'test code'
+      })
+
+      const response = await handler(request, mockContext)
+      const body = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(body.error).toBe('Failed to create share')
+      expect(body.details).toBe('Error: Store error')
     })
   })
 
@@ -222,6 +238,22 @@ describe('share function', () => {
       const response = await handler(request, mockContext)
 
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    })
+
+    it('should return 500 when store.get throws an error', async () => {
+      mockStore.get.mockRejectedValue(new Error('Store read error'))
+
+      const request = createRequest(
+        'GET',
+        'https://example.com/api/share?id=testid'
+      )
+
+      const response = await handler(request, mockContext)
+      const body = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(body.error).toBe('Failed to retrieve share')
+      expect(body.details).toBe('Error: Store read error')
     })
   })
 

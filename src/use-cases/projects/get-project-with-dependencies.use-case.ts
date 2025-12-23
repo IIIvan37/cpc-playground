@@ -1,5 +1,5 @@
-import type { IProjectsRepository } from '../../domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
+import type { IProjectsRepository } from '../../domain/repositories/projects.repository.interface'
 
 /**
  * File with project context for compilation
@@ -93,8 +93,8 @@ export const createGetProjectWithDependenciesUseCase = (
         allFiles.push(...projectFiles)
 
         // Recursively fetch dependencies
-        for (const dependencyId of project.dependencies) {
-          await fetchProjectFiles(dependencyId)
+        for (const dependency of project.dependencies) {
+          await fetchProjectFiles(dependency.id)
         }
       }
 

@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
-import { ValidationError } from '@/domain/errors'
+import { AUTH_ERRORS, TAG_ERRORS } from '@/domain/errors/error-messages'
 import type { IProjectsRepository } from '@/domain/repositories/projects.repository.interface'
 import type { AuthorizationService } from '@/domain/services'
-import { createMockAuthorizationService } from '@/domain/services/__tests__/mock-authorization.service'
-import { AUTH_ERROR_MESSAGES } from '@/domain/services/authorization.service'
+import { createAuthorizationService } from '@/domain/services'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
@@ -19,7 +18,7 @@ describe('AddTagUseCase', () => {
 
   beforeEach(async () => {
     repository = createInMemoryProjectsRepository()
-    authorizationService = createMockAuthorizationService(repository)
+    authorizationService = createAuthorizationService(repository)
     useCase = createAddTagUseCase(repository, authorizationService)
 
     // Create a test project
@@ -83,33 +82,36 @@ describe('AddTagUseCase', () => {
   })
 
   it('should throw ValidationError for empty tag', async () => {
+    const emptyTag = ''
     await expect(
       useCase.execute({
         projectId,
         userId,
-        tagName: ''
+        tagName: emptyTag
       })
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(TAG_ERRORS.INVALID(emptyTag))
   })
 
   it('should throw ValidationError for tag with spaces', async () => {
+    const tagWithSpaces = 'my tag'
     await expect(
       useCase.execute({
         projectId,
         userId,
-        tagName: 'my tag'
+        tagName: tagWithSpaces
       })
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(TAG_ERRORS.INVALID(tagWithSpaces))
   })
 
   it('should throw ValidationError for tag too short', async () => {
+    const shortTag = 'a'
     await expect(
       useCase.execute({
         projectId,
         userId,
-        tagName: 'a'
+        tagName: shortTag
       })
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(TAG_ERRORS.INVALID(shortTag))
   })
 
   it('should throw ValidationError for tag too long', async () => {
@@ -120,17 +122,18 @@ describe('AddTagUseCase', () => {
         userId,
         tagName: longTag
       })
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(TAG_ERRORS.INVALID(longTag))
   })
 
   it('should throw ValidationError for tag with special characters', async () => {
+    const tagWithSpecialChars = 'my_tag!'
     await expect(
       useCase.execute({
         projectId,
         userId,
-        tagName: 'my_tag!'
+        tagName: tagWithSpecialChars
       })
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(TAG_ERRORS.INVALID(tagWithSpecialChars))
   })
 
   it('should throw ProjectNotFoundError for non-existent project', async () => {
@@ -140,7 +143,7 @@ describe('AddTagUseCase', () => {
         userId,
         tagName: 'assembly'
       })
-    ).rejects.toThrow(AUTH_ERROR_MESSAGES.PROJECT_NOT_FOUND)
+    ).rejects.toThrow(AUTH_ERRORS.PROJECT_NOT_FOUND)
   })
 
   it('should throw UnauthorizedError when user does not own the project', async () => {
@@ -150,7 +153,7 @@ describe('AddTagUseCase', () => {
         userId: 'other-user',
         tagName: 'assembly'
       })
-    ).rejects.toThrow(AUTH_ERROR_MESSAGES.UNAUTHORIZED_MODIFY)
+    ).rejects.toThrow(AUTH_ERRORS.UNAUTHORIZED_MODIFY)
   })
 
   it('should reuse existing tag when adding same tag name', async () => {

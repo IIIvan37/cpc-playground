@@ -14,12 +14,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { Database } from '@/types/database.types'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+// Supabase local dev demo keys (public, not secrets)
 const SUPABASE_ANON_KEY =
   process.env.SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' // NOSONAR - public demo key
 const SUPABASE_SERVICE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU' // NOSONAR - public demo key
 
 const isIntegrationTest = process.env.TEST_INTEGRATION === 'true'
 const describeIntegration = isIntegrationTest ? describe : describe.skip
@@ -52,8 +53,12 @@ describeIntegration('Access Control Integration Tests', () => {
       email_confirm: true
     })
 
+    if (!userAData?.user) {
+      throw new Error('Failed to create User A')
+    }
+
     await adminClient.from('user_profiles').insert({
-      id: userAData!.user.id,
+      id: userAData.user.id,
       username: `usera${Date.now()}`
     })
 
@@ -61,7 +66,7 @@ describeIntegration('Access Control Integration Tests', () => {
     const clientA = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { autoRefreshToken: false, persistSession: false }
     })
-    const { data: sessionA, error: authErrorA } =
+    const { data: _sessionA, error: authErrorA } =
       await clientA.auth.signInWithPassword({
         email: emailA,
         password: 'password123'
@@ -71,7 +76,7 @@ describeIntegration('Access Control Integration Tests', () => {
       throw new Error(`Failed to sign in User A: ${authErrorA.message}`)
     }
 
-    userA = { id: userAData!.user.id, email: emailA, client: clientA }
+    userA = { id: userAData.user.id, email: emailA, client: clientA }
 
     // Create User B
     const emailB = `user-b-${Date.now()}@test.local`
@@ -81,8 +86,12 @@ describeIntegration('Access Control Integration Tests', () => {
       email_confirm: true
     })
 
+    if (!userBData?.user) {
+      throw new Error('Failed to create User B')
+    }
+
     await adminClient.from('user_profiles').insert({
-      id: userBData!.user.id,
+      id: userBData.user.id,
       username: `userb${Date.now()}`
     })
 
@@ -90,7 +99,7 @@ describeIntegration('Access Control Integration Tests', () => {
     const clientB = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { autoRefreshToken: false, persistSession: false }
     })
-    const { data: sessionB, error: authErrorB } =
+    const { data: _sessionB, error: authErrorB } =
       await clientB.auth.signInWithPassword({
         email: emailB,
         password: 'password123'
@@ -100,7 +109,7 @@ describeIntegration('Access Control Integration Tests', () => {
       throw new Error(`Failed to sign in User B: ${authErrorB.message}`)
     }
 
-    userB = { id: userBData!.user.id, email: emailB, client: clientB }
+    userB = { id: userBData.user.id, email: emailB, client: clientB }
 
     // Create test projects owned by User A
     const { data: privateProject } = await adminClient
@@ -270,7 +279,7 @@ describeIntegration('Access Control Integration Tests', () => {
 
   describe('Other user access (User B)', () => {
     it('should NOT see User A private project', async () => {
-      const { data, error } = await userB.client
+      const { data } = await userB.client
         .from('projects')
         .select('*')
         .eq('id', privateProjectId)
@@ -320,7 +329,7 @@ describeIntegration('Access Control Integration Tests', () => {
     })
 
     it('should NOT be able to update User A project', async () => {
-      const { error } = await userB.client
+      await userB.client
         .from('projects')
         .update({ description: 'Attempted update by B' })
         .eq('id', publicProjectId)
@@ -337,10 +346,7 @@ describeIntegration('Access Control Integration Tests', () => {
     })
 
     it('should NOT be able to delete User A project', async () => {
-      const { error } = await userB.client
-        .from('projects')
-        .delete()
-        .eq('id', publicProjectId)
+      await userB.client.from('projects').delete().eq('id', publicProjectId)
 
       // Verify project still exists
       const { data: project } = await adminClient
@@ -506,9 +512,13 @@ describeIntegration('Access Control Integration Tests', () => {
         email_confirm: true
       })
 
+      if (!userC?.user) {
+        throw new Error('Failed to create User C')
+      }
+
       const { error } = await userA.client.from('project_shares').insert({
         project_id: privateProjectId,
-        user_id: userC!.user.id
+        user_id: userC.user.id
       })
 
       expect(error).toBeNull()
@@ -518,8 +528,8 @@ describeIntegration('Access Control Integration Tests', () => {
         .from('project_shares')
         .delete()
         .eq('project_id', privateProjectId)
-        .eq('user_id', userC!.user.id)
-      await adminClient.auth.admin.deleteUser(userC!.user.id)
+        .eq('user_id', userC.user.id)
+      await adminClient.auth.admin.deleteUser(userC.user.id)
     })
   })
 })

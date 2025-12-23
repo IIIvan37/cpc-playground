@@ -1,10 +1,11 @@
 import type { InputHTMLAttributes } from 'react'
 import styles from './input.module.css'
 
-type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+type InputProps = Readonly<{
   label?: string
   error?: string
-}
+}> &
+  InputHTMLAttributes<HTMLInputElement>
 
 export default function Input({
   label,
