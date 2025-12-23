@@ -22,11 +22,12 @@ function createFullChainMock(resolvedValue?: unknown) {
     'neq',
     'in',
     'order',
-    'single'
+    'single',
+    'maybeSingle'
   ]
 
   for (const name of methodNames) {
-    if (name === 'single') {
+    if (name === 'single' || name === 'maybeSingle') {
       mock[name] = vi.fn(() => Promise.resolve(value))
     } else {
       mock[name] = vi.fn(() => mock)
@@ -43,6 +44,7 @@ function createFullChainMock(resolvedValue?: unknown) {
     in: ReturnType<typeof vi.fn>
     order: ReturnType<typeof vi.fn>
     single: ReturnType<typeof vi.fn>
+    maybeSingle: ReturnType<typeof vi.fn>
   }
 }
 
@@ -1042,10 +1044,10 @@ describe('SupabaseProjectsRepository', () => {
     })
 
     it('should create new tag if not exists', async () => {
-      // Find tag - not found
+      // Find tag - not found (maybeSingle returns null data, no error)
       const findMock = createFullChainMock({
         data: null,
-        error: { code: 'PGRST116', message: 'Not found' }
+        error: null
       })
       // Create tag
       const createMock = createFullChainMock({
@@ -1121,10 +1123,10 @@ describe('SupabaseProjectsRepository', () => {
     })
 
     it('should throw on create tag error', async () => {
-      // Find tag - not found
+      // Find tag - not found (maybeSingle returns null data, no error)
       const findMock = createFullChainMock({
         data: null,
-        error: { code: 'PGRST116', message: 'Not found' }
+        error: null
       })
       // Create tag - error
       const createMock = createFullChainMock({
@@ -1179,9 +1181,10 @@ describe('SupabaseProjectsRepository', () => {
     })
 
     it('should do nothing if tag name not found', async () => {
+      // maybeSingle returns null data, no error for not found
       const findMock = createFullChainMock({
         data: null,
-        error: { code: 'PGRST116', message: 'Not found' }
+        error: null
       })
       mockSupabase.from.mockReturnValue(findMock)
 
