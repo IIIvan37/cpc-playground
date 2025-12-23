@@ -8,11 +8,12 @@
 [functions]
   directory = "netlify/functions"
 
-# API routes
+# API routes - must have force=true to take priority over SPA fallback
 [[redirects]]
   from = "/api/share"
   to = "/.netlify/functions/share"
   status = 200
+  force = true
 
 # Proxy CDN requests to avoid CORS issues
 [[redirects]]
