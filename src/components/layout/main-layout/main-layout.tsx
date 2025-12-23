@@ -44,7 +44,7 @@ export function MainLayout() {
         </div>
         <div
           className={`${styles.panel} ${styles.emulatorPanel}`}
-          data-hidden={viewMode === 'emulator'}
+          data-hidden={viewMode === 'editor'}
         >
           <EmulatorCanvas />
         </div>
