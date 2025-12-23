@@ -22,7 +22,7 @@ export function ResizableSidebar({
 }: ResizableSidebarProps) {
   // Load persisted state
   const getInitialWidth = () => {
-    if (typeof window === 'undefined') return defaultWidth
+    if (globalThis.window === undefined) return defaultWidth
     const stored = localStorage.getItem(storageKey)
     if (stored) {
       const parsed = Number.parseInt(stored, 10)
@@ -34,7 +34,7 @@ export function ResizableSidebar({
   }
 
   const getInitialCollapsed = () => {
-    if (typeof window === 'undefined') return false
+    if (globalThis.window === undefined) return false
     const stored = localStorage.getItem(`${storageKey}-collapsed`)
     return stored === 'true'
   }
@@ -79,15 +79,15 @@ export function ResizableSidebar({
 
   useEffect(() => {
     if (isResizing) {
-      window.addEventListener('mousemove', resize)
-      window.addEventListener('mouseup', stopResizing)
+      globalThis.addEventListener('mousemove', resize)
+      globalThis.addEventListener('mouseup', stopResizing)
       document.body.style.cursor = 'col-resize'
       document.body.style.userSelect = 'none'
     }
 
     return () => {
-      window.removeEventListener('mousemove', resize)
-      window.removeEventListener('mouseup', stopResizing)
+      globalThis.removeEventListener('mousemove', resize)
+      globalThis.removeEventListener('mouseup', stopResizing)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }

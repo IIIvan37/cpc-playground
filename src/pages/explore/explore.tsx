@@ -1,8 +1,7 @@
-import { FileIcon, PersonIcon, PlusIcon } from '@radix-ui/react-icons'
+import { PlusIcon } from '@radix-ui/react-icons'
 import { useSetAtom } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Badge } from '@/components/ui/badge'
 import Button from '@/components/ui/button/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -12,6 +11,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { container } from '@/infrastructure/container'
 import { createProjectAtom } from '@/store/projects'
 import styles from './explore.module.css'
+import { ExploreListView } from './explore.view'
 
 /**
  * Explore Page
@@ -91,137 +91,70 @@ export function ExplorePage() {
     navigate(`/?project=${project.id}`)
   }
 
-  const isOwner = (project: Project) => user?.id === project.userId
-  const isShared = (project: Project) =>
-    project.userShares.some((share) => share.userId === user?.id)
-
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <div className={styles.loading}>
-          <div className={styles.spinner} />
-          <p>Loading projects...</p>
-        </div>
-      )
-    }
-
-    if (error) {
-      return <div className={styles.error}>{error}</div>
-    }
-
-    if (projects.length === 0) {
-      return (
-        <div className={styles.empty}>
-          <p>No projects found</p>
-          <p>Be the first to share a project!</p>
-        </div>
-      )
-    }
-
-    return (
-      <div className={styles.grid}>
-        {projects.map((project) => (
-          <button
-            type='button'
-            key={project.id}
-            className={styles.card}
-            onClick={() => handleProjectClick(project)}
-          >
-            <div className={styles.cardHeader}>
-              <h2 className={styles.cardTitle}>{project.name.value}</h2>
-              <div className={styles.badges}>
-                {isOwner(project) && <Badge variant='owner'>Owner</Badge>}
-                {isShared(project) && !isOwner(project) && (
-                  <Badge variant='shared'>Shared</Badge>
-                )}
-                {project.visibility.value === 'public' && (
-                  <Badge variant='public'>Public</Badge>
-                )}
-                {project.isLibrary && <Badge variant='library'>Library</Badge>}
-              </div>
-            </div>
-
-            {project.description && (
-              <p className={styles.description}>{project.description}</p>
-            )}
-
-            {project.tags.length > 0 && (
-              <div className={styles.tags}>
-                {project.tags.map((tag) => (
-                  <span key={tag} className={styles.tag}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <div className={styles.cardMeta}>
-              <span className={styles.metaItem}>
-                <FileIcon />
-                {project.files.length} file
-                {project.files.length === 1 ? '' : 's'}
-              </span>
-              <span className={styles.metaItem}>
-                <PersonIcon />
-                {project.userShares.length} share
-                {project.userShares.length === 1 ? '' : 's'}
-              </span>
-              <span className={styles.metaItem}>
-                Updated {formatDate(project.updatedAt)}
-              </span>
-            </div>
-          </button>
-        ))}
-      </div>
-    )
-  }
+  // Prepare data for dumb view
+  const listProjects = projects.map((project) => ({
+    id: project.id,
+    name: project.name.value,
+    description: project.description,
+    tags: [...project.tags],
+    isOwner: user?.id === project.userId,
+    isShared: project.userShares.some((share) => share.userId === user?.id),
+    visibility: project.visibility.value,
+    isLibrary: project.isLibrary,
+    filesCount: project.files.length,
+    sharesCount: project.userShares.length,
+    updatedAt: project.updatedAt,
+    onClick: () => handleProjectClick(project)
+  }))
 
   return (
     <div className={styles.container}>
-      <div className={styles.pageHeader}>
-        <div className={styles.headerRow}>
-          <div>
-            <h1 className={styles.title}>Explore Projects</h1>
-            <p className={styles.subtitle}>
-              {user
-                ? 'Browse public projects and your shared projects'
-                : 'Browse public projects from the community'}
-            </p>
-          </div>
-          {user && (
-            <Button onClick={() => setShowNewProjectDialog(true)}>
-              <PlusIcon />
-              New Project
-            </Button>
-          )}
-        </div>
+      <div className={styles.header}>
+        <h1>Explore Projects</h1>
+        {user && (
+          <Button onClick={() => setShowNewProjectDialog(true)}>
+            <PlusIcon /> New Project
+          </Button>
+        )}
       </div>
 
-      <main className={styles.content}>{renderContent()}</main>
+      <ExploreListView
+        projects={listProjects}
+        loading={loading}
+        error={error}
+      />
 
       {showNewProjectDialog && (
         <Modal
           open={showNewProjectDialog}
-          title='New Project'
-          onClose={() => setShowNewProjectDialog(false)}
+          title='Create New Project'
+          onClose={() => {
+            setShowNewProjectDialog(false)
+            setNewProjectName('')
+            setNewProjectIsLibrary(false)
+          }}
         >
           <div className={styles.modalContent}>
             <Input
-              placeholder='Project name'
+              label='Project Name'
               value={newProjectName}
               onChange={(e) => setNewProjectName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+              placeholder='My Awesome Project'
               autoFocus
             />
             <Checkbox
-              label='This is a library (no main file)'
+              label='Library Project'
               checked={newProjectIsLibrary}
               onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
             />
             <div className={styles.modalActions}>
               <Button
-                variant='outline'
-                onClick={() => setShowNewProjectDialog(false)}
+                variant='ghost'
+                onClick={() => {
+                  setShowNewProjectDialog(false)
+                  setNewProjectName('')
+                  setNewProjectIsLibrary(false)
+                }}
               >
                 Cancel
               </Button>
@@ -237,17 +170,4 @@ export function ExplorePage() {
       )}
     </div>
   )
-}
-
-function formatDate(date: Date): string {
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-
-  if (days === 0) return 'today'
-  if (days === 1) return 'yesterday'
-  if (days < 7) return `${days} days ago`
-  if (days < 30) return `${Math.floor(days / 7)} weeks ago`
-  if (days < 365) return `${Math.floor(days / 30)} months ago`
-  return `${Math.floor(days / 365)} years ago`
 }

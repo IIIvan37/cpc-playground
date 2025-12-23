@@ -263,18 +263,16 @@ function DependencyFileView({
   onSelect
 }: DependencyFileViewProps) {
   return (
-    <div
+    <button
+      type='button'
       className={`${styles.dependencyFileItem} ${
         isSelected ? styles.active : ''
       }`}
       onClick={onSelect}
-      onKeyDown={(e) => e.key === 'Enter' && onSelect()}
-      role='button'
-      tabIndex={0}
     >
       <FileIcon className={styles.fileIcon} />
       <span className={styles.fileName}>{file.name}</span>
-    </div>
+    </button>
   )
 }
 
@@ -287,12 +285,10 @@ function DependencyProjectView({
 
   return (
     <div className={styles.dependencyProject}>
-      <div
+      <button
+        type='button'
         className={styles.dependencyHeader}
         onClick={() => setIsExpanded(!isExpanded)}
-        onKeyDown={(e) => e.key === 'Enter' && setIsExpanded(!isExpanded)}
-        role='button'
-        tabIndex={0}
       >
         <ChevronRightIcon
           className={`${styles.collapseIcon} ${
@@ -301,7 +297,7 @@ function DependencyProjectView({
         />
         <CubeIcon className={styles.dependencyIcon} />
         <span className={styles.dependencyName}>{project.name}</span>
-      </div>
+      </button>
       {isExpanded && (
         <div className={styles.dependencyFiles}>
           {project.files.map((file) => (
@@ -329,12 +325,10 @@ function DependenciesSectionView({
 
   return (
     <div className={styles.dependenciesSection}>
-      <div
+      <button
+        type='button'
         className={styles.sectionHeader}
         onClick={() => setIsExpanded(!isExpanded)}
-        onKeyDown={(e) => e.key === 'Enter' && setIsExpanded(!isExpanded)}
-        role='button'
-        tabIndex={0}
       >
         <ChevronRightIcon
           className={`${styles.collapseIcon} ${
@@ -342,7 +336,7 @@ function DependenciesSectionView({
           }`}
         />
         <span>Dependencies ({dependencies.length})</span>
-      </div>
+      </button>
       {isExpanded &&
         dependencies.map((dep) => (
           <DependencyProjectView

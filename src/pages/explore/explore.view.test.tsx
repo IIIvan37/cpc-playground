@@ -1,0 +1,68 @@
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { ExploreListView } from './explore.view'
+
+describe('ExploreListView', () => {
+  const baseProject = {
+    id: '1',
+    name: 'Test Project',
+    description: 'A test project',
+    tags: ['asm', 'demo'],
+    isOwner: false,
+    isShared: false,
+    visibility: 'public',
+    isLibrary: false,
+    filesCount: 2,
+    sharesCount: 1,
+    updatedAt: new Date('2025-12-20T12:00:00Z'),
+    onClick: vi.fn()
+  }
+
+  it('renders loading state', () => {
+    render(<ExploreListView projects={[]} loading error={null} />)
+    expect(screen.getByText(/loading projects/i)).toBeInTheDocument()
+  })
+
+  it('renders error state', () => {
+    render(<ExploreListView projects={[]} error='Oops!' />)
+    expect(screen.getByText('Oops!')).toBeInTheDocument()
+  })
+
+  it('renders empty state', () => {
+    render(<ExploreListView projects={[]} />)
+    expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
+  })
+
+  it('renders a project', () => {
+    render(<ExploreListView projects={[baseProject]} />)
+    expect(screen.getByText('Test Project')).toBeInTheDocument()
+    expect(screen.getByText('A test project')).toBeInTheDocument()
+    expect(screen.getByText('asm')).toBeInTheDocument()
+    expect(screen.getByText('demo')).toBeInTheDocument()
+    expect(screen.getByText(/2 files/)).toBeInTheDocument()
+    expect(screen.getByText(/1 share/)).toBeInTheDocument()
+    expect(screen.getByText(/Updated/)).toBeInTheDocument()
+  })
+
+  it('calls onClick when project is clicked', () => {
+    const onClick = vi.fn()
+    render(<ExploreListView projects={[{ ...baseProject, onClick }]} />)
+    fireEvent.click(screen.getByTestId('project-item'))
+    expect(onClick).toHaveBeenCalled()
+  })
+
+  it('shows badges for owner/shared/public/library', () => {
+    render(
+      <ExploreListView
+        projects={[
+          { ...baseProject, isOwner: true, isShared: false, isLibrary: true },
+          { ...baseProject, isOwner: false, isShared: true, isLibrary: false }
+        ]}
+      />
+    )
+    expect(screen.getAllByText('Owner')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Library')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Shared')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Public')[0]).toBeInTheDocument()
+  })
+})

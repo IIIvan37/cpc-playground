@@ -1,0 +1,133 @@
+import { Badge } from '@/components/ui/badge'
+import styles from './explore.module.css'
+
+export interface ExploreListViewProps {
+  readonly projects: ReadonlyArray<{
+    id: string
+    name: string
+    description?: string | null
+    tags: string[]
+    isOwner: boolean
+    isShared: boolean
+    visibility: string
+    isLibrary: boolean
+    filesCount: number
+    sharesCount: number
+    updatedAt: Date
+    onClick: () => void
+  }>
+  readonly loading?: boolean
+  readonly error?: string | null
+}
+
+export function ExploreListView({
+  projects,
+  loading,
+  error
+}: ExploreListViewProps) {
+  if (loading) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.spinner} />
+        <p>Loading projects...</p>
+      </div>
+    )
+  }
+  if (error) {
+    return <div className={styles.error}>{error}</div>
+  }
+  if (!projects.length) {
+    return (
+      <div className={styles.empty}>
+        <p>No projects found</p>
+        <p>Be the first to share a project!</p>
+      </div>
+    )
+  }
+  return (
+    <div className={styles.list}>
+      {projects.map((project) => (
+        <ProjectListItem key={project.id} {...project} />
+      ))}
+    </div>
+  )
+}
+
+export type ProjectListItemProps = {
+  readonly name: string
+  readonly description?: string | null
+  readonly tags: string[]
+  readonly isOwner: boolean
+  readonly isShared: boolean
+  readonly visibility: string
+  readonly isLibrary: boolean
+  readonly filesCount: number
+  readonly sharesCount: number
+  readonly updatedAt: Date
+  readonly onClick: () => void
+}
+
+export function ProjectListItem({
+  name,
+  description,
+  tags,
+  isOwner,
+  isShared,
+  visibility,
+  isLibrary,
+  filesCount,
+  sharesCount,
+  updatedAt,
+  onClick
+}: ProjectListItemProps) {
+  return (
+    <button
+      type='button'
+      className={styles.listItem}
+      data-testid='project-item'
+      onClick={onClick}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
+    >
+      <div className={styles.rowTop}>
+        <span className={styles.projectName}>{name}</span>
+        <span className={styles.typeBadges}>
+          {isOwner && <Badge variant='owner'>Owner</Badge>}
+          {isShared && !isOwner && <Badge variant='shared'>Shared</Badge>}
+          {visibility === 'public' && <Badge variant='public'>Public</Badge>}
+          {isLibrary && <Badge variant='library'>Library</Badge>}
+        </span>
+      </div>
+      {description && <div className={styles.description}>{description}</div>}
+      {tags.length > 0 && (
+        <div className={styles.tags}>
+          {tags.map((tag) => (
+            <span key={tag} className={styles.tag}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+      <div className={styles.metaLine}>
+        <span>{pluralize(filesCount, 'file')}</span>
+        <span>{pluralize(sharesCount, 'share')}</span>
+        <span>Updated {formatDate(updatedAt)}</span>
+      </div>
+    </button>
+  )
+}
+
+function pluralize(count: number, singular: string): string {
+  return `${count} ${singular}${count === 1 ? '' : 's'}`
+}
+
+function formatDate(date: Date): string {
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  if (days === 0) return 'today'
+  if (days === 1) return 'yesterday'
+  if (days < 7) return `${days} days ago`
+  if (days < 30) return `${Math.floor(days / 7)} weeks ago`
+  if (days < 365) return `${Math.floor(days / 30)} months ago`
+  return `${Math.floor(days / 365)} years ago`
+}

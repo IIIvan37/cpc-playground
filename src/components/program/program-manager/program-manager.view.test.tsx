@@ -279,7 +279,7 @@ describe('ProgramManagerView', () => {
 
       // Get all Delete buttons and click the one in the modal
       const deleteButtons = screen.getAllByRole('button', { name: 'Delete' })
-      await user.click(deleteButtons[deleteButtons.length - 1])
+      await user.click(deleteButtons.at(-1)!)
 
       expect(handleDeleteConfirm).toHaveBeenCalledTimes(1)
     })
