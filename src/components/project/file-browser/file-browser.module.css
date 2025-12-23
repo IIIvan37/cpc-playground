@@ -138,19 +138,8 @@
 }
 
 .tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
   padding: var(--spacing-sm);
   border-top: 1px solid var(--color-border);
-}
-
-.tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
 }
 
 .ownerInfo {

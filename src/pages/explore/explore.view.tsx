@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import { TagsList } from '@/components/ui/tag'
 import styles from './explore.module.css'
 
 export interface ExploreListViewProps {
@@ -108,12 +109,8 @@ export function ProjectListItem({
       )}
       {description && <div className={styles.description}>{description}</div>}
       {tags.length > 0 && (
-        <div className={styles.tags}>
-          {tags.map((tag) => (
-            <span key={tag} className={styles.tag}>
-              {tag}
-            </span>
-          ))}
+        <div className={styles.tagsContainer}>
+          <TagsList tags={tags} />
         </div>
       )}
       <div className={styles.metaLine}>

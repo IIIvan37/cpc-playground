@@ -105,18 +105,8 @@
   line-height: 1.5;
   text-align: left;
 }
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
+.tagsContainer {
   margin-bottom: 0.1rem;
-}
-.tag {
-  font-size: 0.75rem;
-  padding: 0.125rem 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 0.25rem;
-  color: var(--color-disabled-text);
 }
 .metaLine {
   display: flex;

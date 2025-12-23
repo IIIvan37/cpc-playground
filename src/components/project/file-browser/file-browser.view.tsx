@@ -10,6 +10,7 @@ import {
 import { type ReactNode, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import Button from '@/components/ui/button/button'
+import { TagsList } from '@/components/ui/tag'
 import type { VisibilityValue } from '@/domain/value-objects'
 import styles from './file-browser.module.css'
 
@@ -248,11 +249,7 @@ function TagsView({ tags }: TagsViewProps) {
 
   return (
     <div className={styles.tags}>
-      {tags.map((tag) => (
-        <span key={tag} className={styles.tag}>
-          {tag}
-        </span>
-      ))}
+      <TagsList tags={tags} />
     </div>
   )
 }
