@@ -1,18 +1,18 @@
-import { useAtomValue, useSetAtom } from 'jotai'
+import { useAtomValue } from 'jotai'
 import { useState } from 'react'
-import { useAuth } from '@/hooks'
+import { useNavigate } from 'react-router-dom'
 import {
-  addDependencyToProjectAtom,
-  addTagToProjectAtom,
-  addUserShareToProjectAtom,
-  currentProjectAtom,
-  fetchProjectsAtom,
-  projectsAtom,
-  removeDependencyFromProjectAtom,
-  removeTagFromProjectAtom,
-  removeUserShareFromProjectAtom,
-  updateProjectAtom
-} from '@/store/projects'
+  useAuth,
+  useHandleAddDependency,
+  useHandleAddShare,
+  useHandleAddTag,
+  useHandleDeleteProject,
+  useHandleRemoveDependency,
+  useHandleRemoveShare,
+  useHandleRemoveTag,
+  useHandleSaveProject
+} from '@/hooks'
+import { currentProjectAtom, projectsAtom } from '@/store/projects'
 import { ProjectSettingsModalView } from './project-settings-modal.view'
 
 type ProjectSettingsModalProps = Readonly<{
@@ -24,18 +24,27 @@ type ProjectSettingsModalProps = Readonly<{
  * Handles business logic and delegates rendering to ProjectSettingsModalView
  */
 export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
+  const navigate = useNavigate()
   const { user } = useAuth()
+
+  // Clean Architecture hooks for operations
+  const { handleSave, loading: saveLoading } = useHandleSaveProject()
+  const { handleDelete, loading: deleteLoading } = useHandleDeleteProject()
+  const { handleAddTag, loading: addTagLoading } = useHandleAddTag()
+  const { handleRemoveTag, loading: removeTagLoading } = useHandleRemoveTag()
+  const { handleAddDependency, loading: addDependencyLoading } =
+    useHandleAddDependency()
+  const { handleRemoveDependency, loading: removeDependencyLoading } =
+    useHandleRemoveDependency()
+  const { handleAddShare, loading: addShareLoading } = useHandleAddShare()
+  const { handleRemoveShare, loading: removeShareLoading } =
+    useHandleRemoveShare()
+
+  // Read from global state
   const currentProject = useAtomValue(currentProjectAtom)
   const projects = useAtomValue(projectsAtom)
-  const updateProject = useSetAtom(updateProjectAtom)
-  const addTag = useSetAtom(addTagToProjectAtom)
-  const removeTag = useSetAtom(removeTagFromProjectAtom)
-  const addDependency = useSetAtom(addDependencyToProjectAtom)
-  const removeDependency = useSetAtom(removeDependencyFromProjectAtom)
-  const addUserShare = useSetAtom(addUserShareToProjectAtom)
-  const removeUserShare = useSetAtom(removeUserShareFromProjectAtom)
-  const fetchProjects = useSetAtom(fetchProjectsAtom)
 
+  // Form state
   const [name, setName] = useState(currentProject?.name.value || '')
   const [description, setDescription] = useState(
     currentProject?.description || ''
@@ -46,139 +55,115 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       : (currentProject?.visibility.value as 'private' | 'public') || 'private'
   )
   const [isLibrary, setIsLibrary] = useState(currentProject?.isLibrary || false)
-
   const [newTag, setNewTag] = useState('')
   const [selectedDependency, setSelectedDependency] = useState('')
   const [shareUsername, setShareUsername] = useState('')
-  const [loading, setLoading] = useState(false)
 
   if (!currentProject || !user) return null
 
-  const handleSave = async () => {
-    setLoading(true)
-    try {
-      await updateProject({
-        projectId: currentProject.id,
-        userId: user.id,
-        name,
-        description,
-        visibility: visibility === 'shared' ? 'private' : visibility,
-        isLibrary: isLibrary
-      })
-      await fetchProjects(user.id)
+  // Combined loading state
+  const loading =
+    saveLoading ||
+    deleteLoading ||
+    addTagLoading ||
+    removeTagLoading ||
+    addDependencyLoading ||
+    removeDependencyLoading ||
+    addShareLoading ||
+    removeShareLoading
+
+  // Handlers that delegate to hooks
+  const onSave = async () => {
+    const result = await handleSave({
+      projectId: currentProject.id,
+      userId: user.id,
+      name,
+      description,
+      visibility: visibility === 'shared' ? 'private' : visibility,
+      isLibrary
+    })
+    if (result.success) {
       onClose()
-    } catch (error) {
-      console.error('Error updating project:', error)
-      alert('Error updating project')
-    } finally {
-      setLoading(false)
+    } else if (result.error) {
+      alert(result.error)
     }
   }
 
-  const handleAddTag = async () => {
-    if (!newTag.trim()) return
-    setLoading(true)
-    try {
-      await addTag({ projectId: currentProject.id, tagName: newTag.trim() })
-      setNewTag('')
-      await fetchProjects(user.id)
-    } catch (error) {
-      console.error('Error adding tag:', error)
-      alert('Error adding tag')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRemoveTag = async (tagName: string) => {
-    setLoading(true)
-    try {
-      await removeTag({ projectId: currentProject.id, tagName })
-      await fetchProjects(user.id)
-    } catch (error) {
-      console.error('Error removing tag:', error)
-      alert('Error removing tag')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleAddDependency = async () => {
-    if (!selectedDependency) return
-    // Find the selected library to get its name
-    const selectedLib = availableDependencies.find(
-      (d) => d.id === selectedDependency
+  const onDelete = async () => {
+    const result = await handleDelete(
+      currentProject.id,
+      user.id,
+      currentProject.name.value
     )
-    if (!selectedLib) return
+    if (result.success) {
+      onClose()
+      navigate('/')
+    } else if (result.error) {
+      alert(result.error)
+    }
+  }
 
-    setLoading(true)
-    try {
-      await addDependency({
-        projectId: currentProject.id,
-        dependencyId: selectedDependency,
-        dependencyName: selectedLib.name
-      })
+  const onAddTag = async () => {
+    const result = await handleAddTag(currentProject.id, user.id, newTag)
+    if (result.success) {
+      setNewTag('')
+    } else if (result.error) {
+      alert(result.error)
+    }
+  }
+
+  const onRemoveTag = async (tagName: string) => {
+    const result = await handleRemoveTag(currentProject.id, user.id, tagName)
+    if (result.error) {
+      alert(result.error)
+    }
+  }
+
+  const onAddDependency = async () => {
+    const result = await handleAddDependency(
+      currentProject.id,
+      user.id,
+      selectedDependency
+    )
+    if (result.success) {
       setSelectedDependency('')
-      await fetchProjects(user.id)
-    } catch (error) {
-      console.error('Error adding dependency:', error)
-      alert('Error adding dependency')
-    } finally {
-      setLoading(false)
+    } else if (result.error) {
+      alert(result.error)
     }
   }
 
-  const handleRemoveDependency = async (dependencyId: string) => {
-    setLoading(true)
-    try {
-      await removeDependency({
-        projectId: currentProject.id,
-        dependencyId
-      })
-      await fetchProjects(user.id)
-    } catch (error) {
-      console.error('Error removing dependency:', error)
-      alert('Error removing dependency')
-    } finally {
-      setLoading(false)
+  const onRemoveDependency = async (dependencyId: string) => {
+    const result = await handleRemoveDependency(
+      currentProject.id,
+      user.id,
+      dependencyId
+    )
+    if (result.error) {
+      alert(result.error)
     }
   }
 
-  const handleAddShare = async () => {
-    if (!shareUsername.trim()) return
-    setLoading(true)
-    try {
-      await addUserShare({
-        projectId: currentProject.id,
-        username: shareUsername.trim()
-      })
+  const onAddShare = async () => {
+    const result = await handleAddShare(
+      currentProject.id,
+      user.id,
+      shareUsername
+    )
+    if (result.success) {
       setShareUsername('')
-      await fetchProjects(user.id)
-    } catch (error) {
-      console.error('Error adding share:', error)
-      if (error instanceof Error) {
-        alert(error.message)
-      } else {
-        alert('Error adding share')
-      }
-    } finally {
-      setLoading(false)
+    } else if (result.error) {
+      alert(result.error)
     }
   }
 
-  const handleRemoveShare = async (userId: string) => {
-    setLoading(true)
-    try {
-      await removeUserShare({
-        projectId: currentProject.id,
-        targetUserId: userId
-      })
-      await fetchProjects(user.id)
-    } catch (error) {
-      console.error('Error removing share:', error)
-      alert('Error removing share')
-    } finally {
-      setLoading(false)
+  const onRemoveShare = async (targetUserId: string) => {
+    const result = await handleRemoveShare(
+      currentProject.id,
+      user.id,
+      targetUserId
+    )
+    if (result.error) {
+      alert(result.error)
     }
   }
 
@@ -221,14 +206,15 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       onNewTagChange={setNewTag}
       onSelectedDependencyChange={setSelectedDependency}
       onShareUsernameChange={setShareUsername}
-      onSave={handleSave}
+      onSave={onSave}
       onClose={onClose}
-      onAddTag={handleAddTag}
-      onRemoveTag={handleRemoveTag}
-      onAddDependency={handleAddDependency}
-      onRemoveDependency={handleRemoveDependency}
-      onAddShare={handleAddShare}
-      onRemoveShare={handleRemoveShare}
+      onAddTag={onAddTag}
+      onRemoveTag={onRemoveTag}
+      onAddDependency={onAddDependency}
+      onRemoveDependency={onRemoveDependency}
+      onAddShare={onAddShare}
+      onRemoveShare={onRemoveShare}
+      onDelete={onDelete}
     />
   )
 }

@@ -46,6 +46,24 @@ function createFullChainMock(resolvedValue?: unknown) {
   }
 }
 
+/**
+ * Creates a mock for user_profiles table query used by enrichWithAuthorUsernames
+ */
+function createUserProfilesMock(
+  profiles: Array<{ id: string; username: string }> = [
+    { id: 'user-123', username: 'testuser' }
+  ]
+) {
+  const mock = createFullChainMock()
+  mock.in = vi.fn(() =>
+    Promise.resolve({
+      data: profiles,
+      error: null
+    })
+  )
+  return mock
+}
+
 // Sample data
 const mockProjectRow = {
   id: 'project-123',
@@ -126,6 +144,7 @@ describe('SupabaseProjectsRepository', () => {
         .mockReturnValueOnce(ownMock)
         .mockReturnValueOnce(sharedIdsMock)
         .mockReturnValueOnce(sharedProjectsMock)
+        .mockReturnValueOnce(createUserProfilesMock())
 
       const result = await repository.findAll('user-123')
 
@@ -146,6 +165,7 @@ describe('SupabaseProjectsRepository', () => {
       mockSupabase.from
         .mockReturnValueOnce(ownMock)
         .mockReturnValueOnce(sharedIdsMock)
+        .mockReturnValueOnce(createUserProfilesMock())
 
       const result = await repository.findAll('user-123')
 
@@ -208,6 +228,7 @@ describe('SupabaseProjectsRepository', () => {
         .mockReturnValueOnce(ownMock)
         .mockReturnValueOnce(sharedIdsMock)
         .mockReturnValueOnce(sharedProjectsMock)
+        .mockReturnValueOnce(createUserProfilesMock())
 
       const result = await repository.findAll('user-123')
 
@@ -221,7 +242,9 @@ describe('SupabaseProjectsRepository', () => {
         data: mockProjectRow,
         error: null
       })
-      mockSupabase.from.mockReturnValue(chainMock)
+      mockSupabase.from
+        .mockReturnValueOnce(chainMock)
+        .mockReturnValueOnce(createUserProfilesMock())
 
       const result = await repository.findById('project-123')
 
@@ -314,6 +337,7 @@ describe('SupabaseProjectsRepository', () => {
       mockSupabase.from
         .mockReturnValueOnce(insertMock)
         .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(createUserProfilesMock())
 
       const project = {
         id: '',
@@ -384,11 +408,20 @@ describe('SupabaseProjectsRepository', () => {
         },
         error: null
       })
+      // Fourth call: enrichWithAuthorUsernames (user_profiles)
+      const userProfilesMock = createFullChainMock()
+      userProfilesMock.in = vi.fn(() =>
+        Promise.resolve({
+          data: [{ id: 'user-123', username: 'testuser' }],
+          error: null
+        })
+      )
 
       mockSupabase.from
         .mockReturnValueOnce(insertMock)
         .mockReturnValueOnce(fileInsertMock)
         .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(userProfilesMock)
 
       const project = {
         id: '',
@@ -485,10 +518,19 @@ describe('SupabaseProjectsRepository', () => {
         data: { ...mockProjectRow, name: 'Updated Name' },
         error: null
       })
+      // Third call: enrichWithAuthorUsernames (user_profiles)
+      const userProfilesMock = createFullChainMock()
+      userProfilesMock.in = vi.fn(() =>
+        Promise.resolve({
+          data: [{ id: 'user-123', username: 'testuser' }],
+          error: null
+        })
+      )
 
       mockSupabase.from
         .mockReturnValueOnce(updateMock)
         .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(userProfilesMock)
 
       const result = await repository.update('project-123', {
         name: createProjectName('Updated Name')
@@ -519,10 +561,19 @@ describe('SupabaseProjectsRepository', () => {
         data: { ...mockProjectRow, visibility: 'public' },
         error: null
       })
+      // Third call: enrichWithAuthorUsernames (user_profiles)
+      const userProfilesMock = createFullChainMock()
+      userProfilesMock.in = vi.fn(() =>
+        Promise.resolve({
+          data: [{ id: 'user-123', username: 'testuser' }],
+          error: null
+        })
+      )
 
       mockSupabase.from
         .mockReturnValueOnce(updateMock)
         .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(userProfilesMock)
 
       const result = await repository.update('project-123', {
         visibility: createVisibility('public')
@@ -538,10 +589,19 @@ describe('SupabaseProjectsRepository', () => {
         data: { ...mockProjectRow, is_library: true },
         error: null
       })
+      // Third call: enrichWithAuthorUsernames (user_profiles)
+      const userProfilesMock = createFullChainMock()
+      userProfilesMock.in = vi.fn(() =>
+        Promise.resolve({
+          data: [{ id: 'user-123', username: 'testuser' }],
+          error: null
+        })
+      )
 
       mockSupabase.from
         .mockReturnValueOnce(updateMock)
         .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(userProfilesMock)
 
       const result = await repository.update('project-123', {
         isLibrary: true
@@ -557,10 +617,19 @@ describe('SupabaseProjectsRepository', () => {
         data: { ...mockProjectRow, description: 'New description' },
         error: null
       })
+      // Third call: enrichWithAuthorUsernames (user_profiles)
+      const userProfilesMock = createFullChainMock()
+      userProfilesMock.in = vi.fn(() =>
+        Promise.resolve({
+          data: [{ id: 'user-123', username: 'testuser' }],
+          error: null
+        })
+      )
 
       mockSupabase.from
         .mockReturnValueOnce(updateMock)
         .mockReturnValueOnce(findMock)
+        .mockReturnValueOnce(userProfilesMock)
 
       const result = await repository.update('project-123', {
         description: 'New description'

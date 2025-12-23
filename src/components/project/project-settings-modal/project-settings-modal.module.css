@@ -17,11 +17,40 @@
   border: 1px solid var(--color-foreground, #333);
   border-radius: 8px;
   padding: 2rem;
-  max-width: 600px;
-  width: 90%;
+  max-width: 1100px;
+  width: 95%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive grid layout for sections */
+.sectionsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .sectionsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 900px) {
+  .sectionsGrid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
 }
 
 .modalHeader {
@@ -56,7 +85,7 @@
 }
 
 .section {
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 .sectionTitle {
@@ -288,4 +317,48 @@
   color: var(--color-foreground, #888);
   margin-top: 0.375rem;
   line-height: 1.4;
+}
+
+/* Danger Zone */
+.dangerSection {
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 8px;
+  background: rgba(220, 53, 69, 0.05);
+  padding: 1rem;
+}
+
+.dangerSection .sectionTitle {
+  color: #dc3545;
+}
+
+.dangerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dangerText {
+  flex: 1;
+}
+
+.dangerText strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.dangerText p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-foreground, #888);
+}
+
+.dangerButton {
+  border-color: #dc3545;
+  color: #dc3545;
+  flex-shrink: 0;
+}
+
+.dangerButton:hover {
+  background: rgba(220, 53, 69, 0.1);
 }

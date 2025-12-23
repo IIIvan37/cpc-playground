@@ -743,9 +743,9 @@ export function createSupabaseProjectsRepository(
         .from('tags')
         .select('id, name')
         .eq('name', normalizedName)
-        .single()
+        .maybeSingle()
 
-      if (findError && findError.code !== 'PGRST116') {
+      if (findError) {
         throw findError
       }
 
@@ -793,9 +793,12 @@ export function createSupabaseProjectsRepository(
           .from('tags')
           .select('id')
           .eq('name', tagIdOrName.toLowerCase())
-          .single()
+          .maybeSingle()
 
-        if (findError || !tag) {
+        if (findError) {
+          throw findError
+        }
+        if (!tag) {
           // Tag doesn't exist, nothing to remove
           return
         }

@@ -17,8 +17,8 @@
 .modal {
   border-radius: 8px;
   padding: 1.5rem;
-  width: 440px;
-  max-width: 90%;
+  width: 100%;
+  max-width: 440px;
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
 }
@@ -37,6 +37,10 @@
 
 .modal.sizeXl {
   max-width: 800px;
+}
+
+.modal.size2xl {
+  max-width: 1100px;
 }
 
 .header {
