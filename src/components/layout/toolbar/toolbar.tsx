@@ -4,6 +4,7 @@ import { useAssembler, useEmulator } from '@/hooks'
 import {
   codeAtom,
   compilationStatusAtom,
+  isMarkdownFileAtom,
   type OutputFormat,
   outputFormatAtom,
   type ViewMode,
@@ -27,6 +28,7 @@ export function Toolbar() {
   const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
   const currentProject = useAtomValue(currentProjectAtom)
   const currentFile = useAtomValue(currentFileAtom)
+  const isMarkdownFile = useAtomValue(isMarkdownFileAtom)
   const fetchProjectWithDependencies = useSetAtom(
     fetchProjectWithDependenciesAtom
   )
@@ -94,6 +96,7 @@ export function Toolbar() {
       onReset={reset}
       viewMode={viewMode}
       onViewModeChange={(v) => setViewMode(v as ViewMode)}
+      isMarkdownFile={isMarkdownFile}
     />
   )
 }
