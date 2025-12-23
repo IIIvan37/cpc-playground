@@ -7,13 +7,35 @@ type AppHeaderViewProps = Readonly<{
   authModal?: ReactNode
 }>
 
+function PixsaurLink() {
+  return (
+    <a
+      href='https://pixsaur.iiivan.org'
+      target='_blank'
+      rel='noopener noreferrer'
+      className={styles.iconLink}
+      title='Pixsaur - CPC Image Converter'
+    >
+      <span className={styles.srOnly}>Pixsaur - CPC Image Converter</span>
+      <img
+        src='/pixsaur_dino.ico'
+        alt=''
+        width='20'
+        height='20'
+        aria-hidden='true'
+      />
+    </a>
+  )
+}
+
 function GitHubLink() {
   return (
     <a
       href='https://github.com/IIIvan37/cpc-playground'
       target='_blank'
       rel='noopener noreferrer'
-      className={styles.githubLink}
+      className={styles.iconLink}
+      title='View source code on GitHub'
     >
       <span className={styles.srOnly}>View source code on GitHub</span>
       <svg
@@ -48,6 +70,7 @@ export function AppHeaderView({ authSection, authModal }: AppHeaderViewProps) {
 
       <div className={styles.actions}>
         {authSection}
+        <PixsaurLink />
         <GitHubLink />
       </div>
 

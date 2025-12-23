@@ -101,4 +101,19 @@ describe('AppHeaderView', () => {
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
   })
+
+  describe('Pixsaur link', () => {
+    it('renders Pixsaur link', () => {
+      renderWithRouter(<AppHeaderView authSection={null} />)
+      const link = screen.getByRole('link', { name: /pixsaur/i })
+      expect(link).toHaveAttribute('href', 'https://pixsaur.iiivan.org')
+    })
+
+    it('Pixsaur link opens in new tab', () => {
+      renderWithRouter(<AppHeaderView authSection={null} />)
+      const link = screen.getByRole('link', { name: /pixsaur/i })
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    })
+  })
 })
