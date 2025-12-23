@@ -14,6 +14,12 @@
   gap: var(--spacing-xs);
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .projectName {
   padding: var(--spacing-xs);
   font-size: var(--font-size-sm);
@@ -63,10 +69,8 @@
   background: none;
   border: none;
   color: var(--color-text-secondary);
-  cursor: pointer;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
-  text-align: left;
 }
 
 .fileItem:hover {
@@ -77,6 +81,52 @@
 .fileItem.active {
   background: var(--color-bg-active);
   color: var(--color-text);
+}
+
+.fileButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.fileActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.fileItem:hover .fileActions {
+  opacity: 1;
+}
+
+.fileItem .mainIcon {
+  opacity: 1;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.actionButton:hover {
+  color: var(--color-text);
+  background: var(--color-bg-hover);
 }
 
 .fileIcon {
@@ -128,5 +178,16 @@
 
 .ownerName {
   color: var(--color-text-secondary);
-  font-weight: 500;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
 }
