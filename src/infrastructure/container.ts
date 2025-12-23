@@ -54,6 +54,7 @@ import type {
   GetProjectsUseCase,
   GetProjectUseCase,
   GetProjectWithDependenciesUseCase,
+  GetVisibleProjectsUseCase,
   UpdateProjectUseCase
 } from '@/use-cases/projects'
 import {
@@ -62,6 +63,7 @@ import {
   createGetProjectsUseCase,
   createGetProjectUseCase,
   createGetProjectWithDependenciesUseCase,
+  createGetVisibleProjectsUseCase,
   createUpdateProjectUseCase
 } from '@/use-cases/projects'
 import type { GetSharedCodeUseCase } from '@/use-cases/shared-code'
@@ -98,6 +100,7 @@ export type Container = {
   // Projects use cases
   createProject: CreateProjectUseCase
   getProjects: GetProjectsUseCase
+  getVisibleProjects: GetVisibleProjectsUseCase
   getProject: GetProjectUseCase
   getProjectWithDependencies: GetProjectWithDependenciesUseCase
   updateProject: UpdateProjectUseCase
@@ -150,6 +153,7 @@ export function createContainer(): Container {
     // Projects use cases
     createProject: createCreateProjectUseCase(projectsRepository),
     getProjects: createGetProjectsUseCase(projectsRepository),
+    getVisibleProjects: createGetVisibleProjectsUseCase(projectsRepository),
     getProject: createGetProjectUseCase(
       projectsRepository,
       authorizationService

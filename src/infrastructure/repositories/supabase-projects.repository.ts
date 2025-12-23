@@ -206,6 +206,137 @@ export function createSupabaseProjectsRepository(
       )
     },
 
+    async findVisible(userId?: string): Promise<readonly Project[]> {
+      const projectSelect = `
+        *,
+        project_files (*),
+        project_shares (*),
+        project_tags (
+          tags (*)
+        ),
+        project_dependencies!project_dependencies_project_id_fkey (
+          dependency:projects!project_dependencies_dependency_id_fkey (
+            id,
+            name,
+            is_library
+          )
+        )
+      `
+
+      // Simpler select for anonymous users (no user-related joins)
+      const anonProjectSelect = `
+        *,
+        project_files (*),
+        project_tags (
+          tags (*)
+        ),
+        project_dependencies!project_dependencies_project_id_fkey (
+          dependency:projects!project_dependencies_dependency_id_fkey (
+            id,
+            name,
+            is_library
+          )
+        )
+      `
+
+      // If no user, return only public projects with simpler query
+      if (!userId) {
+        const { data: publicProjects, error: publicError } = await supabase
+          .from('projects')
+          .select(anonProjectSelect)
+          .eq('visibility', 'public')
+          .order('updated_at', { ascending: false })
+
+        if (publicError) throw publicError
+
+        // Map with empty shares for anonymous users
+        return (publicProjects || []).map((p) =>
+          mapToDomain({
+            ...p,
+            project_shares: []
+          } as unknown as ProjectWithRelations)
+        )
+      }
+
+      // Get public projects
+      const { data: publicProjects, error: publicError } = await supabase
+        .from('projects')
+        .select(projectSelect)
+        .eq('visibility', 'public')
+        .order('updated_at', { ascending: false })
+
+      if (publicError) throw publicError
+
+      // Get user's own projects (all visibilities)
+      const { data: ownProjects, error: ownError } = await supabase
+        .from('projects')
+        .select(projectSelect)
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+
+      if (ownError) throw ownError
+
+      // Get project IDs shared with this user
+      const { data: sharedProjectIds, error: sharedIdsError } = await supabase
+        .from('project_shares')
+        .select('project_id')
+        .eq('user_id', userId)
+
+      if (sharedIdsError) throw sharedIdsError
+
+      // Fetch shared projects if any
+      let sharedProjects: ProjectWithRelations[] = []
+      if (sharedProjectIds && sharedProjectIds.length > 0) {
+        const ids = sharedProjectIds.map((s) => s.project_id)
+        const { data, error } = await supabase
+          .from('projects')
+          .select(projectSelect)
+          .in('id', ids)
+          .order('updated_at', { ascending: false })
+
+        if (error) throw error
+        sharedProjects = data || []
+      }
+
+      // Combine and deduplicate
+      const allProjects: Array<(typeof publicProjects)[number]> = []
+      const seenIds = new Set<string>()
+
+      // Add own projects first
+      for (const p of ownProjects || []) {
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id)
+          allProjects.push(p)
+        }
+      }
+
+      // Add shared projects
+      for (const p of sharedProjects) {
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id)
+          allProjects.push(p as (typeof publicProjects)[number])
+        }
+      }
+
+      // Add public projects
+      for (const p of publicProjects || []) {
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id)
+          allProjects.push(p)
+        }
+      }
+
+      // Sort by updated_at descending
+      allProjects.sort(
+        (a, b) =>
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      )
+
+      return allProjects.map((p) =>
+        mapToDomain(p as unknown as ProjectWithRelations)
+      )
+    },
+
     async findById(projectId: string): Promise<Project | null> {
       const { data, error } = await supabase
         .from('projects')

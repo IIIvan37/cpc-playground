@@ -25,6 +25,7 @@ describe('UpdateProjectUseCase', () => {
       findById: vi.fn(),
       findByShareCode: vi.fn(),
       findAll: vi.fn(),
+      findVisible: vi.fn(),
       create: vi.fn(),
       update: vi.fn().mockImplementation((_id, project) => project),
       delete: vi.fn(),

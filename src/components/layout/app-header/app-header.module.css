@@ -12,6 +12,14 @@
   gap: var(--spacing-lg);
 }
 
+.titleLink {
+  text-decoration: none;
+}
+
+.titleLink:hover .title {
+  text-shadow: 0 0 15px var(--color-accent);
+}
+
 .title {
   font-size: var(--font-size-lg);
   font-weight: bold;
@@ -20,6 +28,7 @@
   letter-spacing: 0.1em;
   text-shadow: 0 0 10px var(--color-accent);
   margin: 0;
+  transition: text-shadow 0.2s ease;
 }
 
 .subtitle {
@@ -39,6 +48,28 @@
 
 .githubLink:hover {
   opacity: 1;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.navLink {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.navLink:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-accent);
 }
 
 .actions {

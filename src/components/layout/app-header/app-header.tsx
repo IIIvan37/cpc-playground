@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AuthModal } from '@/components/auth'
 import { ExamplesMenu } from '@/components/examples'
 import Button from '@/components/ui/button/button'
@@ -13,9 +14,17 @@ export function AppHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
-        <h1 className={styles.title}>CPC PLAYGROUND</h1>
+        <Link to='/explore' className={styles.titleLink}>
+          <h1 className={styles.title}>CPC PLAYGROUND</h1>
+        </Link>
         <p className={styles.subtitle}>Z80 Assembly IDE for Amstrad CPC</p>
       </div>
+
+      <nav className={styles.nav}>
+        <Link to='/explore' className={styles.navLink}>
+          Explore
+        </Link>
+      </nav>
 
       <div className={styles.actions}>
         {user ? (

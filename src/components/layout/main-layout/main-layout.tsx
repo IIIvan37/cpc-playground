@@ -2,35 +2,38 @@ import { useAtomValue } from 'jotai'
 import { ConsolePanel } from '@/components/console'
 import { CodeEditor } from '@/components/editor'
 import { EmulatorCanvas } from '@/components/emulator'
-import { ProjectBrowser } from '@/components/project/project-browser'
-import { useAuth } from '@/hooks'
+import { FileBrowser } from '@/components/project/file-browser'
+import { ReadOnlyProjectBanner } from '@/components/project/read-only-project-banner'
+import { useProjectFromUrl } from '@/hooks'
 import { useAutoSaveFile } from '@/hooks/use-auto-save-file'
 import { useSharedCode } from '@/hooks/use-shared-code'
-import { viewModeAtom } from '@/store'
-import { AppHeader } from '../app-header/app-header'
+import { activeProjectAtom, isReadOnlyModeAtom, viewModeAtom } from '@/store'
 import { Toolbar } from '../toolbar/toolbar'
 import styles from './main-layout.module.css'
 
 export function MainLayout() {
   const viewMode = useAtomValue(viewModeAtom)
-  const { user } = useAuth()
+  const isReadOnlyMode = useAtomValue(isReadOnlyModeAtom)
+  const activeProject = useAtomValue(activeProjectAtom)
 
   // Load shared code from URL if present
   useSharedCode()
+
+  // Load project from URL if present (handles public projects)
+  useProjectFromUrl()
 
   // Auto-save file content (only for authenticated users with cloud projects)
   useAutoSaveFile()
 
   return (
     <div className={styles.layout}>
-      <AppHeader />
-
+      {isReadOnlyMode && <ReadOnlyProjectBanner />}
       <Toolbar />
 
       <main className={styles.main}>
-        {user && (
+        {activeProject && (
           <div className={styles.sidebar}>
-            <ProjectBrowser />
+            <FileBrowser />
           </div>
         )}
         <div

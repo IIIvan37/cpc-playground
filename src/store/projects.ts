@@ -16,6 +16,17 @@ export const projectsAtom = atom<Project[]>([])
 export const currentProjectIdAtom = atom<string | null>(null)
 export const currentFileIdAtom = atom<string | null>(null)
 
+/**
+ * Read-only project atom for viewing public projects without being the owner
+ * This is separate from the user's projects list
+ */
+export const viewOnlyProjectAtom = atom<Project | null>(null)
+
+/**
+ * Flag to indicate if we're in read-only mode (viewing someone else's public project)
+ */
+export const isReadOnlyModeAtom = atom<boolean>(false)
+
 // ============================================================================
 // Derived Atoms (Computed values)
 // ============================================================================
@@ -24,6 +35,18 @@ export const currentProjectAtom = atom((get) => {
   const projects = get(projectsAtom)
   const currentId = get(currentProjectIdAtom)
   return projects.find((p) => p.id === currentId) ?? null
+})
+
+/**
+ * Active project atom - returns either the current user's project or the view-only project
+ * Used by the FileBrowser to display the current project regardless of ownership
+ */
+export const activeProjectAtom = atom((get) => {
+  const isReadOnly = get(isReadOnlyModeAtom)
+  if (isReadOnly) {
+    return get(viewOnlyProjectAtom)
+  }
+  return get(currentProjectAtom)
 })
 
 export const currentFileAtom = atom((get) => {
@@ -59,10 +82,12 @@ export const fetchProjectsAtom = atom(
 
 /**
  * Fetch a single project by ID
+ * If userId is provided and user owns the project, adds it to their projects list
+ * If no userId or user doesn't own it, stores in viewOnlyProjectAtom
  */
 export const fetchProjectAtom = atom(
   null,
-  async (_get, set, params: { projectId: string; userId: string }) => {
+  async (_get, set, params: { projectId: string; userId?: string }) => {
     try {
       const result = await container.getProject.execute(params)
 
@@ -70,16 +95,36 @@ export const fetchProjectAtom = atom(
         throw new Error(PROJECT_ERRORS.NOT_FOUND(params.projectId))
       }
 
-      // Update the project in the list or add it
-      set(projectsAtom, (prev) => {
-        const index = prev.findIndex((p) => p.id === result.project.id)
-        if (index >= 0) {
-          const updated = [...prev]
-          updated[index] = result.project
-          return updated
+      const isOwner = params.userId && result.project.userId === params.userId
+
+      if (isOwner) {
+        // User owns this project - add to their list and set as current
+        set(isReadOnlyModeAtom, false)
+        set(viewOnlyProjectAtom, null)
+        set(projectsAtom, (prev) => {
+          const index = prev.findIndex((p) => p.id === result.project.id)
+          if (index >= 0) {
+            const updated = [...prev]
+            updated[index] = result.project
+            return updated
+          }
+          return [...prev, result.project]
+        })
+        // Set the project as the current project
+        set(currentProjectIdAtom, result.project.id)
+        // Select the main file or first file
+        const mainFile =
+          result.project.files.find((f) => f.isMain) || result.project.files[0]
+        if (mainFile) {
+          set(currentFileIdAtom, mainFile.id)
         }
-        return [...prev, result.project]
-      })
+      } else {
+        // User is viewing someone else's public project - read-only mode
+        set(isReadOnlyModeAtom, true)
+        set(viewOnlyProjectAtom, result.project)
+        set(currentProjectIdAtom, null)
+        set(currentFileIdAtom, null)
+      }
 
       return result.project
     } catch (error) {

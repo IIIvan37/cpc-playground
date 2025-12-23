@@ -33,6 +33,53 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
       )
     },
 
+    async findVisible(userId?: string): Promise<readonly Project[]> {
+      const allProjects = Array.from(projects.values())
+
+      // Get public projects
+      const publicProjects = allProjects.filter(
+        (project) => project.visibility.value === 'public'
+      )
+
+      // If no user, return only public projects
+      if (!userId) {
+        return publicProjects.sort(
+          (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
+        )
+      }
+
+      // Get user's own projects
+      const ownProjects = allProjects.filter(
+        (project) => project.userId === userId
+      )
+
+      // Get projects shared with user
+      const sharedWithUserProjects = allProjects.filter((project) => {
+        const projectUserShares = userShares.get(project.id) ?? []
+        return projectUserShares.some((share) => share.userId === userId)
+      })
+
+      // Combine and deduplicate
+      const seen = new Set<string>()
+      const visibleProjects: Project[] = []
+
+      for (const project of [
+        ...publicProjects,
+        ...ownProjects,
+        ...sharedWithUserProjects
+      ]) {
+        if (!seen.has(project.id)) {
+          seen.add(project.id)
+          visibleProjects.push(project)
+        }
+      }
+
+      // Sort by updated_at descending
+      return visibleProjects.sort(
+        (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
+      )
+    },
+
     async findById(id: string): Promise<Project | null> {
       return projects.get(id) ?? null
     },

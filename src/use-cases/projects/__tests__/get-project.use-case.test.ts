@@ -20,11 +20,19 @@ describe('GetProjectUseCase', () => {
     visibility: createVisibility('private')
   })
 
+  const publicProject = createProject({
+    id: 'public-project-123',
+    userId: 'user-123',
+    name: createProjectName('Public Project'),
+    visibility: createVisibility('public')
+  })
+
   beforeEach(() => {
     mockRepository = {
       findById: vi.fn(),
       findByShareCode: vi.fn(),
       findAll: vi.fn(),
+      findVisible: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -53,13 +61,22 @@ describe('GetProjectUseCase', () => {
   })
 
   describe('execute', () => {
-    it('should return project when found', async () => {
+    it('should return public project when found without userId', async () => {
+      vi.mocked(mockRepository.findById).mockResolvedValue(publicProject)
+
+      const result = await useCase.execute({ projectId: 'public-project-123' })
+
+      expect(result.project).toBe(publicProject)
+      expect(mockRepository.findById).toHaveBeenCalledWith('public-project-123')
+      expect(mockAuthService.canReadProject).not.toHaveBeenCalled()
+    })
+
+    it('should throw NotFoundError for private project without userId', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testProject)
 
-      const result = await useCase.execute({ projectId: 'project-123' })
-
-      expect(result.project).toBe(testProject)
-      expect(mockRepository.findById).toHaveBeenCalledWith('project-123')
+      await expect(
+        useCase.execute({ projectId: 'project-123' })
+      ).rejects.toThrow(NotFoundError)
     })
 
     it('should throw NotFoundError when project not found', async () => {
@@ -74,7 +91,7 @@ describe('GetProjectUseCase', () => {
       ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('non-existent'))
     })
 
-    it('should check authorization when userId is provided', async () => {
+    it('should return project when userId is provided and can read', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testProject)
       vi.mocked(mockAuthService.canReadProject).mockResolvedValue(true)
 
@@ -107,14 +124,6 @@ describe('GetProjectUseCase', () => {
           userId: 'unauthorized-user'
         })
       ).rejects.toThrow(PROJECT_ERRORS.NOT_FOUND('project-123'))
-    })
-
-    it('should not check authorization when userId is not provided', async () => {
-      vi.mocked(mockRepository.findById).mockResolvedValue(testProject)
-
-      await useCase.execute({ projectId: 'project-123' })
-
-      expect(mockAuthService.canReadProject).not.toHaveBeenCalled()
     })
   })
 })

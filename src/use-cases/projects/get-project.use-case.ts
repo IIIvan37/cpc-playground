@@ -36,15 +36,21 @@ export function createGetProjectUseCase(
         throw new NotFoundError(PROJECT_ERRORS.NOT_FOUND(input.projectId))
       }
 
-      // Authorization check if userId is provided
-      if (input.userId) {
-        const canRead = await authorizationService.canReadProject(
-          input.projectId,
-          input.userId
-        )
-        if (!canRead) {
+      // If no userId provided, only allow access to public projects
+      if (!input.userId) {
+        if (project.visibility.value !== 'public') {
           throw new NotFoundError(PROJECT_ERRORS.NOT_FOUND(input.projectId))
         }
+        return { project }
+      }
+
+      // Authorization check for authenticated users
+      const canRead = await authorizationService.canReadProject(
+        input.projectId,
+        input.userId
+      )
+      if (!canRead) {
+        throw new NotFoundError(PROJECT_ERRORS.NOT_FOUND(input.projectId))
       }
 
       return { project }
