@@ -17,6 +17,7 @@ export type ProgramManagerViewProps = Readonly<{
   currentProgramId: string | null
   selectKey: number
   hasCurrentProject: boolean
+  canSave: boolean
 
   // Dialog states
   showSaveDialog: boolean
@@ -120,6 +121,7 @@ export function ProgramManagerView({
   currentProgramId,
   selectKey,
   hasCurrentProject,
+  canSave,
   showSaveDialog,
   showDeleteDialog,
   programName,
@@ -154,7 +156,14 @@ export function ProgramManagerView({
           <Button variant='icon' onClick={onNew} title='New program'>
             <PlusIcon />
           </Button>
-          <Button variant='icon' onClick={onSave} title='Save'>
+          <Button
+            variant='icon'
+            onClick={onSave}
+            disabled={!canSave}
+            title={
+              canSave ? 'Save program' : 'Cannot save while viewing a project'
+            }
+          >
             <FileIcon />
           </Button>
           <Button

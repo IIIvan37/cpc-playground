@@ -100,19 +100,30 @@ export function EditorTextareaView({
 // --- EditorHeaderView ---
 type EditorHeaderViewProps = Readonly<{
   fileName: string | undefined
-  isProjectFile: boolean
+  fileType: 'project' | 'saved' | 'modified' | 'scratch'
 }>
 
 export function EditorHeaderView({
   fileName,
-  isProjectFile
+  fileType
 }: EditorHeaderViewProps) {
+  const getHintText = () => {
+    switch (fileType) {
+      case 'project':
+        return 'Project File'
+      case 'saved':
+        return 'Saved • RASM Syntax'
+      case 'modified':
+        return 'Modified • RASM Syntax'
+      case 'scratch':
+        return 'Unsaved • RASM Syntax'
+    }
+  }
+
   return (
     <div className={styles.header}>
       <span className={styles.title}>{fileName ?? 'Scratch'}</span>
-      <span className={styles.hint}>
-        {isProjectFile ? 'Project File' : 'Unsaved • RASM Syntax'}
-      </span>
+      <span className={styles.hint}>{getHintText()}</span>
     </div>
   )
 }
@@ -121,7 +132,7 @@ export function EditorHeaderView({
 export type CodeEditorViewProps = Readonly<{
   // Header props
   fileName: string | undefined
-  isProjectFile: boolean
+  fileType: 'project' | 'saved' | 'modified' | 'scratch'
 
   // Editor state
   code: string
@@ -141,7 +152,7 @@ export type CodeEditorViewProps = Readonly<{
 
 export function CodeEditorView({
   fileName,
-  isProjectFile,
+  fileType,
   code,
   lines,
   errorLines,
@@ -154,7 +165,7 @@ export function CodeEditorView({
 }: CodeEditorViewProps) {
   return (
     <div className={styles.container}>
-      <EditorHeaderView fileName={fileName} isProjectFile={isProjectFile} />
+      <EditorHeaderView fileName={fileName} fileType={fileType} />
       <div className={styles.editorWrapper}>
         <LineNumbersView
           lines={lines}

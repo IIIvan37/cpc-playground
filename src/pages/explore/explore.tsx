@@ -1,9 +1,15 @@
-import { FileIcon, PersonIcon } from '@radix-ui/react-icons'
-import { useEffect, useState } from 'react'
+import { FileIcon, PersonIcon, PlusIcon } from '@radix-ui/react-icons'
+import { useSetAtom } from 'jotai'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Button from '@/components/ui/button/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
 import type { Project } from '@/domain/entities/project.entity'
 import { useAuth } from '@/hooks/use-auth'
 import { container } from '@/infrastructure/container'
+import { createProjectAtom } from '@/store/projects'
 import styles from './explore.module.css'
 
 /**
@@ -16,29 +22,67 @@ export function ExplorePage() {
   const [projects, setProjects] = useState<readonly Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
+  const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
+  const [creating, setCreating] = useState(false)
 
   const { user } = useAuth()
   const navigate = useNavigate()
+  const createProject = useSetAtom(createProjectAtom)
+
+  const fetchProjects = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const result = await container.getVisibleProjects.execute({
+        userId: user?.id
+      })
+      setProjects(result.projects)
+    } catch {
+      setError('Failed to load projects')
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id])
 
   useEffect(() => {
-    async function fetchProjects() {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const result = await container.getVisibleProjects.execute({
-          userId: user?.id
-        })
-        setProjects(result.projects)
-      } catch {
-        setError('Failed to load projects')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchProjects()
-  }, [user?.id])
+  }, [fetchProjects])
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim() || !user) return
+    setCreating(true)
+    try {
+      const initialFile = {
+        name: newProjectIsLibrary ? 'lib.asm' : 'main.asm',
+        content: '',
+        isMain: !newProjectIsLibrary
+      }
+
+      const project = await createProject({
+        userId: user.id,
+        name: newProjectName.trim(),
+        visibility: 'private',
+        isLibrary: newProjectIsLibrary,
+        files: [initialFile]
+      })
+
+      setShowNewProjectDialog(false)
+      setNewProjectName('')
+      setNewProjectIsLibrary(false)
+
+      // Navigate to the new project
+      if (project) {
+        navigate(`/?project=${project.id}`)
+      }
+    } catch (err) {
+      console.error('Failed to create project:', err)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const handleProjectClick = (project: Project) => {
     // Navigate to project (using a query param or similar approach)
@@ -146,15 +190,62 @@ export function ExplorePage() {
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
-        <h1 className={styles.title}>Explore Projects</h1>
-        <p className={styles.subtitle}>
-          {user
-            ? 'Browse public projects and your shared projects'
-            : 'Browse public projects from the community'}
-        </p>
+        <div className={styles.headerRow}>
+          <div>
+            <h1 className={styles.title}>Explore Projects</h1>
+            <p className={styles.subtitle}>
+              {user
+                ? 'Browse public projects and your shared projects'
+                : 'Browse public projects from the community'}
+            </p>
+          </div>
+          {user && (
+            <Button onClick={() => setShowNewProjectDialog(true)}>
+              <PlusIcon />
+              New Project
+            </Button>
+          )}
+        </div>
       </div>
 
       <main className={styles.content}>{renderContent()}</main>
+
+      {showNewProjectDialog && (
+        <Modal
+          open={showNewProjectDialog}
+          title='New Project'
+          onClose={() => setShowNewProjectDialog(false)}
+        >
+          <div className={styles.modalContent}>
+            <Input
+              placeholder='Project name'
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+              autoFocus
+            />
+            <Checkbox
+              label='This is a library (no main file)'
+              checked={newProjectIsLibrary}
+              onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
+            />
+            <div className={styles.modalActions}>
+              <Button
+                variant='outline'
+                onClick={() => setShowNewProjectDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateProject}
+                disabled={!newProjectName.trim() || creating}
+              >
+                {creating ? 'Creating...' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

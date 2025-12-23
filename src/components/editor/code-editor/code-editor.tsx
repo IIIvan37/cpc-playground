@@ -1,6 +1,7 @@
 import { useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
+import { currentProgramAtom } from '@/store/programs'
 import { currentFileAtom } from '@/store/projects'
 import { CodeEditorView } from './code-editor.view'
 
@@ -15,6 +16,7 @@ export function CodeEditor() {
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
   const errorLines = useAtomValue(errorLinesAtom)
   const currentFile = useAtomValue(currentFileAtom)
+  const currentProgram = useAtomValue(currentProgramAtom)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
@@ -97,10 +99,23 @@ export function CodeEditor() {
     }
   }, [goToLine, lines, setGoToLine])
 
+  // Determine file name and type for header
+  const fileName =
+    currentFile?.name.value ?? currentProgram?.name.value ?? undefined
+  const getFileType = (): 'project' | 'saved' | 'modified' | 'scratch' => {
+    if (currentFile) return 'project'
+    if (currentProgram) {
+      // Check if code has been modified from saved version
+      return code === currentProgram.code ? 'saved' : 'modified'
+    }
+    return 'scratch'
+  }
+  const fileType = getFileType()
+
   return (
     <CodeEditorView
-      fileName={currentFile?.name.value}
-      isProjectFile={!!currentFile}
+      fileName={fileName}
+      fileType={fileType}
       code={code}
       lines={lines}
       errorLines={errorLines}

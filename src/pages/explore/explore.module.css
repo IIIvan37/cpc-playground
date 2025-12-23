@@ -11,6 +11,13 @@
   margin: 0 auto 2rem;
 }
 
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
 .title {
   margin: 0;
   font-size: 2rem;
@@ -188,4 +195,16 @@
   padding: 1rem;
   border-radius: 0.5rem;
   text-align: center;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
 }
