@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthModal } from '@/components/auth'
-import { ExamplesMenu } from '@/components/examples'
 import Button from '@/components/ui/button/button'
 import { UserProfile } from '@/components/user'
 import { useAuth } from '@/hooks'
@@ -39,7 +38,6 @@ export function AppHeader() {
             Sign In
           </Button>
         )}
-        <ExamplesMenu />
         <a
           href='https://github.com/IIIvan37/cpc-playground'
           target='_blank'
