@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { TagsList } from '@/components/ui/tag'
 import styles from './explore.module.css'
 
@@ -47,12 +48,11 @@ export function ExploreListView({
     <>
       {onSearchChange && (
         <div className={styles.searchContainer}>
-          <input
+          <Input
             type='text'
             placeholder='Search by name, author, or tag...'
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className={styles.searchInput}
             data-testid='search-input'
           />
         </div>
