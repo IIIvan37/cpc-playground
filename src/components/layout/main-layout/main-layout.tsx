@@ -9,8 +9,12 @@ import { useAutoSaveFile } from '@/hooks/use-auto-save-file'
 import { useSharedCode } from '@/hooks/use-shared-code'
 import { activeProjectAtom, isReadOnlyModeAtom, viewModeAtom } from '@/store'
 import { Toolbar } from '../toolbar/toolbar'
-import styles from './main-layout.module.css'
+import { MainLayoutView } from './main-layout.view'
 
+/**
+ * Container component for the main IDE layout
+ * Handles URL loading, auto-save, and view mode state
+ */
 export function MainLayout() {
   const viewMode = useAtomValue(viewModeAtom)
   const isReadOnlyMode = useAtomValue(isReadOnlyModeAtom)
@@ -26,33 +30,15 @@ export function MainLayout() {
   useAutoSaveFile()
 
   return (
-    <div className={styles.layout}>
-      {isReadOnlyMode && <ReadOnlyProjectBanner />}
-      <Toolbar />
-
-      <main className={styles.main}>
-        {activeProject && (
-          <div className={styles.sidebar}>
-            <FileBrowser />
-          </div>
-        )}
-        <div
-          className={`${styles.panel} ${styles.editorPanel}`}
-          data-hidden={viewMode === 'emulator'}
-        >
-          <CodeEditor />
-        </div>
-        <div
-          className={`${styles.panel} ${styles.emulatorPanel}`}
-          data-hidden={viewMode === 'editor'}
-        >
-          <EmulatorCanvas />
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <ConsolePanel />
-      </footer>
-    </div>
+    <MainLayoutView
+      viewMode={viewMode}
+      showSidebar={!!activeProject}
+      readOnlyBanner={isReadOnlyMode ? <ReadOnlyProjectBanner /> : undefined}
+      toolbar={<Toolbar />}
+      sidebar={<FileBrowser />}
+      editor={<CodeEditor />}
+      emulator={<EmulatorCanvas />}
+      console={<ConsolePanel />}
+    />
   )
 }
