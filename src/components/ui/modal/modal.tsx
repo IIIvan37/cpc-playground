@@ -53,10 +53,15 @@ export function Modal({
     return () => document.removeEventListener('keydown', handleKeyDown, true)
   }, [open, handleKeyDown])
 
-  // Focus the overlay when modal opens
+  // Focus trap: ensure focus stays within modal
+  // Don't focus the dialog itself - let autoFocus on children work
   useEffect(() => {
     if (open && overlayRef.current) {
-      overlayRef.current.focus()
+      // Only focus the dialog if nothing inside it has autoFocus
+      const hasAutoFocus = overlayRef.current.querySelector('[autofocus]')
+      if (!hasAutoFocus) {
+        overlayRef.current.focus()
+      }
     }
   }, [open])
 
