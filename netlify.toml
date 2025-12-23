@@ -44,7 +44,7 @@
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type"
 
-# SPA fallback - must be last
+# SPA fallback - must be last, no force to allow existing files to be served
 [[redirects]]
   from = "/*"
   to = "/index.html"
