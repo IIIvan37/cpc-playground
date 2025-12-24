@@ -27,10 +27,14 @@ export function useCreateFile() {
     async (params: Parameters<typeof execute>[0]) => {
       const result = await execute(params)
       if (result?.file) {
-        // Invalidate project cache to refresh file list
-        queryClient.invalidateQueries({
-          queryKey: ['project', params.projectId]
+        // Fetch fresh project from API and update cache directly
+        const res = await container.getProject.execute({
+          projectId: params.projectId,
+          userId: params.userId
         })
+        if (res.project) {
+          queryClient.setQueryData(['project', params.projectId], res.project)
+        }
         // Set as current file if it's main or if requested
         if (result.file.isMain) {
           setCurrentFileId(result.file.id)

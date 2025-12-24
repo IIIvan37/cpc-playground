@@ -127,7 +127,7 @@ export function FileBrowser() {
 
   const handleCreateFile = useCallback(async () => {
     const projectId = currentProjectId || project?.id
-    if (!projectId || !newFileName.trim() || !user) return
+    if (!projectId || !newFileName.trim() || !user || loading) return
 
     setLoading(true)
     try {
@@ -144,7 +144,15 @@ export function FileBrowser() {
     } finally {
       setLoading(false)
     }
-  }, [currentProjectId, project?.id, newFileName, user, createFile, toast])
+  }, [
+    currentProjectId,
+    project?.id,
+    newFileName,
+    user,
+    createFile,
+    toast,
+    loading
+  ])
 
   const handleDeleteFile = useCallback(
     async (fileId: string) => {
