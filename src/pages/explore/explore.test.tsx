@@ -10,7 +10,12 @@ import { ExplorePage } from './explore'
 vi.mock('@/hooks', () => ({
   useAuth: vi.fn(),
   useCreateProject: vi.fn(),
-  useFetchVisibleProjects: vi.fn()
+  useFetchVisibleProjects: vi.fn(),
+  getThumbnailUrl: vi.fn((path: string | null | undefined) =>
+    path
+      ? `https://test.supabase.co/storage/v1/object/public/thumbnails/${path}`
+      : null
+  )
 }))
 
 describe('ExplorePage', () => {

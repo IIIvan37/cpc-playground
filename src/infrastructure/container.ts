@@ -55,6 +55,7 @@ import type {
   GetProjectUseCase,
   GetProjectWithDependenciesUseCase,
   GetVisibleProjectsUseCase,
+  SaveThumbnailUseCase,
   UpdateProjectUseCase
 } from '@/use-cases/projects'
 import {
@@ -64,6 +65,7 @@ import {
   createGetProjectUseCase,
   createGetProjectWithDependenciesUseCase,
   createGetVisibleProjectsUseCase,
+  createSaveThumbnailUseCase,
   createUpdateProjectUseCase
 } from '@/use-cases/projects'
 import type { GetSharedCodeUseCase } from '@/use-cases/shared-code'
@@ -83,6 +85,7 @@ import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
 import { createApiSharedCodeRepository } from './repositories/api-shared-code.repository'
 import { createSupabaseAuthRepository } from './repositories/supabase-auth.repository'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
+import { createSupabaseThumbnailStorage } from './repositories/supabase-thumbnail-storage'
 
 export type Container = {
   // Auth repository (exposed for onAuthStateChange subscription)
@@ -107,6 +110,7 @@ export type Container = {
   getProjectWithDependencies: GetProjectWithDependenciesUseCase
   updateProject: UpdateProjectUseCase
   deleteProject: DeleteProjectUseCase
+  saveThumbnail: SaveThumbnailUseCase
   // Files use cases
   createFile: CreateFileUseCase
   updateFile: UpdateFileUseCase
@@ -133,6 +137,7 @@ export function createContainer(): Container {
   const authRepository = createSupabaseAuthRepository(supabase)
   const projectsRepository = createSupabaseProjectsRepository(supabase)
   const sharedCodeRepository = createApiSharedCodeRepository()
+  const thumbnailStorage = createSupabaseThumbnailStorage(supabase)
 
   // Domain services
   const authorizationService = createAuthorizationService(projectsRepository)
@@ -172,6 +177,11 @@ export function createContainer(): Container {
     deleteProject: createDeleteProjectUseCase(
       projectsRepository,
       authorizationService
+    ),
+    saveThumbnail: createSaveThumbnailUseCase(
+      projectsRepository,
+      authorizationService,
+      thumbnailStorage
     ),
     createFile: createCreateFileUseCase(
       projectsRepository,

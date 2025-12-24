@@ -10,7 +10,12 @@ export { useConfirmDialog, useUseCase, useUseCaseWithoutInput } from './core'
 export { useToast, useToastActions } from './core/use-toast'
 
 // Emulator & Assembler
-export { useAssembler, useEmulator } from './emulator'
+export {
+  getThumbnailUrl,
+  useAssembler,
+  useEmulator,
+  useSaveThumbnail
+} from './emulator'
 
 // File management
 export {

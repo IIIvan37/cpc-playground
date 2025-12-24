@@ -10,8 +10,11 @@ describe('EmulatorCanvasView', () => {
     containerRef: createRef<HTMLDivElement>(),
     hasFocus: false,
     statusText: '○ Click to type',
+    canSaveThumbnail: false,
+    savingThumbnail: false,
     onFocus: vi.fn(),
-    onBlur: vi.fn()
+    onBlur: vi.fn(),
+    onSaveThumbnail: vi.fn()
   }
 
   describe('rendering', () => {

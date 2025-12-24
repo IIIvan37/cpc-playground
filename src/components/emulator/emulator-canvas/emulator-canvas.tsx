@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useEmulator } from '@/hooks'
+import {
+  useAuth,
+  useCurrentProject,
+  useEmulator,
+  useSaveThumbnail
+} from '@/hooks'
 import { setCpcecKeyboardEnabled } from '@/lib/cpcec-keyboard-patch'
 import styles from './emulator-canvas.module.css'
 import { EmulatorCanvasView } from './emulator-canvas.view'
@@ -35,6 +40,13 @@ function getOrCreatePersistentCanvas(): HTMLCanvasElement {
 }
 
 /**
+ * Get the emulator canvas element for screenshot capture
+ */
+export function getEmulatorCanvas(): HTMLCanvasElement | null {
+  return persistentCanvas
+}
+
+/**
  * Container component for CPC emulator canvas
  * Handles keyboard blocking, CPC keyboard mappings, and emulator initialization
  */
@@ -42,7 +54,13 @@ export function EmulatorCanvas() {
   const wrapperRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { initialize, isReady } = useEmulator()
+  const { user } = useAuth()
+  const { project } = useCurrentProject()
+  const { saveThumbnail, loading: savingThumbnail } = useSaveThumbnail()
   const [hasFocus, setHasFocus] = useState(false)
+
+  // Can save thumbnail if user owns the current project
+  const canSaveThumbnail = !!(user && project && project.userId === user.id)
 
   // Get or create the persistent canvas and attach it to the wrapper
   useEffect(() => {
@@ -145,6 +163,10 @@ export function EmulatorCanvas() {
     setCpcecKeyboardEnabled(false)
   }, [])
 
+  const handleSaveThumbnail = useCallback(() => {
+    saveThumbnail()
+  }, [saveThumbnail])
+
   const statusText = useMemo(() => {
     if (!isReady) return '○ Loading...'
     return hasFocus ? '● Active' : '○ Click to type'
@@ -156,8 +178,11 @@ export function EmulatorCanvas() {
       containerRef={containerRef}
       hasFocus={hasFocus}
       statusText={statusText}
+      canSaveThumbnail={canSaveThumbnail}
+      savingThumbnail={savingThumbnail}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onSaveThumbnail={handleSaveThumbnail}
     />
   )
 }

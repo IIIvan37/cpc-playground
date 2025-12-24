@@ -124,6 +124,7 @@ function mapToDomainWithEmbeddedRelations(data: ProjectWithRelations): Project {
     authorUsername,
     name: createProjectName(data.name),
     description: data.description,
+    thumbnailPath: data.thumbnail_path ?? null,
     visibility: createVisibility(data.visibility),
     isLibrary: data.is_library,
     files,
@@ -460,6 +461,7 @@ export function createSupabaseProjectsRepository(
       const dbUpdates: Partial<{
         name: string
         description: string | null
+        thumbnail_path: string | null
         visibility: DbVisibility
         is_library: boolean
         updated_at: string
@@ -468,6 +470,8 @@ export function createSupabaseProjectsRepository(
       if (updates.name) dbUpdates.name = updates.name.value
       if (updates.description !== undefined)
         dbUpdates.description = updates.description
+      if (updates.thumbnailPath !== undefined)
+        dbUpdates.thumbnail_path = updates.thumbnailPath
       if (updates.visibility)
         dbUpdates.visibility = updates.visibility.value as DbVisibility
       if (updates.isLibrary !== undefined)

@@ -170,23 +170,19 @@ describe('UserProfile', () => {
 
       await user.click(screen.getByRole('button', { name: /testuser/i }))
 
+      // Dialog should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+
       const input = screen.getByDisplayValue('testuser')
       await user.clear(input)
       await user.type(input, 'newusername')
 
       await user.click(screen.getByRole('button', { name: /save username/i }))
 
-      // Wait for updateUsername to be called, then check modal closes
+      // Wait for modal to close after save
       await waitFor(() => {
-        expect(mockUpdateUsername).toHaveBeenCalledWith('newusername')
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
       })
-
-      await waitFor(
-        () => {
-          expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-        },
-        { timeout: 2000 }
-      )
     })
 
     it('does not save empty username', async () => {

@@ -347,6 +347,7 @@ describe('SupabaseProjectsRepository', () => {
         authorUsername: null,
         name: createProjectName('New Project'),
         description: 'Description',
+        thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
         files: [],
@@ -377,6 +378,7 @@ describe('SupabaseProjectsRepository', () => {
         authorUsername: null,
         name: createProjectName('New Project'),
         description: null,
+        thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
         files: [],
@@ -431,6 +433,7 @@ describe('SupabaseProjectsRepository', () => {
         authorUsername: null,
         name: createProjectName('New Project'),
         description: 'Description',
+        thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
         files: [
@@ -482,6 +485,7 @@ describe('SupabaseProjectsRepository', () => {
         authorUsername: null,
         name: createProjectName('New Project'),
         description: null,
+        thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
         files: [

@@ -11,7 +11,12 @@ import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import type { Project } from '@/domain/entities/project.entity'
 import { filterProjects } from '@/domain/services'
-import { useAuth, useCreateProject, useFetchVisibleProjects } from '@/hooks'
+import {
+  getThumbnailUrl,
+  useAuth,
+  useCreateProject,
+  useFetchVisibleProjects
+} from '@/hooks'
 import styles from './explore.module.css'
 import { ExploreListView } from './explore.view'
 
@@ -110,6 +115,7 @@ export function ExplorePage() {
       sharesCount: (project.userShares ?? []).length,
       updatedAt: project.updatedAt,
       createdAt: project.createdAt,
+      thumbnailUrl: getThumbnailUrl(project.thumbnailPath),
       onClick: () => handleProjectClick(project)
     }
   })
