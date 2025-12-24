@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEmulator } from '@/hooks'
+import { setCpcecKeyboardEnabled } from '@/lib/cpcec-keyboard-patch'
 import styles from './emulator-canvas.module.css'
 import { EmulatorCanvasView } from './emulator-canvas.view'
 
@@ -61,28 +62,6 @@ export function EmulatorCanvas() {
     // Cleanup: don't remove canvas from DOM, just let it stay
     // It will be moved to the new wrapper when component remounts
   }, [initialize, isReady])
-
-  // Block keyboard events from reaching CPCEC (which listens on window)
-  useEffect(() => {
-    const blockKeyboardForCPCEC = (e: KeyboardEvent) => {
-      if (emulatorHasFocus) return
-      e.stopPropagation()
-    }
-
-    document.body.addEventListener('keydown', blockKeyboardForCPCEC, false)
-    document.body.addEventListener('keyup', blockKeyboardForCPCEC, false)
-    document.body.addEventListener('keypress', blockKeyboardForCPCEC, false)
-
-    return () => {
-      document.body.removeEventListener('keydown', blockKeyboardForCPCEC, false)
-      document.body.removeEventListener('keyup', blockKeyboardForCPCEC, false)
-      document.body.removeEventListener(
-        'keypress',
-        blockKeyboardForCPCEC,
-        false
-      )
-    }
-  }, [])
 
   // Handle special CPC keyboard mappings when emulator has focus
   useEffect(() => {
@@ -155,11 +134,15 @@ export function EmulatorCanvas() {
   const handleFocus = useCallback(() => {
     emulatorHasFocus = true
     setHasFocus(true)
+    // Enable CPCEC keyboard processing
+    setCpcecKeyboardEnabled(true)
   }, [])
 
   const handleBlur = useCallback(() => {
     emulatorHasFocus = false
     setHasFocus(false)
+    // Disable CPCEC keyboard processing
+    setCpcecKeyboardEnabled(false)
   }, [])
 
   const statusText = useMemo(() => {
