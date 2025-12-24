@@ -144,6 +144,17 @@
   margin-top: 0.2rem;
 }
 
+.forkButton {
+  color: var(--color-accent);
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.forkButton:hover {
+  text-decoration: underline;
+}
+
 /* Loading and empty states */
 .loading,
 .empty {

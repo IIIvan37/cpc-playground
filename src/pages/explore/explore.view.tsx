@@ -101,6 +101,8 @@ export type ProjectListItemProps = {
   readonly createdAt: Date
   readonly thumbnailUrl?: string | null
   readonly onClick: () => void
+  readonly onFork?: () => void
+  readonly canFork?: boolean
 }
 
 export function ProjectListItem({
@@ -117,8 +119,15 @@ export function ProjectListItem({
   updatedAt,
   createdAt: _createdAt,
   thumbnailUrl,
-  onClick
+  onClick,
+  onFork,
+  canFork
 }: ProjectListItemProps) {
+  const handleFork = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onFork?.()
+  }
+
   return (
     <button
       type='button'
@@ -162,6 +171,11 @@ export function ProjectListItem({
           <span>{pluralize(filesCount, 'file')}</span>
           <span>{pluralize(sharesCount, 'share')}</span>
           <span>Updated {formatDate(updatedAt)}</span>
+          {canFork && (
+            <Button className={styles.forkButton} onClick={handleFork}>
+              Fork
+            </Button>
+          )}
         </div>
       </div>
     </button>
