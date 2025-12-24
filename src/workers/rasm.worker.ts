@@ -72,8 +72,8 @@ async function createFreshRasmModule(): Promise<RasmModule> {
   const module = await createRASM!({
     wasmBinary: wasmBinary!.slice(0), // Clone the binary
     wasmMemory: new WebAssembly.Memory({
-      initial: 1024, // 64MB (1024 pages * 64KB)
-      maximum: 2048 // 128MB max
+      initial: 2048, // 128MB (2048 pages * 64KB)
+      maximum: 4096 // 256MB max
     }),
     print: (text: string) => {
       stdoutLines.push(text)
