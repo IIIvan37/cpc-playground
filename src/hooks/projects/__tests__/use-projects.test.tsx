@@ -19,6 +19,7 @@ import {
   projectsAtom,
   viewOnlyProjectAtom
 } from '@/store/projects'
+import { useActiveProject, useCurrentProject } from '../use-current-project'
 import {
   useCreateProject,
   useDeleteProject,
@@ -49,6 +50,14 @@ vi.mock('@/infrastructure/container', () => ({
     getProjects: { execute: (...args: unknown[]) => mockGetProjects(...args) },
     getProject: { execute: (...args: unknown[]) => mockGetProject(...args) }
   }
+}))
+
+// Mock useAuth for useCurrentProject hook
+vi.mock('@/hooks/auth/use-auth', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', email: 'test@example.com' },
+    loading: false
+  })
 }))
 
 const mockMainFile: ProjectFile = createProjectFile({
@@ -364,6 +373,99 @@ describe('useProjects hooks', () => {
           })
         ).rejects.toThrow()
       })
+    })
+  })
+
+  describe('React Query cache sharing', () => {
+    it('useGetProject stores project directly in cache (not wrapped)', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      const { result } = renderHook(() => useGetProject(), { wrapper })
+
+      await act(async () => {
+        await result.current.getProject('project-1', 'user-1')
+      })
+
+      // Verify the cache contains the project directly, not { project: Project }
+      const cachedData = queryClient.getQueryData(['project', 'project-1'])
+      expect(cachedData).toEqual(mockProject)
+      expect(cachedData).not.toHaveProperty('project')
+    })
+
+    it('useCurrentProject can read project from cache populated by useGetProject', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      // First, populate the cache via useGetProject
+      const { result: getProjectResult } = renderHook(() => useGetProject(), {
+        wrapper
+      })
+
+      await act(async () => {
+        await getProjectResult.current.getProject('project-1', 'user-1')
+      })
+
+      // Set the current project ID to trigger useCurrentProject
+      store.set(currentProjectIdAtom, 'project-1')
+
+      // Now verify useCurrentProject can read from the same cache
+      const { result: currentProjectResult } = renderHook(
+        () => useCurrentProject(),
+        { wrapper }
+      )
+
+      await waitFor(() => {
+        expect(currentProjectResult.current.project).toEqual(mockProject)
+      })
+
+      // Verify the mock was only called once (cache was used)
+      expect(mockGetProject).toHaveBeenCalledTimes(1)
+    })
+
+    it('useFetchProject populates cache that useActiveProject can read', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      // Fetch project (simulates clicking on a project from explore)
+      const { result: fetchResult } = renderHook(() => useFetchProject(), {
+        wrapper
+      })
+
+      await act(async () => {
+        await fetchResult.current.fetchProject({
+          projectId: 'project-1',
+          userId: 'user-1'
+        })
+      })
+
+      // Verify cache was populated
+      const cachedData = queryClient.getQueryData(['project', 'project-1'])
+      expect(cachedData).toEqual(mockProject)
+
+      // Now useActiveProject should return the project
+      const { result: activeResult } = renderHook(() => useActiveProject(), {
+        wrapper
+      })
+
+      await waitFor(() => {
+        expect(activeResult.current.activeProject).toEqual(mockProject)
+      })
+    })
+
+    it('cache format is consistent between useGetProject return and cache storage', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      const { result } = renderHook(() => useGetProject(), { wrapper })
+
+      let returnedValue: { project: typeof mockProject | null } | undefined
+      await act(async () => {
+        returnedValue = await result.current.getProject('project-1', 'user-1')
+      })
+
+      // useGetProject returns { project: Project } for backward compatibility
+      expect(returnedValue).toEqual({ project: mockProject })
+
+      // But cache stores Project directly for useCurrentProject compatibility
+      const cachedData = queryClient.getQueryData(['project', 'project-1'])
+      expect(cachedData).toEqual(mockProject)
     })
   })
 })

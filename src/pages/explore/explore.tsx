@@ -95,13 +95,15 @@ export function ExplorePage() {
       name: project.name.value,
       authorName,
       description: project.description,
-      tags: [...project.tags],
+      tags: [...(project.tags ?? [])],
       isOwner,
-      isShared: project.userShares.some((share) => share.userId === user?.id),
+      isShared: (project.userShares ?? []).some(
+        (share) => share.userId === user?.id
+      ),
       visibility: project.visibility.value,
       isLibrary: project.isLibrary,
-      filesCount: project.files.length,
-      sharesCount: project.userShares.length,
+      filesCount: (project.files ?? []).length,
+      sharesCount: (project.userShares ?? []).length,
       updatedAt: project.updatedAt,
       createdAt: project.createdAt,
       onClick: () => handleProjectClick(project)

@@ -81,7 +81,7 @@ export function useCurrentFile() {
   const { activeProject } = useActiveProject()
   const currentFileId = useAtomValue(currentFileIdAtom)
 
-  if (!activeProject || !currentFileId) return null
+  if (!activeProject?.files || !currentFileId) return null
 
   return activeProject.files.find((f) => f.id === currentFileId) ?? null
 }
@@ -93,7 +93,7 @@ export function useCurrentFile() {
 export function useMainFile() {
   const { activeProject } = useActiveProject()
 
-  if (!activeProject) return null
+  if (!activeProject?.files) return null
 
   return activeProject.files.find((f) => f.isMain) ?? null
 }

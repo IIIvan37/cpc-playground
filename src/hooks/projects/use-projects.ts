@@ -166,11 +166,13 @@ export function useGetProject() {
             projectId,
             userId
           })
-          return result
+          // Store the project directly, not the wrapper object
+          return result.project
         },
         staleTime: 1000 * 30 // 30 seconds
       })
-      return data
+      // Return in the same format as the use case for backward compatibility
+      return { project: data }
     },
     [queryClient]
   )

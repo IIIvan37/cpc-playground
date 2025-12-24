@@ -54,18 +54,18 @@ export function FileBrowser() {
 
   // Auto-select main file on project change and fetch dependencies
   useEffect(() => {
-    if (project && project.files.length > 0) {
+    if (project?.files && project.files.length > 0) {
       // Only reset selection when project ID actually changes
       if (project.id !== lastProjectIdRef.current) {
         lastProjectIdRef.current = project.id
         const mainFile = project.files.find((f) => f.isMain) || project.files[0]
         setSelectedFileId(mainFile.id)
         setCurrentFileId(mainFile.id)
-        setCode(mainFile.content.value)
+        setCode(mainFile.content?.value ?? '')
         setSelectedDependencyFileId(null) // Reset dependency selection
 
         // Fetch dependencies when project changes
-        if (project.dependencies.length > 0) {
+        if (project.dependencies && project.dependencies.length > 0) {
           fetchDependencyFiles()
         }
       }
@@ -74,13 +74,13 @@ export function FileBrowser() {
 
   const handleSelectFile = useCallback(
     (fileId: string) => {
-      if (!project) return
+      if (!project?.files) return
       const file = project.files.find((f) => f.id === fileId)
       if (file) {
         setSelectedFileId(file.id)
         setSelectedDependencyFileId(null) // Clear dependency selection
         setCurrentFileId(file.id)
-        setCode(file.content.value)
+        setCode(file.content?.value ?? '')
       }
     },
     [project, setCurrentFileId, setCode]
@@ -166,17 +166,17 @@ export function FileBrowser() {
   const canEdit = !!(user && !isReadOnlyMode && project.userId === user.id)
 
   // Map project files to view format (extract primitive values from VOs)
-  const files = project.files.map((f) => ({
+  const files = (project.files ?? []).map((f) => ({
     id: f.id,
-    name: f.name.value,
+    name: f.name?.value ?? '',
     isMain: f.isMain
   }))
 
   // Map project info to view format
   const projectInfo = {
-    name: project.name.value,
-    visibility: project.visibility.value,
-    isLibrary: project.isLibrary,
+    name: project.name?.value ?? '',
+    visibility: project.visibility?.value ?? 'private',
+    isLibrary: project.isLibrary ?? false,
     tags: project.tags ?? []
   }
 

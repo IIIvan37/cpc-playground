@@ -62,7 +62,7 @@ export function Toolbar() {
       } catch (error) {
         console.error('Error fetching dependencies:', error)
         // Fallback to just current project files
-        additionalFiles = currentProject.files
+        additionalFiles = (currentProject.files ?? [])
           .filter((f) => f.id !== currentFile.id)
           .map((f) => ({
             name: f.name.value,
