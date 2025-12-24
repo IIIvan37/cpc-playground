@@ -59,9 +59,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   // Form state - initialize with empty values
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [visibility, setVisibility] = useState<'private' | 'public' | 'shared'>(
-    'private'
-  )
+  const [visibility, setVisibility] = useState<'private' | 'public'>('private')
   const [isLibrary, setIsLibrary] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [selectedDependency, setSelectedDependency] = useState('')
@@ -118,7 +116,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
       userId: user.id,
       name,
       description,
-      visibility: visibility === 'shared' ? 'private' : visibility,
+      visibility,
       isLibrary
     })
     if (result.success) {
@@ -190,11 +188,9 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
     )
     if (result.success) {
       setShareUsername('')
-      // Switch to shared visibility if not already
-      if (visibility !== 'shared') {
-        setVisibility('shared')
-      }
       // Cache automatically invalidated by useMutation
+      // Note: visibility is independent of shares - a project can be
+      // private/public with or without user shares
     } else if (result.error) {
       alert(result.error)
     }

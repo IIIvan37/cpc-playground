@@ -11,7 +11,7 @@ type DependencyInfo = Readonly<{
   name: string
 }>
 
-type VisibilityOption = 'private' | 'public' | 'shared'
+type VisibilityOption = 'private' | 'public'
 
 export type ProjectSettingsModalViewProps = Readonly<{
   // Form state
@@ -226,71 +226,66 @@ export function ProjectSettingsModalView({
                 <SelectItem value='public'>
                   Public (everyone can see)
                 </SelectItem>
-                <SelectItem value='shared'>Shared (specific users)</SelectItem>
               </Select>
               <div className={styles.helpText}>
                 {visibility === 'private' &&
-                  'Only you can see and edit this project'}
+                  'Only you and users you share with can see this project'}
                 {visibility === 'public' &&
                   'Everyone can see this project, but only you can edit it'}
-                {visibility === 'shared' &&
-                  'Only you and users you share with can see this project'}
               </div>
             </div>
 
-            {visibility === 'shared' && (
-              <div className={styles.formGroup}>
-                <span className={styles.label}>Shared with</span>
-                {currentUserShares.length > 0 ? (
-                  <div className={styles.sharesList}>
-                    {currentUserShares.map((share) => (
-                      <div key={share.userId} className={styles.shareItem}>
-                        <span className={styles.shareUsername}>
-                          {share.username}
-                        </span>
-                        <Button
-                          type='button'
-                          variant='icon'
-                          className={styles.shareRemove}
-                          onClick={() => onRemoveShare(share.userId)}
-                          disabled={loading}
-                          aria-label='Remove user'
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.emptyState}>
-                    Not shared with anyone yet
-                  </div>
-                )}
-                <div className={styles.addShare}>
-                  <Combobox
-                    placeholder='Enter username...'
-                    value={shareUsername}
-                    onValueChange={onShareUsernameChange}
-                    onSelect={(option: ComboboxOption) =>
-                      onUserSelect(option.value)
-                    }
-                    options={(foundUsers || []).map((user) => ({
-                      value: user.username,
-                      label: user.username
-                    }))}
-                    loading={searchingUsers}
-                    emptyMessage='No users found'
-                  />
-                  <Button
-                    type='button'
-                    onClick={onAddShare}
-                    disabled={loading || !shareUsername.trim()}
-                  >
-                    Add
-                  </Button>
+            <div className={styles.formGroup}>
+              <span className={styles.label}>Shared with</span>
+              {currentUserShares.length > 0 ? (
+                <div className={styles.sharesList}>
+                  {currentUserShares.map((share) => (
+                    <div key={share.userId} className={styles.shareItem}>
+                      <span className={styles.shareUsername}>
+                        {share.username}
+                      </span>
+                      <Button
+                        type='button'
+                        variant='icon'
+                        className={styles.shareRemove}
+                        onClick={() => onRemoveShare(share.userId)}
+                        disabled={loading}
+                        aria-label='Remove user'
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  Not shared with anyone yet
+                </div>
+              )}
+              <div className={styles.addShare}>
+                <Combobox
+                  placeholder='Enter username...'
+                  value={shareUsername}
+                  onValueChange={onShareUsernameChange}
+                  onSelect={(option: ComboboxOption) =>
+                    onUserSelect(option.value)
+                  }
+                  options={(foundUsers || []).map((user) => ({
+                    value: user.username,
+                    label: user.username
+                  }))}
+                  loading={searchingUsers}
+                  emptyMessage='No users found'
+                />
+                <Button
+                  type='button'
+                  onClick={onAddShare}
+                  disabled={loading || !shareUsername.trim()}
+                >
+                  Add
+                </Button>
               </div>
-            )}
+            </div>
           </div>
         </div>
 

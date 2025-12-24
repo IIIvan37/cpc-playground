@@ -99,7 +99,9 @@ describe('ProjectSettingsModalView', () => {
         <ProjectSettingsModalView {...defaultProps} visibility='private' />
       )
       expect(
-        screen.getByText('Only you can see and edit this project')
+        screen.getByText(
+          'Only you and users you share with can see this project'
+        )
       ).toBeInTheDocument()
     })
 
@@ -111,35 +113,26 @@ describe('ProjectSettingsModalView', () => {
         )
       ).toBeInTheDocument()
     })
-
-    it('shows shared help text for shared visibility', () => {
-      render(<ProjectSettingsModalView {...defaultProps} visibility='shared' />)
-      expect(
-        screen.getByText(
-          'Only you and users you share with can see this project'
-        )
-      ).toBeInTheDocument()
-    })
   })
 
   describe('user shares section', () => {
-    it('shows shared with section when visibility is shared', () => {
-      render(<ProjectSettingsModalView {...defaultProps} visibility='shared' />)
-      expect(screen.getByText('Shared with')).toBeInTheDocument()
-    })
-
-    it('does not show shared with section when visibility is private', () => {
+    it('always shows shared with section', () => {
       render(
         <ProjectSettingsModalView {...defaultProps} visibility='private' />
       )
-      expect(screen.queryByText('Shared with')).not.toBeInTheDocument()
+      expect(screen.getByText('Shared with')).toBeInTheDocument()
+    })
+
+    it('shows shared with section for public visibility too', () => {
+      render(<ProjectSettingsModalView {...defaultProps} visibility='public' />)
+      expect(screen.getByText('Shared with')).toBeInTheDocument()
     })
 
     it('renders user shares list', () => {
       render(
         <ProjectSettingsModalView
           {...defaultProps}
-          visibility='shared'
+          visibility='private'
           currentUserShares={[{ userId: '1', username: 'john_doe' }]}
         />
       )
