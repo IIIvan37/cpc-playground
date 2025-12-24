@@ -50,9 +50,10 @@ export function useCurrentProject() {
       )
     },
     enabled: !!currentProjectId,
-    // Never consider data stale - prevents automatic refetches
+    // Keep data fresh but allow invalidation to trigger re-render
     staleTime: Number.POSITIVE_INFINITY,
-    // Never refetch - data is managed by useFetchProject
+    gcTime: Number.POSITIVE_INFINITY,
+    // Never refetch automatically - data is managed by useFetchProject
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false

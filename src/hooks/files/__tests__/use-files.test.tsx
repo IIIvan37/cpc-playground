@@ -24,12 +24,14 @@ import {
 const mockCreateFile = vi.fn()
 const mockUpdateFile = vi.fn()
 const mockDeleteFile = vi.fn()
+const mockGetProject = vi.fn()
 
 vi.mock('@/infrastructure/container', () => ({
   container: {
     createFile: { execute: (...args: unknown[]) => mockCreateFile(...args) },
     updateFile: { execute: (...args: unknown[]) => mockUpdateFile(...args) },
-    deleteFile: { execute: (...args: unknown[]) => mockDeleteFile(...args) }
+    deleteFile: { execute: (...args: unknown[]) => mockDeleteFile(...args) },
+    getProject: { execute: (...args: unknown[]) => mockGetProject(...args) }
   }
 }))
 
@@ -79,6 +81,8 @@ describe('useFiles hooks', () => {
     })
     store.set(projectsAtom, [mockProject])
     store.set(currentFileIdAtom, mockMainFile.id)
+    // Mock getProject to return the project for cache updates
+    mockGetProject.mockResolvedValue({ project: mockProject })
   })
 
   describe('useCreateFile', () => {
