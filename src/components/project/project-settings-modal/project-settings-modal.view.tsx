@@ -1,7 +1,9 @@
 import Button from '@/components/ui/button/button'
 import Checkbox from '@/components/ui/checkbox/checkbox'
+import { Combobox, type ComboboxOption } from '@/components/ui/combobox'
 import { Modal } from '@/components/ui/modal'
 import { Select, SelectItem } from '@/components/ui/select/select'
+import type { UserSearchResult } from '@/hooks'
 import styles from './project-settings-modal.module.css'
 
 type DependencyInfo = Readonly<{
@@ -9,7 +11,7 @@ type DependencyInfo = Readonly<{
   name: string
 }>
 
-type VisibilityOption = 'private' | 'public' | 'shared'
+type VisibilityOption = 'private' | 'public'
 
 export type ProjectSettingsModalViewProps = Readonly<{
   // Form state
@@ -37,6 +39,8 @@ export type ProjectSettingsModalViewProps = Readonly<{
       name: string
     }>
   >
+  foundUsers: readonly UserSearchResult[]
+  searchingUsers: boolean
 
   // Form handlers
   onNameChange: (value: string) => void
@@ -46,6 +50,7 @@ export type ProjectSettingsModalViewProps = Readonly<{
   onNewTagChange: (value: string) => void
   onSelectedDependencyChange: (value: string) => void
   onShareUsernameChange: (value: string) => void
+  onUserSelect: (username: string) => void
 
   // Actions
   onSave: () => void
@@ -76,6 +81,8 @@ export function ProjectSettingsModalView({
   currentDependencies,
   currentUserShares,
   availableDependencies,
+  foundUsers,
+  searchingUsers,
   onNameChange,
   onDescriptionChange,
   onVisibilityChange,
@@ -83,6 +90,7 @@ export function ProjectSettingsModalView({
   onNewTagChange,
   onSelectedDependencyChange,
   onShareUsernameChange,
+  onUserSelect,
   onSave,
   onClose,
   onDelete,
@@ -218,67 +226,66 @@ export function ProjectSettingsModalView({
                 <SelectItem value='public'>
                   Public (everyone can see)
                 </SelectItem>
-                <SelectItem value='shared'>Shared (specific users)</SelectItem>
               </Select>
               <div className={styles.helpText}>
                 {visibility === 'private' &&
-                  'Only you can see and edit this project'}
+                  'Only you and users you share with can see this project'}
                 {visibility === 'public' &&
                   'Everyone can see this project, but only you can edit it'}
-                {visibility === 'shared' &&
-                  'Only you and users you share with can see this project'}
               </div>
             </div>
 
-            {visibility === 'shared' && (
-              <div className={styles.formGroup}>
-                <span className={styles.label}>Shared with</span>
-                {currentUserShares.length > 0 ? (
-                  <div className={styles.sharesList}>
-                    {currentUserShares.map((share) => (
-                      <div key={share.userId} className={styles.shareItem}>
-                        <span className={styles.shareUsername}>
-                          {share.username}
-                        </span>
-                        <Button
-                          type='button'
-                          variant='icon'
-                          className={styles.shareRemove}
-                          onClick={() => onRemoveShare(share.userId)}
-                          disabled={loading}
-                          aria-label='Remove user'
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.emptyState}>
-                    Not shared with anyone yet
-                  </div>
-                )}
-                <div className={styles.addShare}>
-                  <input
-                    type='text'
-                    className={`${styles.input} ${styles.usernameInput}`}
-                    placeholder='Enter username...'
-                    value={shareUsername}
-                    onChange={(e) => onShareUsernameChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') onAddShare()
-                    }}
-                  />
-                  <Button
-                    type='button'
-                    onClick={onAddShare}
-                    disabled={loading || !shareUsername.trim()}
-                  >
-                    Add
-                  </Button>
+            <div className={styles.formGroup}>
+              <span className={styles.label}>Shared with</span>
+              {currentUserShares.length > 0 ? (
+                <div className={styles.sharesList}>
+                  {currentUserShares.map((share) => (
+                    <div key={share.userId} className={styles.shareItem}>
+                      <span className={styles.shareUsername}>
+                        {share.username}
+                      </span>
+                      <Button
+                        type='button'
+                        variant='icon'
+                        className={styles.shareRemove}
+                        onClick={() => onRemoveShare(share.userId)}
+                        disabled={loading}
+                        aria-label='Remove user'
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  Not shared with anyone yet
+                </div>
+              )}
+              <div className={styles.addShare}>
+                <Combobox
+                  placeholder='Enter username...'
+                  value={shareUsername}
+                  onValueChange={onShareUsernameChange}
+                  onSelect={(option: ComboboxOption) =>
+                    onUserSelect(option.value)
+                  }
+                  options={(foundUsers || []).map((user) => ({
+                    value: user.username,
+                    label: user.username
+                  }))}
+                  loading={searchingUsers}
+                  emptyMessage='No users found'
+                />
+                <Button
+                  type='button'
+                  onClick={onAddShare}
+                  disabled={loading || !shareUsername.trim()}
+                >
+                  Add
+                </Button>
               </div>
-            )}
+            </div>
           </div>
         </div>
 

@@ -61,8 +61,8 @@ SAVE 'PROGRAM.BIN',__cpc_playground_start,__cpc_playground_end-__cpc_playground_
  * Prepare source for SNA output
  */
 function prepareSnaSource(source: string): string {
-  const hasBuildsna = /^\s*BUILDSNA\b/im.test(source)
-  const hasBankset = /^\s*BANKSET\b/im.test(source)
+  const hasBuildsna = /^[ \t]*BUILDSNA\b/im.test(source)
+  const hasBankset = /^[ \t]*BANKSET\b/im.test(source)
 
   let result = source
   if (!hasBankset) {

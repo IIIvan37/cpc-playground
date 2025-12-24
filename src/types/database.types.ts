@@ -174,6 +174,7 @@ export type Database = {
           id: string
           is_library: boolean
           name: string
+          thumbnail_path: string | null
           updated_at: string
           user_id: string
           visibility: Database['public']['Enums']['project_visibility']
@@ -184,6 +185,7 @@ export type Database = {
           id?: string
           is_library?: boolean
           name: string
+          thumbnail_path?: string | null
           updated_at?: string
           user_id?: string
           visibility?: Database['public']['Enums']['project_visibility']
@@ -194,6 +196,7 @@ export type Database = {
           id?: string
           is_library?: boolean
           name?: string
+          thumbnail_path?: string | null
           updated_at?: string
           user_id?: string
           visibility?: Database['public']['Enums']['project_visibility']

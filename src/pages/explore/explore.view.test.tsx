@@ -16,6 +16,7 @@ describe('ExploreListView', () => {
     filesCount: 2,
     sharesCount: 1,
     updatedAt: new Date('2025-12-20T12:00:00Z'),
+    createdAt: new Date('2025-12-20T10:00:00Z'),
     onClick: vi.fn()
   }
 

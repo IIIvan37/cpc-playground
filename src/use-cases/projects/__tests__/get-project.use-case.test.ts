@@ -39,8 +39,6 @@ describe('GetProjectUseCase', () => {
       createFile: vi.fn(),
       updateFile: vi.fn(),
       deleteFile: vi.fn(),
-      getShares: vi.fn(),
-      createShare: vi.fn(),
       getTags: vi.fn(),
       addTag: vi.fn(),
       removeTag: vi.fn(),
@@ -49,6 +47,7 @@ describe('GetProjectUseCase', () => {
       removeDependency: vi.fn(),
       getUserShares: vi.fn(),
       findUserByUsername: vi.fn(),
+      searchUsers: vi.fn(),
       addUserShare: vi.fn(),
       removeUserShare: vi.fn()
     }
@@ -100,8 +99,9 @@ describe('GetProjectUseCase', () => {
         userId: 'user-123'
       })
 
+      // canReadProject now receives the project object instead of projectId
       expect(mockAuthService.canReadProject).toHaveBeenCalledWith(
-        'project-123',
+        testProject,
         'user-123'
       )
       expect(result.project).toBe(testProject)

@@ -55,6 +55,7 @@ import type {
   GetProjectUseCase,
   GetProjectWithDependenciesUseCase,
   GetVisibleProjectsUseCase,
+  SaveThumbnailUseCase,
   UpdateProjectUseCase
 } from '@/use-cases/projects'
 import {
@@ -64,23 +65,27 @@ import {
   createGetProjectUseCase,
   createGetProjectWithDependenciesUseCase,
   createGetVisibleProjectsUseCase,
+  createSaveThumbnailUseCase,
   createUpdateProjectUseCase
 } from '@/use-cases/projects'
 import type { GetSharedCodeUseCase } from '@/use-cases/shared-code'
 import { createGetSharedCodeUseCase } from '@/use-cases/shared-code'
 import type {
   AddUserShareUseCase,
-  RemoveUserShareUseCase
+  RemoveUserShareUseCase,
+  SearchUsersUseCase
 } from '@/use-cases/shares'
 import {
   createAddUserShareUseCase,
-  createRemoveUserShareUseCase
+  createRemoveUserShareUseCase,
+  createSearchUsersUseCase
 } from '@/use-cases/shares'
 import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
 import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
 import { createApiSharedCodeRepository } from './repositories/api-shared-code.repository'
 import { createSupabaseAuthRepository } from './repositories/supabase-auth.repository'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
+import { createSupabaseThumbnailStorage } from './repositories/supabase-thumbnail-storage'
 
 export type Container = {
   // Auth repository (exposed for onAuthStateChange subscription)
@@ -105,6 +110,7 @@ export type Container = {
   getProjectWithDependencies: GetProjectWithDependenciesUseCase
   updateProject: UpdateProjectUseCase
   deleteProject: DeleteProjectUseCase
+  saveThumbnail: SaveThumbnailUseCase
   // Files use cases
   createFile: CreateFileUseCase
   updateFile: UpdateFileUseCase
@@ -118,6 +124,7 @@ export type Container = {
   // Shares use cases
   addUserShare: AddUserShareUseCase
   removeUserShare: RemoveUserShareUseCase
+  searchUsers: SearchUsersUseCase
   // Shared code use cases
   getSharedCode: GetSharedCodeUseCase
 }
@@ -130,6 +137,7 @@ export function createContainer(): Container {
   const authRepository = createSupabaseAuthRepository(supabase)
   const projectsRepository = createSupabaseProjectsRepository(supabase)
   const sharedCodeRepository = createApiSharedCodeRepository()
+  const thumbnailStorage = createSupabaseThumbnailStorage(supabase)
 
   // Domain services
   const authorizationService = createAuthorizationService(projectsRepository)
@@ -170,6 +178,11 @@ export function createContainer(): Container {
       projectsRepository,
       authorizationService
     ),
+    saveThumbnail: createSaveThumbnailUseCase(
+      projectsRepository,
+      authorizationService,
+      thumbnailStorage
+    ),
     createFile: createCreateFileUseCase(
       projectsRepository,
       authorizationService
@@ -200,6 +213,7 @@ export function createContainer(): Container {
       projectsRepository,
       authorizationService
     ),
+    searchUsers: createSearchUsersUseCase(projectsRepository),
     // Shared code use cases
     getSharedCode: createGetSharedCodeUseCase(sharedCodeRepository)
   }

@@ -1,6 +1,7 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import type { User } from '@/domain/entities/user.entity'
 import { container } from '@/infrastructure/container'
 
@@ -12,7 +13,7 @@ export const userAtom = atomWithStorage<User | null>('auth-user', null)
  */
 export function useAuth() {
   const [user, setUser] = useAtom(userAtom)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
   // Get use cases from container
   const {
@@ -26,20 +27,32 @@ export function useAuth() {
     authRepository
   } = container
 
-  useEffect(() => {
-    // Get initial user
-    getCurrentUserUseCase.execute().then(({ user: currentUser }) => {
-      setUser(currentUser)
-      setLoading(false)
-    })
+  // Use React Query to fetch and cache current user
+  const { data: currentUser, isLoading } = useQuery({
+    queryKey: ['auth', 'currentUser'],
+    queryFn: async () => {
+      const result = await getCurrentUserUseCase.execute()
+      return result.user
+    },
+    staleTime: Number.POSITIVE_INFINITY // Never stale - we manage updates manually
+  })
 
-    // Listen for auth changes
+  // Sync React Query data with Jotai atom
+  useEffect(() => {
+    if (currentUser !== undefined) {
+      setUser(currentUser)
+    }
+  }, [currentUser, setUser])
+
+  // Listen for auth changes and update both React Query cache and atom
+  useEffect(() => {
     const unsubscribe = authRepository.onAuthStateChange((newUser) => {
       setUser(newUser)
+      queryClient.setQueryData(['auth', 'currentUser'], newUser)
     })
 
     return unsubscribe
-  }, [setUser, getCurrentUserUseCase, authRepository])
+  }, [authRepository, setUser, queryClient])
 
   const signIn = useCallback(
     async (email: string, password: string) => {
@@ -67,9 +80,10 @@ export function useAuth() {
     const result = await signOutUseCase.execute()
     if (!result.error) {
       setUser(null)
+      queryClient.setQueryData(['auth', 'currentUser'], null)
     }
     return { error: result.error }
-  }, [signOutUseCase, setUser])
+  }, [signOutUseCase, setUser, queryClient])
 
   const signInWithGithub = useCallback(async () => {
     const result = await signInWithOAuthUseCase.execute({ provider: 'github' })
@@ -97,7 +111,7 @@ export function useAuth() {
 
   return {
     user,
-    loading,
+    loading: isLoading,
     signIn,
     signUp,
     signOut,

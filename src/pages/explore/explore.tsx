@@ -2,12 +2,21 @@ import { PlusIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/button/button'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('ExplorePage')
+
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import type { Project } from '@/domain/entities/project.entity'
 import { filterProjects } from '@/domain/services'
-import { useAuth, useCreateProject, useFetchVisibleProjects } from '@/hooks'
+import {
+  getThumbnailUrl,
+  useAuth,
+  useCreateProject,
+  useFetchVisibleProjects
+} from '@/hooks'
 import styles from './explore.module.css'
 import { ExploreListView } from './explore.view'
 
@@ -24,11 +33,14 @@ export function ExplorePage() {
   const [creating, setCreating] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const { create: createProject } = useCreateProject()
 
-  const { projects, loading, error } = useFetchVisibleProjects(user?.id)
+  const { projects, loading, error } = useFetchVisibleProjects(
+    user?.id,
+    !authLoading
+  )
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return
@@ -57,7 +69,7 @@ export function ExplorePage() {
         navigate(`/?project=${result.project.id}`)
       }
     } catch (err) {
-      console.error('Failed to create project:', err)
+      logger.error('Failed to create project:', err)
     } finally {
       setCreating(false)
     }
@@ -92,17 +104,42 @@ export function ExplorePage() {
       name: project.name.value,
       authorName,
       description: project.description,
-      tags: [...project.tags],
+      tags: [...(project.tags ?? [])],
       isOwner,
-      isShared: project.userShares.some((share) => share.userId === user?.id),
+      isShared: (project.userShares ?? []).some(
+        (share) => share.userId === user?.id
+      ),
       visibility: project.visibility.value,
       isLibrary: project.isLibrary,
-      filesCount: project.files.length,
-      sharesCount: project.userShares.length,
+      filesCount: (project.files ?? []).length,
+      sharesCount: (project.userShares ?? []).length,
       updatedAt: project.updatedAt,
+      createdAt: project.createdAt,
+      thumbnailUrl: getThumbnailUrl(project.thumbnailPath),
       onClick: () => handleProjectClick(project)
     }
   })
+
+  // Sort projects: pin the documentation project (oldest) at the top, then sort by createdAt descending
+  const sortedProjects =
+    listProjects.length > 0
+      ? (() => {
+          // Find the oldest project (documentation)
+          const oldestProject = listProjects.reduce(
+            (oldest, current) =>
+              current.createdAt < oldest.createdAt ? current : oldest,
+            listProjects[0]
+          )
+
+          // Separate the documentation project from the rest
+          const docProject = listProjects.find((p) => p.id === oldestProject.id)
+          const otherProjects = listProjects
+            .filter((p) => p.id !== oldestProject.id)
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
+          return docProject ? [docProject, ...otherProjects] : otherProjects
+        })()
+      : listProjects
 
   return (
     <div className={styles.container}>
@@ -124,7 +161,7 @@ export function ExplorePage() {
         </div>
 
         <ExploreListView
-          projects={listProjects}
+          projects={sortedProjects}
           loading={loading}
           error={error}
           searchQuery={searchQuery}

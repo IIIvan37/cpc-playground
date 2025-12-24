@@ -1,8 +1,4 @@
-import type {
-  Project,
-  ProjectShare,
-  UserShare
-} from '../entities/project.entity'
+import type { Project, UserShare } from '../entities/project.entity'
 import type { ProjectFile } from '../entities/project-file.entity'
 
 /**
@@ -78,15 +74,8 @@ export interface IProjectsRepository {
    */
   deleteFile(projectId: string, fileId: string): Promise<void>
 
-  /**
-   * Get all shares for a project
-   */
-  getShares(projectId: string): Promise<readonly ProjectShare[]>
-
-  /**
-   * Create a share for a project
-   */
-  createShare(projectId: string): Promise<ProjectShare>
+  // Note: Link shares (with share_code) are handled by Netlify Blobs, not the database
+  // The project_shares table only stores user shares (project_id, user_id)
 
   // ============================================================================
   // Tags
@@ -141,6 +130,14 @@ export interface IProjectsRepository {
   findUserByUsername(
     username: string
   ): Promise<{ id: string; username: string } | null>
+
+  /**
+   * Search users by username prefix
+   */
+  searchUsers(
+    query: string,
+    limit?: number
+  ): Promise<ReadonlyArray<{ id: string; username: string }>>
 
   /**
    * Add a user share to a project

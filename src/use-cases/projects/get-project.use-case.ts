@@ -45,8 +45,9 @@ export function createGetProjectUseCase(
       }
 
       // Authorization check for authenticated users
+      // Pass the already-fetched project to avoid refetching
       const canRead = await authorizationService.canReadProject(
-        input.projectId,
+        project,
         input.userId
       )
       if (!canRead) {

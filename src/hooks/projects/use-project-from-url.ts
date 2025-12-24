@@ -1,9 +1,18 @@
 import { useSetAtom } from 'jotai'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { codeAtom } from '@/store'
 import { isReadOnlyModeAtom, viewOnlyProjectAtom } from '@/store/projects'
 import { useAuth } from '../auth'
 import { useFetchProject } from './use-projects'
+
+/**
+ * Module-level ref to track loaded project+user combo
+ * Must be at module level to survive React StrictMode double-mounting
+ */
+let loadedProjectState: {
+  projectId: string
+  userId: string | undefined
+} | null = null
 
 /**
  * Hook to load a project from URL query parameter
@@ -16,6 +25,10 @@ export function useProjectFromUrl() {
   const setIsReadOnlyMode = useSetAtom(isReadOnlyModeAtom)
   const setCode = useSetAtom(codeAtom)
 
+  // Store fetchProject in a ref to avoid it triggering effect re-runs
+  const fetchProjectRef = useRef(fetchProject)
+  fetchProjectRef.current = fetchProject
+
   useEffect(() => {
     // Wait for auth to be ready
     if (authLoading) return
@@ -27,13 +40,24 @@ export function useProjectFromUrl() {
       // No project in URL - clear read-only state
       setViewOnlyProject(null)
       setIsReadOnlyMode(false)
+      loadedProjectState = null
       return
     }
 
-    fetchProject({
-      projectId,
-      userId: user?.id
-    })
+    // Skip if we've already loaded this exact project+user combo
+    if (
+      loadedProjectState?.projectId === projectId &&
+      loadedProjectState?.userId === user?.id
+    ) {
+      return
+    }
+    loadedProjectState = { projectId, userId: user?.id }
+
+    fetchProjectRef
+      .current({
+        projectId,
+        userId: user?.id
+      })
       .then((project) => {
         // Load the main file content into the editor
         if (project) {
@@ -47,13 +71,9 @@ export function useProjectFromUrl() {
       })
       .catch((err) => {
         console.error('Failed to load project from URL:', err)
+        // Reset on error so we can retry
+        loadedProjectState = null
       })
-  }, [
-    authLoading,
-    user?.id,
-    fetchProject,
-    setCode,
-    setViewOnlyProject,
-    setIsReadOnlyMode
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProject is accessed via ref to avoid triggering effect
+  }, [authLoading, user?.id, setCode, setViewOnlyProject, setIsReadOnlyMode])
 }

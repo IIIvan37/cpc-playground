@@ -5,11 +5,15 @@ import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import {
   addFile,
+  addFileIfMatch,
   addTag,
   createProject,
   getMainFile,
   removeFile,
+  removeFileIfMatch,
   removeTag,
+  replaceFileIfMatch,
+  setFileAsMain,
   updateFile,
   updateProject
 } from '../project.entity'
@@ -404,6 +408,211 @@ describe('Project Entity', () => {
       const updated = removeTag(project, 'non-existent')
 
       expect(updated.tags).toEqual(['tag1'])
+    })
+  })
+
+  describe('addFileIfMatch', () => {
+    it('should add file when project ID matches', () => {
+      const project = createProject({
+        id: 'target-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private')
+      })
+      const file = createTestFile()
+      const updated = addFileIfMatch(project, 'target-project', file)
+
+      expect(updated.files).toHaveLength(1)
+      expect(updated.files[0]).toBe(file)
+    })
+
+    it('should not modify project when ID does not match', () => {
+      const project = createProject({
+        id: 'other-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private')
+      })
+      const file = createTestFile()
+      const updated = addFileIfMatch(project, 'target-project', file)
+
+      expect(updated).toBe(project)
+      expect(updated.files).toHaveLength(0)
+    })
+  })
+
+  describe('setFileAsMain', () => {
+    it('should set specified file as main and unset others', () => {
+      const file1 = createTestFile({ id: 'file-1', isMain: true })
+      const file2 = createTestFile({ id: 'file-2', isMain: false })
+      const project = createProject({
+        id: 'target-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [file1, file2]
+      })
+      const updated = setFileAsMain(project, 'target-project', 'file-2')
+
+      expect(updated.files[0].isMain).toBe(false)
+      expect(updated.files[1].isMain).toBe(true)
+      expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        project.updatedAt.getTime()
+      )
+    })
+
+    it('should not modify project when ID does not match', () => {
+      const file = createTestFile({ id: 'file-1', isMain: false })
+      const project = createProject({
+        id: 'other-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [file]
+      })
+      const updated = setFileAsMain(project, 'target-project', 'file-1')
+
+      expect(updated).toBe(project)
+      expect(updated.files[0].isMain).toBe(false)
+    })
+
+    it('should update all files isMain flags correctly', () => {
+      const files = [
+        createTestFile({ id: 'file-1', isMain: true }),
+        createTestFile({ id: 'file-2', isMain: false }),
+        createTestFile({ id: 'file-3', isMain: false })
+      ]
+      const project = createProject({
+        id: 'target-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files
+      })
+      const updated = setFileAsMain(project, 'target-project', 'file-3')
+
+      expect(updated.files[0].isMain).toBe(false)
+      expect(updated.files[1].isMain).toBe(false)
+      expect(updated.files[2].isMain).toBe(true)
+    })
+  })
+
+  describe('replaceFileIfMatch', () => {
+    it('should replace file when project ID matches', () => {
+      const originalFile = createTestFile({ id: 'file-1' })
+      const project = createProject({
+        id: 'target-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [originalFile]
+      })
+      const updatedFile = createProjectFile({
+        ...originalFile,
+        content: createFileContent('; updated content')
+      })
+      const updated = replaceFileIfMatch(project, 'target-project', updatedFile)
+
+      expect(updated.files).toHaveLength(1)
+      expect(updated.files[0]).toBe(updatedFile)
+      expect(updated.files[0].content.value).toBe('; updated content')
+    })
+
+    it('should not modify project when ID does not match', () => {
+      const file = createTestFile({ id: 'file-1' })
+      const project = createProject({
+        id: 'other-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [file]
+      })
+      const updatedFile = createProjectFile({
+        ...file,
+        content: createFileContent('; new content')
+      })
+      const updated = replaceFileIfMatch(project, 'target-project', updatedFile)
+
+      expect(updated).toBe(project)
+      expect(updated.files[0].content.value).toBe('; test')
+    })
+
+    it('should only replace matching file and preserve others', () => {
+      const file1 = createTestFile({ id: 'file-1' })
+      const file2 = createTestFile({ id: 'file-2' })
+      const project = createProject({
+        id: 'target-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [file1, file2]
+      })
+      const updatedFile1 = createProjectFile({
+        ...file1,
+        content: createFileContent('; updated')
+      })
+      const updated = replaceFileIfMatch(
+        project,
+        'target-project',
+        updatedFile1
+      )
+
+      expect(updated.files).toHaveLength(2)
+      expect(updated.files[0].content.value).toBe('; updated')
+      expect(updated.files[1]).toBe(file2)
+    })
+  })
+
+  describe('removeFileIfMatch', () => {
+    it('should remove file when project ID matches', () => {
+      const file = createTestFile({ id: 'file-to-remove' })
+      const project = createProject({
+        id: 'target-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [file]
+      })
+      const updated = removeFileIfMatch(
+        project,
+        'target-project',
+        'file-to-remove'
+      )
+
+      expect(updated.files).toHaveLength(0)
+    })
+
+    it('should not modify project when ID does not match', () => {
+      const file = createTestFile({ id: 'file-1' })
+      const project = createProject({
+        id: 'other-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [file]
+      })
+      const updated = removeFileIfMatch(project, 'target-project', 'file-1')
+
+      expect(updated).toBe(project)
+      expect(updated.files).toHaveLength(1)
+    })
+
+    it('should preserve other files when removing one', () => {
+      const file1 = createTestFile({ id: 'file-1' })
+      const file2 = createTestFile({ id: 'file-2' })
+      const file3 = createTestFile({ id: 'file-3' })
+      const project = createProject({
+        id: 'target-project',
+        userId: 'user-123',
+        name: createProjectName('Test'),
+        visibility: createVisibility('private'),
+        files: [file1, file2, file3]
+      })
+      const updated = removeFileIfMatch(project, 'target-project', 'file-2')
+
+      expect(updated.files).toHaveLength(2)
+      expect(updated.files[0].id).toBe('file-1')
+      expect(updated.files[1].id).toBe('file-3')
     })
   })
 })

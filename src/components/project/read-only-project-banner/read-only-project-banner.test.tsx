@@ -14,6 +14,7 @@ const mockProject: Project = {
   authorUsername: 'testuser',
   name: { value: 'Test Project' } as Project['name'],
   description: null,
+  thumbnailPath: null,
   visibility: { value: 'public' } as Project['visibility'],
   isLibrary: false,
   files: [],

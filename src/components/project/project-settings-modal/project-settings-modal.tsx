@@ -1,8 +1,12 @@
-import { useAtomValue } from 'jotai'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   useAuth,
+  useAvailableDependencies,
+  useConfirmDialog,
+  useCurrentProject,
   useHandleAddDependency,
   useHandleAddShare,
   useHandleAddTag,
@@ -10,9 +14,10 @@ import {
   useHandleRemoveDependency,
   useHandleRemoveShare,
   useHandleRemoveTag,
-  useHandleSaveProject
+  useHandleSaveProject,
+  useSearchUsers,
+  useToastActions
 } from '@/hooks'
-import { currentProjectAtom, projectsAtom } from '@/store/projects'
 import { ProjectSettingsModalView } from './project-settings-modal.view'
 
 type ProjectSettingsModalProps = Readonly<{
@@ -20,12 +25,13 @@ type ProjectSettingsModalProps = Readonly<{
 }>
 
 /**
- * Container component for project settings modal
- * Handles business logic and delegates rendering to ProjectSettingsModalView
+ * Inner component that uses Suspense query
  */
-export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
+function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToastActions()
+  const { confirm, dialogProps } = useConfirmDialog()
 
   // Clean Architecture hooks for operations
   const { handleSave, loading: saveLoading } = useHandleSaveProject()
@@ -40,26 +46,60 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
   const { handleRemoveShare, loading: removeShareLoading } =
     useHandleRemoveShare()
 
-  // Read from global state
-  const currentProject = useAtomValue(currentProjectAtom)
-  const projects = useAtomValue(projectsAtom)
+  // User search
+  const {
+    users: foundUsers,
+    loading: searchUsersLoading,
+    searchUsers
+  } = useSearchUsers()
 
-  // Form state
-  const [name, setName] = useState(currentProject?.name.value || '')
-  const [description, setDescription] = useState(
-    currentProject?.description || ''
+  // Read project directly from React Query (single source of truth)
+  const { project: currentProject } = useCurrentProject()
+
+  // Get available dependencies (libraries) from React Query
+  const availableDependencies = useAvailableDependencies(
+    currentProject?.id ?? null
   )
-  const [visibility, setVisibility] = useState<'private' | 'public' | 'shared'>(
-    currentProject?.visibility.value === 'unlisted'
-      ? 'private'
-      : (currentProject?.visibility.value as 'private' | 'public') || 'private'
-  )
-  const [isLibrary, setIsLibrary] = useState(currentProject?.isLibrary || false)
+
+  // Form state - initialize with empty values
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [visibility, setVisibility] = useState<'private' | 'public'>('private')
+  const [isLibrary, setIsLibrary] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [selectedDependency, setSelectedDependency] = useState('')
   const [shareUsername, setShareUsername] = useState('')
 
-  if (!currentProject || !user) return null
+  // Sync form state when project data loads or changes
+  useEffect(() => {
+    if (currentProject) {
+      setName(currentProject.name?.value || '')
+      setDescription(currentProject.description || '')
+      const visibilityValue = currentProject.visibility?.value
+      const resolvedVisibility =
+        visibilityValue === 'public' ? 'public' : 'private'
+      setVisibility(resolvedVisibility)
+      setIsLibrary(currentProject.isLibrary || false)
+    }
+  }, [currentProject])
+
+  // Debounce user search
+  useEffect(() => {
+    if (!shareUsername.trim()) return
+
+    const timer = setTimeout(() => {
+      searchUsers(shareUsername, 10)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [shareUsername, searchUsers])
+
+  // Handle user selection from combobox
+  const handleUserSelect = useCallback((username: string) => {
+    setShareUsername(username)
+  }, [])
+
+  if (!user || !currentProject) return null
 
   // Combined loading state
   const loading =
@@ -79,27 +119,33 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       userId: user.id,
       name,
       description,
-      visibility: visibility === 'shared' ? 'private' : visibility,
+      visibility,
       isLibrary
     })
     if (result.success) {
+      toast.success('Settings saved')
       onClose()
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to save settings', result.error)
     }
   }
 
   const onDelete = async () => {
-    const result = await handleDelete(
-      currentProject.id,
-      user.id,
-      currentProject.name.value
-    )
+    const confirmed = await confirm({
+      title: 'Delete project',
+      message: `Are you sure you want to delete "${currentProject.name.value}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger'
+    })
+    if (!confirmed) return
+
+    const result = await handleDelete(currentProject.id, user.id)
     if (result.success) {
+      toast.success('Project deleted')
       onClose()
       navigate('/')
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to delete project', result.error)
     }
   }
 
@@ -108,14 +154,14 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     if (result.success) {
       setNewTag('')
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to add tag', result.error)
     }
   }
 
   const onRemoveTag = async (tagName: string) => {
     const result = await handleRemoveTag(currentProject.id, user.id, tagName)
     if (result.error) {
-      alert(result.error)
+      toast.error('Failed to remove tag', result.error)
     }
   }
 
@@ -128,7 +174,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     if (result.success) {
       setSelectedDependency('')
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to add dependency', result.error)
     }
   }
 
@@ -139,7 +185,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       dependencyId
     )
     if (result.error) {
-      alert(result.error)
+      toast.error('Failed to remove dependency', result.error)
     }
   }
 
@@ -151,8 +197,12 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     )
     if (result.success) {
       setShareUsername('')
+      toast.success(
+        'User added',
+        `${shareUsername} can now access this project`
+      )
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to share project', result.error)
     }
   }
 
@@ -163,7 +213,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       targetUserId
     )
     if (result.error) {
-      alert(result.error)
+      toast.error('Failed to remove share', result.error)
     }
   }
 
@@ -173,48 +223,57 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
   )
 
   // Filter available dependencies (libraries not already added)
-  const availableDependencies = projects
-    .filter(
-      (p) =>
-        p.isLibrary &&
-        p.id !== currentProject.id &&
-        !currentDependencyIds.has(p.id)
-    )
+  const filteredDependencies = availableDependencies
+    .filter((p) => !currentDependencyIds.has(p.id))
     .map((p) => ({ id: p.id, name: p.name.value }))
 
   // Current dependencies already have name info from the entity
   const currentDependencies = currentProject.dependencies || []
 
   return (
-    <ProjectSettingsModalView
-      name={name}
-      description={description}
-      visibility={visibility}
-      isLibrary={isLibrary}
-      newTag={newTag}
-      selectedDependency={selectedDependency}
-      shareUsername={shareUsername}
-      loading={loading}
-      currentTags={currentProject.tags || []}
-      currentDependencies={currentDependencies}
-      currentUserShares={currentProject.userShares || []}
-      availableDependencies={availableDependencies}
-      onNameChange={setName}
-      onDescriptionChange={setDescription}
-      onVisibilityChange={setVisibility}
-      onIsLibraryChange={setIsLibrary}
-      onNewTagChange={setNewTag}
-      onSelectedDependencyChange={setSelectedDependency}
-      onShareUsernameChange={setShareUsername}
-      onSave={onSave}
-      onClose={onClose}
-      onAddTag={onAddTag}
-      onRemoveTag={onRemoveTag}
-      onAddDependency={onAddDependency}
-      onRemoveDependency={onRemoveDependency}
-      onAddShare={onAddShare}
-      onRemoveShare={onRemoveShare}
-      onDelete={onDelete}
-    />
+    <>
+      <ProjectSettingsModalView
+        name={name}
+        description={description}
+        visibility={visibility}
+        isLibrary={isLibrary}
+        newTag={newTag}
+        selectedDependency={selectedDependency}
+        shareUsername={shareUsername}
+        loading={loading}
+        currentTags={currentProject.tags || []}
+        currentDependencies={currentDependencies}
+        currentUserShares={currentProject.userShares || []}
+        availableDependencies={filteredDependencies}
+        foundUsers={foundUsers}
+        searchingUsers={searchUsersLoading}
+        onNameChange={setName}
+        onDescriptionChange={setDescription}
+        onVisibilityChange={setVisibility}
+        onIsLibraryChange={setIsLibrary}
+        onNewTagChange={setNewTag}
+        onSelectedDependencyChange={setSelectedDependency}
+        onShareUsernameChange={setShareUsername}
+        onUserSelect={handleUserSelect}
+        onSave={onSave}
+        onClose={onClose}
+        onAddTag={onAddTag}
+        onRemoveTag={onRemoveTag}
+        onAddDependency={onAddDependency}
+        onRemoveDependency={onRemoveDependency}
+        onAddShare={onAddShare}
+        onRemoveShare={onRemoveShare}
+        onDelete={onDelete}
+      />
+      <ConfirmDialog {...dialogProps} />
+    </>
   )
+}
+
+/**
+ * Container component for project settings modal
+ * Handles business logic and delegates rendering to ProjectSettingsModalView
+ */
+export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
+  return <ProjectSettingsModalContent onClose={onClose} />
 }

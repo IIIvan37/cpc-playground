@@ -2,19 +2,24 @@ import { useAtom, useAtomValue } from 'jotai'
 import { ProgramManager } from '@/components/program/program-manager'
 import {
   useAssembler,
+  useCurrentFile,
+  useCurrentProject,
   useEmulator,
-  useGetProjectWithDependencies
+  useGetProjectWithDependencies,
+  useIsMarkdownFile
 } from '@/hooks'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('Toolbar')
+
 import {
   codeAtom,
   compilationStatusAtom,
-  isMarkdownFileAtom,
   type OutputFormat,
   outputFormatAtom,
   type ViewMode,
   viewModeAtom
 } from '@/store'
-import { currentFileAtom, currentProjectAtom } from '@/store/projects'
 import { ToolbarView } from './toolbar.view'
 
 /**
@@ -26,9 +31,9 @@ export function Toolbar() {
   const compilationStatus = useAtomValue(compilationStatusAtom)
   const [viewMode, setViewMode] = useAtom(viewModeAtom)
   const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
-  const currentProject = useAtomValue(currentProjectAtom)
-  const currentFile = useAtomValue(currentFileAtom)
-  const isMarkdownFile = useAtomValue(isMarkdownFileAtom)
+  const { project: currentProject } = useCurrentProject()
+  const currentFile = useCurrentFile()
+  const isMarkdownFile = useIsMarkdownFile()
   const { getProjectWithDependencies } = useGetProjectWithDependencies()
   const { compile } = useAssembler()
   const { isReady, loadSna, loadDsk, reset } = useEmulator()
@@ -59,9 +64,9 @@ export function Toolbar() {
             })
           }))
       } catch (error) {
-        console.error('Error fetching dependencies:', error)
+        logger.error('Error fetching dependencies:', error)
         // Fallback to just current project files
-        additionalFiles = currentProject.files
+        additionalFiles = (currentProject.files ?? [])
           .filter((f) => f.id !== currentFile.id)
           .map((f) => ({
             name: f.name.value,

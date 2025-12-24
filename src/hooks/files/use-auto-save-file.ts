@@ -1,12 +1,9 @@
 import { useAtomValue } from 'jotai'
 import { useEffect, useRef } from 'react'
 import { codeAtom } from '@/store/editor'
-import {
-  currentFileAtom,
-  currentFileIdAtom,
-  currentProjectAtom
-} from '@/store/projects'
+import { currentFileIdAtom } from '@/store/projects'
 import { useAuth } from '../auth'
+import { useCurrentFile, useCurrentProject } from '../projects'
 import { useUpdateFile } from './use-files'
 
 const DEBOUNCE_MS = 1000 // 1 second debounce
@@ -15,8 +12,8 @@ export function useAutoSaveFile() {
   const { user } = useAuth()
   const code = useAtomValue(codeAtom)
   const currentFileId = useAtomValue(currentFileIdAtom)
-  const currentFile = useAtomValue(currentFileAtom)
-  const currentProject = useAtomValue(currentProjectAtom)
+  const currentFile = useCurrentFile()
+  const { project: currentProject } = useCurrentProject()
   const { updateFile } = useUpdateFile()
 
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)

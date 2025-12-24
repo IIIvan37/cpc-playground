@@ -63,8 +63,8 @@
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  flex-direction: row;
+  gap: 1rem;
   cursor: pointer;
   transition:
     border-color 0.2s,
@@ -76,6 +76,30 @@
   background: var(--color-panel-hover, #23272e);
   outline: none;
 }
+
+.thumbnailContainer {
+  flex-shrink: 0;
+  width: 96px;
+  height: 68px;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.projectContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .rowTop {
   display: flex;
   align-items: center;

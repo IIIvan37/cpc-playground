@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { createStore, Provider } from 'jotai'
 import type { ReactNode } from 'react'
@@ -59,14 +60,23 @@ const mockProject: Project = createProject({
 
 describe('useFiles hooks', () => {
   let store: ReturnType<typeof createStore>
+  let queryClient: QueryClient
 
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <Provider store={store}>{children}</Provider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>{children}</Provider>
+    </QueryClientProvider>
   )
 
   beforeEach(() => {
     vi.clearAllMocks()
     store = createStore()
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false }
+      }
+    })
     store.set(projectsAtom, [mockProject])
     store.set(currentFileIdAtom, mockMainFile.id)
   })
@@ -94,10 +104,10 @@ describe('useFiles hooks', () => {
         content: '; Test file'
       })
 
-      // Check projects state was updated
-      const projects = store.get(projectsAtom)
-      expect(projects[0].files).toHaveLength(2)
-      expect(projects[0].files[1]).toEqual(newFile)
+      // Note: projectsAtom is no longer updated directly.
+      // The hook now calls queryClient.invalidateQueries() which
+      // triggers a refetch from the server. Tests should verify
+      // that the use case was called correctly.
     })
 
     it('sets current file when creating main file', async () => {
@@ -184,11 +194,9 @@ describe('useFiles hooks', () => {
         content: '; Updated content'
       })
 
-      const projects = store.get(projectsAtom)
-      const updatedFileInStore = projects[0].files.find(
-        (f) => f.id === 'file-1'
-      )
-      expect(updatedFileInStore?.content).toBe('; Updated content')
+      // Note: projectsAtom is no longer updated directly.
+      // The hook now calls queryClient.invalidateQueries() which
+      // triggers a refetch from the server.
     })
 
     it('updates isMain flag on all files when setting main', async () => {
@@ -206,14 +214,16 @@ describe('useFiles hooks', () => {
         })
       })
 
-      const projects = store.get(projectsAtom)
-      const mainFileInStore = projects[0].files.find(
-        (f) => f.id === 'main-file'
-      )
-      const newMain = projects[0].files.find((f) => f.id === 'file-1')
+      expect(mockUpdateFile).toHaveBeenCalledWith({
+        projectId: 'project-1',
+        userId: 'user-1',
+        fileId: 'file-1',
+        isMain: true
+      })
 
-      expect(mainFileInStore?.isMain).toBe(false)
-      expect(newMain?.isMain).toBe(true)
+      // Note: projectsAtom is no longer updated directly.
+      // The hook now calls queryClient.invalidateQueries() which
+      // triggers a refetch from the server.
     })
   })
 
@@ -244,9 +254,9 @@ describe('useFiles hooks', () => {
         fileId: 'file-1'
       })
 
-      const projects = store.get(projectsAtom)
-      expect(projects[0].files).toHaveLength(1)
-      expect(projects[0].files[0].id).toBe('main-file')
+      // Note: projectsAtom is no longer updated directly.
+      // The hook now calls queryClient.invalidateQueries() which
+      // triggers a refetch from the server.
     })
 
     it('clears current file if deleted', async () => {

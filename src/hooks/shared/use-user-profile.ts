@@ -2,8 +2,9 @@
  * User profile hook
  * Uses Clean Architecture use-cases for profile management
  */
-import { useCallback, useEffect, useState } from 'react'
-import type { UserProfile } from '@/domain/entities/user.entity'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
 import { useAuth } from '../auth'
 
@@ -11,47 +12,36 @@ export type { UserProfile } from '@/domain/entities/user.entity'
 
 export function useUserProfile() {
   const { user } = useAuth()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const queryClient = useQueryClient()
 
   const { getUserProfile, updateUserProfile } = container
 
-  useEffect(() => {
-    if (!user) {
-      setProfile(null)
-      setLoading(false)
-      return
-    }
+  // Use React Query to fetch and cache user profile
+  const {
+    data: profile,
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: async () => {
+      if (!user) return null
 
-    async function fetchProfile() {
-      if (!user) return
-      try {
-        setLoading(true)
-        const { profile: fetchedProfile } = await getUserProfile.execute({
-          userId: user.id
-        })
+      const { profile: fetchedProfile } = await getUserProfile.execute({
+        userId: user.id
+      })
 
-        if (!fetchedProfile) {
-          console.warn(
-            'User profile not found. Please sign out and sign in again.'
-          )
-          setProfile(null)
-          return
-        }
-
-        setProfile(fetchedProfile)
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error('Failed to fetch profile')
+      if (!fetchedProfile) {
+        console.warn(
+          'User profile not found. Please sign out and sign in again.'
         )
-      } finally {
-        setLoading(false)
+        return null
       }
-    }
 
-    fetchProfile()
-  }, [user, getUserProfile])
+      return fetchedProfile
+    },
+    enabled: !!user, // Only run query if user exists
+    staleTime: 1000 * 60 * 5 // 5 minutes
+  })
 
   const updateUsername = useCallback(
     async (newUsername: string) => {
@@ -72,16 +62,17 @@ export function useUserProfile() {
         userId: user.id
       })
       if (updatedProfile) {
-        setProfile(updatedProfile)
+        // Update React Query cache
+        queryClient.setQueryData(['userProfile', user.id], updatedProfile)
       }
     },
-    [user, updateUserProfile, getUserProfile]
+    [user, updateUserProfile, getUserProfile, queryClient]
   )
 
   return {
-    profile,
-    loading,
-    error,
+    profile: profile ?? null,
+    loading: isLoading,
+    error: error ?? null,
     updateUsername
   }
 }

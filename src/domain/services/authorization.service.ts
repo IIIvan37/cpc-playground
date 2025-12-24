@@ -10,10 +10,12 @@ import type { IProjectsRepository } from '@/domain/repositories/projects.reposit
 
 export type AuthorizationService = {
   /**
-   * Verify user can read a project (owner, public, library, or shared)
-   * Returns the project if accessible, throws otherwise
+   * Check if user can read a project (owner, public, library, or shared)
+   * @param project - The project to check (avoids refetching)
+   * @param userId - The user ID to check access for
+   * @returns true if accessible, false otherwise
    */
-  canReadProject(projectId: string, userId: string): Promise<boolean>
+  canReadProject(project: Project, userId: string): Promise<boolean>
 
   /**
    * Verify user owns a project (for write operations)
@@ -22,10 +24,12 @@ export type AuthorizationService = {
   mustOwnProject(projectId: string, userId: string): Promise<Project>
 
   /**
-   * Verify user can access a project as dependency (public or library)
-   * Returns true if accessible, false otherwise (does not throw)
+   * Check if user can access a project as dependency (owner, public, or library)
+   * @param project - The project to check (avoids refetching)
+   * @param userId - The user ID to check access for
+   * @returns true if accessible, false otherwise
    */
-  canAccessAsDependency(projectId: string, userId: string): Promise<boolean>
+  canAccessAsDependency(project: Project, userId: string): boolean
 }
 
 /**
@@ -35,13 +39,7 @@ export function createAuthorizationService(
   projectsRepository: IProjectsRepository
 ): AuthorizationService {
   return {
-    async canReadProject(projectId: string, userId: string): Promise<boolean> {
-      const project = await projectsRepository.findById(projectId)
-
-      if (!project) {
-        return false
-      }
-
+    async canReadProject(project: Project, userId: string): Promise<boolean> {
       // Owner can always read
       if (project.userId === userId) {
         return true
@@ -58,7 +56,7 @@ export function createAuthorizationService(
       }
 
       // Check if project is shared with user
-      const shares = await projectsRepository.getUserShares(projectId)
+      const shares = await projectsRepository.getUserShares(project.id)
       if (shares.some((share) => share.userId === userId)) {
         return true
       }
@@ -80,16 +78,7 @@ export function createAuthorizationService(
       return project
     },
 
-    async canAccessAsDependency(
-      projectId: string,
-      userId: string
-    ): Promise<boolean> {
-      const project = await projectsRepository.findById(projectId)
-
-      if (!project) {
-        return false
-      }
-
+    canAccessAsDependency(project: Project, userId: string): boolean {
       // Owner can always access
       if (project.userId === userId) {
         return true

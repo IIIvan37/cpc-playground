@@ -17,6 +17,8 @@ export interface ExploreListViewProps {
     filesCount: number
     sharesCount: number
     updatedAt: Date
+    createdAt: Date
+    thumbnailUrl?: string | null
     onClick: () => void
   }>
   readonly loading?: boolean
@@ -89,6 +91,8 @@ export type ProjectListItemProps = {
   readonly filesCount: number
   readonly sharesCount: number
   readonly updatedAt: Date
+  readonly createdAt: Date
+  readonly thumbnailUrl?: string | null
   readonly onClick: () => void
 }
 
@@ -104,6 +108,8 @@ export function ProjectListItem({
   filesCount,
   sharesCount,
   updatedAt,
+  createdAt: _createdAt,
+  thumbnailUrl,
   onClick
 }: ProjectListItemProps) {
   return (
@@ -114,31 +120,42 @@ export function ProjectListItem({
       onClick={onClick}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
     >
-      <div className={styles.rowTop}>
-        <span className={styles.projectName}>{name}</span>
-        <span className={styles.typeBadges}>
-          {isShared && !isOwner && <Badge variant='shared'>Shared</Badge>}
-          {visibility === 'public' && <Badge variant='public'>Public</Badge>}
-          {isLibrary && <Badge variant='library'>Library</Badge>}
-        </span>
-      </div>
-      {isOwner ? (
-        <div className={styles.authorName}>
-          <Badge variant='owner'>Owner</Badge>
-        </div>
-      ) : (
-        <div className={styles.authorName}>by {authorName}</div>
-      )}
-      {description && <div className={styles.description}>{description}</div>}
-      {tags.length > 0 && (
-        <div className={styles.tagsContainer}>
-          <TagsList tags={tags} />
+      {thumbnailUrl && (
+        <div className={styles.thumbnailContainer}>
+          <img
+            src={thumbnailUrl}
+            alt={`${name} thumbnail`}
+            className={styles.thumbnail}
+          />
         </div>
       )}
-      <div className={styles.metaLine}>
-        <span>{pluralize(filesCount, 'file')}</span>
-        <span>{pluralize(sharesCount, 'share')}</span>
-        <span>Updated {formatDate(updatedAt)}</span>
+      <div className={styles.projectContent}>
+        <div className={styles.rowTop}>
+          <span className={styles.projectName}>{name}</span>
+          <span className={styles.typeBadges}>
+            {isShared && !isOwner && <Badge variant='shared'>Shared</Badge>}
+            {visibility === 'public' && <Badge variant='public'>Public</Badge>}
+            {isLibrary && <Badge variant='library'>Library</Badge>}
+          </span>
+        </div>
+        {isOwner ? (
+          <div className={styles.authorName}>
+            <Badge variant='owner'>Owner</Badge>
+          </div>
+        ) : (
+          <div className={styles.authorName}>by {authorName}</div>
+        )}
+        {description && <div className={styles.description}>{description}</div>}
+        {tags.length > 0 && (
+          <div className={styles.tagsContainer}>
+            <TagsList tags={tags} />
+          </div>
+        )}
+        <div className={styles.metaLine}>
+          <span>{pluralize(filesCount, 'file')}</span>
+          <span>{pluralize(sharesCount, 'share')}</span>
+          <span>Updated {formatDate(updatedAt)}</span>
+        </div>
       </div>
     </button>
   )

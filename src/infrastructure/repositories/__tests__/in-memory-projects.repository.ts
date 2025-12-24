@@ -1,8 +1,4 @@
-import type {
-  Project,
-  ProjectShare,
-  UserShare
-} from '@/domain/entities/project.entity'
+import type { Project, UserShare } from '@/domain/entities/project.entity'
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import type {
   IProjectsRepository,
@@ -18,8 +14,7 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
   _clear: () => void
 } {
   const projects = new Map<string, Project>()
-  const shares = new Map<string, ProjectShare[]>()
-  const shareCodeIndex = new Map<string, string>() // shareCode -> projectId
+  const shareCodeIndex = new Map<string, string>() // shareCode -> projectId (for findByShareCode)
   const tags = new Map<string, Tag>() // tagId -> Tag
   const projectTags = new Map<string, string[]>() // projectId -> tagIds
   const dependencies = new Map<string, string[]>() // projectId -> dependencyIds
@@ -110,9 +105,9 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
 
     async delete(id: string): Promise<void> {
       projects.delete(id)
-      shares.delete(id)
       projectTags.delete(id)
       dependencies.delete(id)
+      userShares.delete(id)
 
       // Clean up share code index
       for (const [shareCode, projectId] of shareCodeIndex.entries()) {
@@ -122,22 +117,7 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
       }
     },
 
-    async getShares(projectId: string): Promise<ProjectShare[]> {
-      return shares.get(projectId) ?? []
-    },
-
-    async createShare(projectId: string): Promise<ProjectShare> {
-      const share: ProjectShare = {
-        id: crypto.randomUUID(),
-        shareCode: crypto.randomUUID(),
-        createdAt: new Date()
-      }
-      const projectShares = shares.get(projectId) ?? []
-      projectShares.push(share)
-      shares.set(projectId, projectShares)
-      shareCodeIndex.set(share.shareCode, projectId)
-      return share
-    },
+    // Note: Link shares are handled by Netlify Blobs, not the repository
 
     // ========================================================================
     // Tags
@@ -332,6 +312,21 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
       return null
     },
 
+    async searchUsers(
+      query: string,
+      limit = 10
+    ): Promise<ReadonlyArray<{ id: string; username: string }>> {
+      const results: Array<{ id: string; username: string }> = []
+      const lowerQuery = query.toLowerCase()
+      for (const user of users.values()) {
+        if (user.username.toLowerCase().includes(lowerQuery)) {
+          results.push(user)
+          if (results.length >= limit) break
+        }
+      }
+      return results
+    },
+
     async addUserShare(projectId: string, userId: string): Promise<UserShare> {
       const user = users.get(userId)
       if (!user) {
@@ -379,7 +374,6 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
     /** Clear all data for testing */
     _clear(): void {
       projects.clear()
-      shares.clear()
       shareCodeIndex.clear()
       tags.clear()
       projectTags.clear()

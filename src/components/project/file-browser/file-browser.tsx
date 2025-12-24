@@ -1,24 +1,26 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/button/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import {
+  useActiveProject,
   useAuth,
+  useConfirmDialog,
   useCreateFile,
   useDeleteFile,
   useFetchDependencyFiles,
-  useSetMainFile
+  useSetMainFile,
+  useToastActions
 } from '@/hooks'
-import {
-  activeProjectAtom,
-  codeAtom,
-  currentFileIdAtom,
-  isReadOnlyModeAtom
-} from '@/store'
+import { createLogger } from '@/lib/logger'
+import { codeAtom, currentFileIdAtom } from '@/store'
 import { currentProjectIdAtom, dependencyFilesAtom } from '@/store/projects'
 import styles from './file-browser.module.css'
 import { FileBrowserView } from './file-browser.view'
+
+const logger = createLogger('FileBrowser')
 
 type DependencyFile = {
   id: string
@@ -34,16 +36,19 @@ type DependencyFile = {
  */
 export function FileBrowser() {
   const { user } = useAuth()
-  const project = useAtomValue(activeProjectAtom)
-  const isReadOnlyMode = useAtomValue(isReadOnlyModeAtom)
+  const { activeProject: project, isReadOnly: isReadOnlyMode } =
+    useActiveProject()
   const currentProjectId = useAtomValue(currentProjectIdAtom)
   const dependencyFiles = useAtomValue(dependencyFilesAtom)
+  const setDependencyFiles = useSetAtom(dependencyFilesAtom)
   const setCode = useSetAtom(codeAtom)
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
   const { createFile } = useCreateFile()
   const { deleteFile } = useDeleteFile()
   const { setMainFile } = useSetMainFile()
   const { fetchDependencyFiles } = useFetchDependencyFiles()
+  const toast = useToastActions()
+  const { confirm, dialogProps } = useConfirmDialog()
 
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [selectedDependencyFileId, setSelectedDependencyFileId] = useState<
@@ -55,36 +60,56 @@ export function FileBrowser() {
 
   // Track last project ID to only trigger on project change, not on every update
   const lastProjectIdRef = useRef<string | null>(null)
+  // Track dependencies to refetch when they change
+  const lastDependenciesRef = useRef<string | null>(null)
 
   // Auto-select main file on project change and fetch dependencies
   useEffect(() => {
-    if (project && project.files.length > 0) {
+    if (project?.files && project.files.length > 0) {
       // Only reset selection when project ID actually changes
       if (project.id !== lastProjectIdRef.current) {
         lastProjectIdRef.current = project.id
         const mainFile = project.files.find((f) => f.isMain) || project.files[0]
         setSelectedFileId(mainFile.id)
         setCurrentFileId(mainFile.id)
-        setCode(mainFile.content.value)
+        setCode(mainFile.content?.value ?? '')
         setSelectedDependencyFileId(null) // Reset dependency selection
-
-        // Fetch dependencies when project changes
-        if (project.dependencies.length > 0) {
-          fetchDependencyFiles()
-        }
       }
     }
-  }, [project, setCurrentFileId, setCode, fetchDependencyFiles])
+  }, [project, setCurrentFileId, setCode])
+
+  // Fetch dependency files when dependencies change
+  useEffect(() => {
+    if (!project) return
+
+    // Create a stable key from dependency IDs
+    const dependencyKey =
+      project.dependencies
+        ?.map((d) => d.id)
+        .sort((a, b) => a.localeCompare(b))
+        .join(',') ?? ''
+
+    if (dependencyKey !== lastDependenciesRef.current) {
+      lastDependenciesRef.current = dependencyKey
+
+      if (project.dependencies && project.dependencies.length > 0) {
+        fetchDependencyFiles()
+      } else {
+        // Clear dependency files when no dependencies
+        setDependencyFiles([])
+      }
+    }
+  }, [project, fetchDependencyFiles, setDependencyFiles])
 
   const handleSelectFile = useCallback(
     (fileId: string) => {
-      if (!project) return
+      if (!project?.files) return
       const file = project.files.find((f) => f.id === fileId)
       if (file) {
         setSelectedFileId(file.id)
         setSelectedDependencyFileId(null) // Clear dependency selection
         setCurrentFileId(file.id)
-        setCode(file.content.value)
+        setCode(file.content?.value ?? '')
       }
     },
     [project, setCurrentFileId, setCode]
@@ -114,16 +139,25 @@ export function FileBrowser() {
       setShowNewFileDialog(false)
       setNewFileName('')
     } catch (error) {
-      console.error('Failed to create file:', error)
+      logger.error('Failed to create file:', error)
+      toast.error('Failed to create file')
     } finally {
       setLoading(false)
     }
-  }, [currentProjectId, project?.id, newFileName, user, createFile])
+  }, [currentProjectId, project?.id, newFileName, user, createFile, toast])
 
   const handleDeleteFile = useCallback(
     async (fileId: string) => {
       const projectId = currentProjectId || project?.id
-      if (!confirm('Delete this file?') || !projectId || !user) return
+      if (!projectId || !user) return
+
+      const confirmed = await confirm({
+        title: 'Delete file',
+        message: 'Are you sure you want to delete this file?',
+        confirmLabel: 'Delete',
+        variant: 'danger'
+      })
+      if (!confirmed) return
 
       try {
         await deleteFile({
@@ -132,10 +166,11 @@ export function FileBrowser() {
           fileId
         })
       } catch (error) {
-        console.error('Failed to delete file:', error)
+        logger.error('Failed to delete file:', error)
+        toast.error('Failed to delete file')
       }
     },
-    [currentProjectId, project?.id, user, deleteFile]
+    [currentProjectId, project?.id, user, deleteFile, toast, confirm]
   )
 
   const handleSetMainFile = useCallback(
@@ -150,10 +185,11 @@ export function FileBrowser() {
           fileId
         })
       } catch (error) {
-        console.error('Failed to set main file:', error)
+        logger.error('Failed to set main file:', error)
+        toast.error('Failed to set main file')
       }
     },
-    [currentProjectId, project?.id, user, setMainFile]
+    [currentProjectId, project?.id, user, setMainFile, toast]
   )
 
   const openNewFileDialog = useCallback(() => setShowNewFileDialog(true), [])
@@ -170,17 +206,17 @@ export function FileBrowser() {
   const canEdit = !!(user && !isReadOnlyMode && project.userId === user.id)
 
   // Map project files to view format (extract primitive values from VOs)
-  const files = project.files.map((f) => ({
+  const files = (project.files ?? []).map((f) => ({
     id: f.id,
-    name: f.name.value,
+    name: f.name?.value ?? '',
     isMain: f.isMain
   }))
 
   // Map project info to view format
   const projectInfo = {
-    name: project.name.value,
-    visibility: project.visibility.value,
-    isLibrary: project.isLibrary,
+    name: project.name?.value ?? '',
+    visibility: project.visibility?.value ?? 'private',
+    isLibrary: project.isLibrary ?? false,
     tags: project.tags ?? []
   }
 
@@ -215,20 +251,23 @@ export function FileBrowser() {
   ) : null
 
   return (
-    <FileBrowserView
-      project={projectInfo}
-      files={files}
-      selectedFileId={selectedFileId}
-      canEdit={canEdit}
-      isReadOnly={isReadOnlyMode}
-      dependencies={dependencyFiles}
-      selectedDependencyFileId={selectedDependencyFileId}
-      onSelectFile={handleSelectFile}
-      onSelectDependencyFile={handleSelectDependencyFile}
-      onNewFileClick={openNewFileDialog}
-      onSetMainFile={handleSetMainFile}
-      onDeleteFile={handleDeleteFile}
-      newFileDialog={newFileDialog}
-    />
+    <>
+      <FileBrowserView
+        project={projectInfo}
+        files={files}
+        selectedFileId={selectedFileId}
+        canEdit={canEdit}
+        isReadOnly={isReadOnlyMode}
+        dependencies={dependencyFiles}
+        selectedDependencyFileId={selectedDependencyFileId}
+        onSelectFile={handleSelectFile}
+        onSelectDependencyFile={handleSelectDependencyFile}
+        onNewFileClick={openNewFileDialog}
+        onSetMainFile={handleSetMainFile}
+        onDeleteFile={handleDeleteFile}
+        newFileDialog={newFileDialog}
+      />
+      <ConfirmDialog {...dialogProps} />
+    </>
   )
 }

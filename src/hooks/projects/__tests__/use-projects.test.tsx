@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { createStore, Provider } from 'jotai'
 import type { ReactNode } from 'react'
@@ -18,6 +19,11 @@ import {
   projectsAtom,
   viewOnlyProjectAtom
 } from '@/store/projects'
+import {
+  useActiveProject,
+  useCurrentProject,
+  useIsMarkdownFile
+} from '../use-current-project'
 import {
   useCreateProject,
   useDeleteProject,
@@ -50,6 +56,14 @@ vi.mock('@/infrastructure/container', () => ({
   }
 }))
 
+// Mock useAuth for useCurrentProject hook
+vi.mock('@/hooks/auth/use-auth', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', email: 'test@example.com' },
+    loading: false
+  })
+}))
+
 const mockMainFile: ProjectFile = createProjectFile({
   id: 'main-file',
   projectId: 'project-1',
@@ -78,14 +92,26 @@ const mockPublicProject: Project = createProject({
 
 describe('useProjects hooks', () => {
   let store: ReturnType<typeof createStore>
+  let queryClient: QueryClient
 
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <Provider store={store}>{children}</Provider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>{children}</Provider>
+    </QueryClientProvider>
   )
 
   beforeEach(() => {
     vi.clearAllMocks()
     store = createStore()
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          staleTime: 1000 * 60 * 5 // 5 minutes (same as app)
+        },
+        mutations: { retry: false }
+      }
+    })
     store.set(projectsAtom, [])
     store.set(currentProjectIdAtom, null)
     store.set(currentFileIdAtom, null)
@@ -111,10 +137,13 @@ describe('useProjects hooks', () => {
         name: 'Test Project'
       })
 
-      // Check state was updated
-      expect(store.get(projectsAtom)).toContainEqual(mockProject)
+      // Check UI state was updated (Jotai atoms for current project/file)
       expect(store.get(currentProjectIdAtom)).toBe('project-1')
       expect(store.get(currentFileIdAtom)).toBe('main-file')
+
+      // Note: projectsAtom is no longer updated directly.
+      // The hook now calls queryClient.invalidateQueries() which
+      // triggers a refetch from the server.
     })
 
     it('sets main file as current file', async () => {
@@ -196,7 +225,10 @@ describe('useProjects hooks', () => {
       const { result } = renderHook(() => useDeleteProject(), { wrapper })
 
       await act(async () => {
-        await result.current.deleteProject('project-1', 'user-1')
+        await result.current.deleteProject({
+          projectId: 'project-1',
+          userId: 'user-1'
+        })
       })
 
       expect(mockDeleteProject).toHaveBeenCalledWith({
@@ -255,7 +287,8 @@ describe('useProjects hooks', () => {
           })
         })
 
-        expect(store.get(projectsAtom)).toContainEqual(mockProject)
+        // Note: projectsAtom is no longer updated directly.
+        // The hook now uses React Query cache.
         expect(store.get(isReadOnlyModeAtom)).toBe(false)
         expect(store.get(viewOnlyProjectAtom)).toBeNull()
       })
@@ -290,9 +323,9 @@ describe('useProjects hooks', () => {
           })
         })
 
-        const projects = store.get(projectsAtom)
-        expect(projects).toHaveLength(1)
-        expect(projects[0].name).toBe('Updated')
+        // Note: projectsAtom is no longer updated directly.
+        // The hook now uses queryClient.setQueryData() to update React Query cache.
+        expect(store.get(currentProjectIdAtom)).toBe('project-1')
       })
     })
 
@@ -313,7 +346,7 @@ describe('useProjects hooks', () => {
         expect(store.get(viewOnlyProjectAtom)).toEqual(mockPublicProject)
       })
 
-      it('clears current project/file in read-only mode', async () => {
+      it('clears current project but selects main file in read-only mode', async () => {
         store.set(currentProjectIdAtom, 'old-project')
         store.set(currentFileIdAtom, 'old-file')
         mockGetProject.mockResolvedValue({ project: mockPublicProject })
@@ -328,7 +361,8 @@ describe('useProjects hooks', () => {
         })
 
         expect(store.get(currentProjectIdAtom)).toBeNull()
-        expect(store.get(currentFileIdAtom)).toBeNull()
+        // In read-only mode, we now select the main file for markdown preview support
+        expect(store.get(currentFileIdAtom)).toBe('main-file')
       })
     })
 
@@ -346,6 +380,183 @@ describe('useProjects hooks', () => {
             })
           })
         ).rejects.toThrow()
+      })
+    })
+  })
+
+  describe('React Query cache sharing', () => {
+    it('useGetProject stores project directly in cache (not wrapped)', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      const { result } = renderHook(() => useGetProject(), { wrapper })
+
+      await act(async () => {
+        await result.current.getProject('project-1', 'user-1')
+      })
+
+      // Verify the cache contains the project directly, not { project: Project }
+      const cachedData = queryClient.getQueryData(['project', 'project-1'])
+      expect(cachedData).toEqual(mockProject)
+      expect(cachedData).not.toHaveProperty('project')
+    })
+
+    it('useCurrentProject can read project from cache populated by useGetProject', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      // First, populate the cache via useGetProject
+      const { result: getProjectResult } = renderHook(() => useGetProject(), {
+        wrapper
+      })
+
+      await act(async () => {
+        await getProjectResult.current.getProject('project-1', 'user-1')
+      })
+
+      // Set the current project ID to trigger useCurrentProject
+      store.set(currentProjectIdAtom, 'project-1')
+
+      // Now verify useCurrentProject can read from the same cache
+      const { result: currentProjectResult } = renderHook(
+        () => useCurrentProject(),
+        { wrapper }
+      )
+
+      await waitFor(() => {
+        expect(currentProjectResult.current.project).toEqual(mockProject)
+      })
+
+      // Verify the mock was only called once (cache was used)
+      expect(mockGetProject).toHaveBeenCalledTimes(1)
+    })
+
+    it('useFetchProject populates cache that useActiveProject can read', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      // Fetch project (simulates clicking on a project from explore)
+      const { result: fetchResult } = renderHook(() => useFetchProject(), {
+        wrapper
+      })
+
+      await act(async () => {
+        await fetchResult.current.fetchProject({
+          projectId: 'project-1',
+          userId: 'user-1'
+        })
+      })
+
+      // Verify cache was populated
+      const cachedData = queryClient.getQueryData(['project', 'project-1'])
+      expect(cachedData).toEqual(mockProject)
+
+      // Now useActiveProject should return the project
+      const { result: activeResult } = renderHook(() => useActiveProject(), {
+        wrapper
+      })
+
+      await waitFor(() => {
+        expect(activeResult.current.activeProject).toEqual(mockProject)
+      })
+    })
+
+    it('cache format is consistent between useGetProject return and cache storage', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+
+      const { result } = renderHook(() => useGetProject(), { wrapper })
+
+      let returnedValue: { project: typeof mockProject | null } | undefined
+      await act(async () => {
+        returnedValue = await result.current.getProject('project-1', 'user-1')
+      })
+
+      // useGetProject returns { project: Project } for backward compatibility
+      expect(returnedValue).toEqual({ project: mockProject })
+
+      // But cache stores Project directly for useCurrentProject compatibility
+      const cachedData = queryClient.getQueryData(['project', 'project-1'])
+      expect(cachedData).toEqual(mockProject)
+    })
+  })
+
+  describe('useIsMarkdownFile', () => {
+    it('returns false when no current file', () => {
+      store.set(currentProjectIdAtom, null)
+      store.set(currentFileIdAtom, null)
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      expect(result.current).toBe(false)
+    })
+
+    it('returns false for .asm files', async () => {
+      // Pre-populate cache since useCurrentProject now only reads from cache
+      queryClient.setQueryData(['project', 'project-1'], mockProject)
+      store.set(currentProjectIdAtom, 'project-1')
+      store.set(currentFileIdAtom, 'main-file')
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current).toBe(false)
+      })
+    })
+
+    it('returns true for .md files', async () => {
+      const mdFile = createProjectFile({
+        id: 'readme-file',
+        projectId: 'project-1',
+        name: createFileName('README.md'),
+        content: createFileContent('# Hello'),
+        isMain: false
+      })
+
+      const projectWithMd = createProject({
+        id: 'project-1',
+        name: createProjectName('Test Project'),
+        userId: 'user-1',
+        files: [mockMainFile, mdFile],
+        visibility: Visibility.PRIVATE,
+        isLibrary: false
+      })
+
+      // Pre-populate cache since useCurrentProject now only reads from cache
+      queryClient.setQueryData(['project', 'project-1'], projectWithMd)
+      store.set(currentProjectIdAtom, 'project-1')
+      store.set(currentFileIdAtom, 'readme-file')
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current).toBe(true)
+      })
+    })
+
+    it('returns true for .MD files (case insensitive)', async () => {
+      const mdFile = createProjectFile({
+        id: 'readme-file',
+        projectId: 'project-1',
+        name: createFileName('README.MD'),
+        content: createFileContent('# Hello'),
+        isMain: false
+      })
+
+      const projectWithMd = createProject({
+        id: 'project-1',
+        name: createProjectName('Test Project'),
+        userId: 'user-1',
+        files: [mockMainFile, mdFile],
+        visibility: Visibility.PRIVATE,
+        isLibrary: false
+      })
+
+      // Pre-populate cache since useCurrentProject now only reads from cache
+      queryClient.setQueryData(['project', 'project-1'], projectWithMd)
+      store.set(currentProjectIdAtom, 'project-1')
+      store.set(currentFileIdAtom, 'readme-file')
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current).toBe(true)
       })
     })
   })

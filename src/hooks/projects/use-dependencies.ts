@@ -3,121 +3,164 @@
  * Provides a clean interface to interact with the domain layer
  */
 
-import { useAtomValue, useSetAtom } from 'jotai'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('Dependencies')
+
+import { useSetAtom } from 'jotai'
 import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
-import {
-  currentProjectIdAtom,
-  type DependencyProject,
-  dependencyFilesAtom,
-  isReadOnlyModeAtom,
-  projectsAtom,
-  viewOnlyProjectAtom
-} from '@/store/projects'
-import { useUseCase } from '../core'
+import { type DependencyProject, dependencyFilesAtom } from '@/store/projects'
+import { useActiveProject } from './use-current-project'
 
 /**
  * Hook to add a dependency to a project
  */
 export function useAddDependency() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.addDependency
-  )
+  const queryClient = useQueryClient()
 
-  const addDependency = useCallback(
-    (projectId: string, userId: string, dependencyId: string) =>
-      execute({ projectId, userId, dependencyId }),
-    [execute]
-  )
-
-  return { addDependency, loading, error, reset, data }
+  return useMutation({
+    mutationFn: async ({
+      projectId,
+      userId,
+      dependencyId
+    }: {
+      projectId: string
+      userId: string
+      dependencyId: string
+    }) => {
+      const result = await container.addDependency.execute({
+        projectId,
+        userId,
+        dependencyId
+      })
+      return { result, userId, projectId }
+    },
+    onSuccess: ({ projectId }) => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    }
+  })
 }
 
 /**
  * Hook to remove a dependency from a project
  */
 export function useRemoveDependency() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.removeDependency
-  )
+  const queryClient = useQueryClient()
 
-  const removeDependency = useCallback(
-    (projectId: string, userId: string, dependencyId: string) =>
-      execute({ projectId, userId, dependencyId }),
-    [execute]
-  )
-
-  return { removeDependency, loading, error, reset, data }
+  return useMutation({
+    mutationFn: async ({
+      projectId,
+      userId,
+      dependencyId
+    }: {
+      projectId: string
+      userId: string
+      dependencyId: string
+    }) => {
+      const result = await container.removeDependency.execute({
+        projectId,
+        userId,
+        dependencyId
+      })
+      return { result, userId, projectId }
+    },
+    onSuccess: ({ userId, projectId }) => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+    }
+  })
 }
+
+/**
+ * Pending dependency fetch promises by project ID
+ * Used to deduplicate concurrent fetches for dependencies
+ */
+const pendingDependencyFetches = new Map<string, Promise<DependencyProject[]>>()
 
 /**
  * Hook to fetch dependency files for the current project
  * Groups files by their parent project
+ * Uses manual deduplication to prevent multiple concurrent fetches
  */
 export function useFetchDependencyFiles() {
-  const isReadOnly = useAtomValue(isReadOnlyModeAtom)
-  const currentProjectId = useAtomValue(currentProjectIdAtom)
-  const viewOnlyProject = useAtomValue(viewOnlyProjectAtom)
-  const projects = useAtomValue(projectsAtom)
+  const { activeProject } = useActiveProject()
   const setDependencyFiles = useSetAtom(dependencyFilesAtom)
+
+  // Extract stable values from activeProject to avoid reference changes
+  const projectId = activeProject?.id
+  const userId = activeProject?.userId
+  const hasDependencies = (activeProject?.dependencies?.length ?? 0) > 0
 
   const fetchDependencyFiles = useCallback(async (): Promise<
     DependencyProject[]
   > => {
-    // Get the active project based on mode
-    const currentProject = isReadOnly
-      ? viewOnlyProject
-      : projects.find((p) => p.id === currentProjectId)
-
-    if (!currentProject || currentProject.dependencies.length === 0) {
+    if (!projectId || !userId || !hasDependencies) {
       setDependencyFiles([])
       return []
     }
 
-    try {
-      const result = await container.getProjectWithDependencies.execute({
-        projectId: currentProject.id,
-        userId: currentProject.userId
-      })
+    // Check if there's already a pending fetch for this project's dependencies
+    const pendingKey = `${projectId}:${userId ?? ''}`
+    const pendingFetch = pendingDependencyFetches.get(pendingKey)
+    if (pendingFetch) {
+      // Wait for the existing fetch to complete
+      return pendingFetch
+    }
 
-      // Group files by project (excluding the current project's files)
-      const projectsMap = new Map<string, DependencyProject>()
+    // Create a new fetch promise
+    const fetchPromise = (async () => {
+      try {
+        const result = await container.getProjectWithDependencies.execute({
+          projectId,
+          userId
+        })
 
-      for (const file of result.files) {
-        // Skip files from the current project
-        if (file.projectId === currentProject.id) continue
+        // Group files by project (excluding the current project's files)
+        const projectsMap = new Map<string, DependencyProject>()
 
-        if (!projectsMap.has(file.projectId)) {
-          projectsMap.set(file.projectId, {
-            id: file.projectId,
-            name: file.projectName,
-            files: []
+        for (const file of result.files) {
+          // Skip files from the current project
+          if (file.projectId === projectId) continue
+
+          if (!projectsMap.has(file.projectId)) {
+            projectsMap.set(file.projectId, {
+              id: file.projectId,
+              name: file.projectName,
+              files: []
+            })
+          }
+
+          projectsMap.get(file.projectId)!.files.push({
+            id: file.id,
+            name: file.name,
+            content: file.content,
+            projectId: file.projectId
           })
         }
 
-        projectsMap.get(file.projectId)!.files.push({
-          id: file.id,
-          name: file.name,
-          content: file.content,
-          projectId: file.projectId
-        })
+        const dependencyProjects = Array.from(projectsMap.values())
+        setDependencyFiles(dependencyProjects)
+        return dependencyProjects
+      } catch (error) {
+        logger.error('Failed to fetch dependency files:', error)
+        setDependencyFiles([])
+        return []
       }
+    })()
 
-      const dependencyProjects = Array.from(projectsMap.values())
-      setDependencyFiles(dependencyProjects)
-      return dependencyProjects
-    } catch (error) {
-      console.error('Failed to fetch dependency files:', error)
-      setDependencyFiles([])
-      return []
+    // Store the pending promise
+    pendingDependencyFetches.set(pendingKey, fetchPromise)
+
+    try {
+      return await fetchPromise
+    } finally {
+      // Clean up the pending promise
+      pendingDependencyFetches.delete(pendingKey)
     }
-  }, [
-    isReadOnly,
-    currentProjectId,
-    viewOnlyProject,
-    projects,
-    setDependencyFiles
-  ])
+  }, [projectId, userId, hasDependencies, setDependencyFiles])
 
   return { fetchDependencyFiles }
 }

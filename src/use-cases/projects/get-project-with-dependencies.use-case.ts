@@ -71,8 +71,9 @@ export const createGetProjectWithDependenciesUseCase = (
 
         // Check user has access to this project as a dependency
         // User can access if: they own it, it's public, or it's a library
-        const canAccess = await authorizationService.canAccessAsDependency(
-          id,
+        // Pass the already-fetched project to avoid refetching
+        const canAccess = authorizationService.canAccessAsDependency(
+          project,
           userId
         )
         if (!canAccess) {

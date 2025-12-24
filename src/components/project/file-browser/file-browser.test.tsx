@@ -26,6 +26,7 @@ const mockCreateFile = vi.fn()
 const mockDeleteFile = vi.fn()
 const mockSetMainFile = vi.fn()
 const mockFetchDependencyFiles = vi.fn()
+const mockConfirm = vi.fn()
 
 const mockUser: User = {
   id: 'user-1',
@@ -38,9 +39,27 @@ const mockUser: User = {
   }
 }
 
+// Mock data that will be used by the mock hooks
+let mockProjectForHook: Project | null = null
+let mockIsReadOnlyForHook = false
+
 vi.mock('@/hooks', () => ({
   useAuth: () => ({
     user: mockUser
+  }),
+  useActiveProject: () => ({
+    activeProject: mockProjectForHook,
+    isReadOnly: mockIsReadOnlyForHook
+  }),
+  useConfirmDialog: () => ({
+    confirm: mockConfirm,
+    dialogProps: {
+      open: false,
+      title: '',
+      message: '',
+      onConfirm: vi.fn(),
+      onCancel: vi.fn()
+    }
   }),
   useCreateFile: () => ({
     createFile: mockCreateFile,
@@ -57,6 +76,13 @@ vi.mock('@/hooks', () => ({
   useFetchDependencyFiles: () => ({
     fetchDependencyFiles: mockFetchDependencyFiles,
     loading: false
+  }),
+  useToastActions: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    remove: vi.fn()
   })
 }))
 
@@ -108,12 +134,17 @@ describe('FileBrowser', () => {
     store.set(codeAtom, '')
     store.set(viewOnlyProjectAtom, null)
 
+    // Set mock hook values
+    mockProjectForHook = mockProject
+    mockIsReadOnlyForHook = false
+
     // Mock confirm dialog
-    vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
+    mockConfirm.mockResolvedValue(true)
   })
 
   describe('rendering', () => {
     it('renders nothing when no project', () => {
+      mockProjectForHook = null
       store.set(projectsAtom, [])
       store.set(currentProjectIdAtom, null)
 
@@ -137,6 +168,7 @@ describe('FileBrowser', () => {
     })
 
     it('hides new file button in read-only mode', () => {
+      mockIsReadOnlyForHook = true
       store.set(isReadOnlyModeAtom, true)
       store.set(viewOnlyProjectAtom, mockProject)
       store.set(currentProjectIdAtom, null)
@@ -258,7 +290,7 @@ describe('FileBrowser', () => {
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
       await user.click(deleteButtons[0])
 
-      expect(globalThis.confirm).toHaveBeenCalledWith('Delete this file?')
+      expect(mockConfirm).toHaveBeenCalled()
     })
 
     it('deletes file when confirmed', async () => {
@@ -279,7 +311,7 @@ describe('FileBrowser', () => {
     })
 
     it('does not delete when cancelled', async () => {
-      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
+      mockConfirm.mockResolvedValue(false)
       const user = userEvent.setup()
       renderComponent()
 
@@ -314,6 +346,7 @@ describe('FileBrowser', () => {
 
   describe('read-only mode', () => {
     beforeEach(() => {
+      mockIsReadOnlyForHook = true
       store.set(isReadOnlyModeAtom, true)
       store.set(viewOnlyProjectAtom, mockProject)
       store.set(currentProjectIdAtom, null)
@@ -354,7 +387,21 @@ describe('FileBrowser', () => {
       ]
     }
 
+    // Create a project with dependencies declared
+    const mockProjectWithDeps: Project = createProject({
+      id: 'project-1',
+      name: createProjectName('Test Project'),
+      userId: 'user-1',
+      files: [mockMainFile, mockSecondFile],
+      visibility: createVisibility('private'),
+      isLibrary: false,
+      dependencies: [{ id: 'lib-project', name: 'Library Project' }]
+    })
+
     beforeEach(() => {
+      // Set project with dependencies
+      mockProjectForHook = mockProjectWithDeps
+      store.set(projectsAtom, [mockProjectWithDeps])
       store.set(dependencyFilesAtom, [mockDependencyProject])
     })
 

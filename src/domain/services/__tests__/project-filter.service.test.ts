@@ -14,6 +14,7 @@ describe('filterProjects', () => {
     authorUsername: 'testuser',
     name: createProjectName('Test Project'),
     description: 'A test description',
+    thumbnailPath: null,
     visibility: createVisibility('public'),
     isLibrary: false,
     files: [],

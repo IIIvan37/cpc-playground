@@ -9,6 +9,7 @@ import { UserProfile } from './user-profile'
 // Mock hooks
 const mockSignOut = vi.fn()
 const mockUpdateUsername = vi.fn().mockResolvedValue(undefined)
+const mockConfirm = vi.fn()
 
 vi.mock('@/hooks', async () => {
   const actual = await vi.importActual('@/hooks')
@@ -16,6 +17,16 @@ vi.mock('@/hooks', async () => {
     ...actual,
     useAuth: () => ({
       signOut: mockSignOut
+    }),
+    useConfirmDialog: () => ({
+      confirm: mockConfirm,
+      dialogProps: {
+        open: false,
+        title: '',
+        message: '',
+        onConfirm: vi.fn(),
+        onCancel: vi.fn()
+      }
     }),
     useUserProfile: () => ({
       profile: { username: 'testuser' },
@@ -55,8 +66,7 @@ describe('UserProfile', () => {
     vi.clearAllMocks()
     mockSignOut.mockResolvedValue({ error: null })
     mockUpdateUsername.mockResolvedValue(undefined)
-    // Mock window.confirm
-    vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
+    mockConfirm.mockResolvedValue(true)
   })
 
   describe('rendering', () => {
@@ -92,14 +102,12 @@ describe('UserProfile', () => {
       // Then click sign out
       await user.click(screen.getByRole('button', { name: /sign out/i }))
 
-      expect(globalThis.confirm).toHaveBeenCalledWith(
-        'Are you sure you want to sign out?'
-      )
+      expect(mockConfirm).toHaveBeenCalled()
       expect(mockSignOut).toHaveBeenCalled()
     })
 
     it('does not call signOut when cancelled', async () => {
-      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
+      mockConfirm.mockResolvedValue(false)
       const user = userEvent.setup()
       renderWithStore()
 
@@ -162,12 +170,16 @@ describe('UserProfile', () => {
 
       await user.click(screen.getByRole('button', { name: /testuser/i }))
 
+      // Dialog should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+
       const input = screen.getByDisplayValue('testuser')
       await user.clear(input)
       await user.type(input, 'newusername')
 
       await user.click(screen.getByRole('button', { name: /save username/i }))
 
+      // Wait for modal to close after save
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
       })

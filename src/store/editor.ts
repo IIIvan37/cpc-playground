@@ -1,23 +1,6 @@
 import { atom } from 'jotai'
 import type { AssemblerType } from '@/domain/services/assembler.interface'
 import { getAssemblerRegistry } from '@/infrastructure/assemblers'
-import { activeProjectAtom, currentFileIdAtom } from './projects'
-
-// Current file name (derived from active project and file id)
-export const currentFileNameAtom = atom((get) => {
-  const project = get(activeProjectAtom)
-  const currentFileId = get(currentFileIdAtom)
-  if (!project || !currentFileId) return null
-  const file = project.files.find((f) => f.id === currentFileId)
-  return file?.name.value ?? null
-})
-
-// Check if current file is a markdown file
-export const isMarkdownFileAtom = atom((get) => {
-  const fileName = get(currentFileNameAtom)
-  if (!fileName) return false
-  return fileName.toLowerCase().endsWith('.md')
-})
 
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly

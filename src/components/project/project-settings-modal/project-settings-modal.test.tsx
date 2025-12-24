@@ -19,15 +19,34 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }))
 
-// Mock hooks
-const mockHandleSave = vi.fn()
-const mockHandleDelete = vi.fn()
-const mockHandleAddTag = vi.fn()
-const mockHandleRemoveTag = vi.fn()
-const mockHandleAddDependency = vi.fn()
-const mockHandleRemoveDependency = vi.fn()
-const mockHandleAddShare = vi.fn()
-const mockHandleRemoveShare = vi.fn()
+// Mock hooks - use vi.hoisted for mocks used inside vi.mock
+const {
+  mockHandleSave,
+  mockHandleDelete,
+  mockHandleAddTag,
+  mockHandleRemoveTag,
+  mockHandleAddDependency,
+  mockHandleRemoveDependency,
+  mockHandleAddShare,
+  mockHandleRemoveShare,
+  mockSearchUsers,
+  mockToastError,
+  mockToastSuccess,
+  mockConfirm
+} = vi.hoisted(() => ({
+  mockHandleSave: vi.fn(),
+  mockHandleDelete: vi.fn(),
+  mockHandleAddTag: vi.fn(),
+  mockHandleRemoveTag: vi.fn(),
+  mockHandleAddDependency: vi.fn(),
+  mockHandleRemoveDependency: vi.fn(),
+  mockHandleAddShare: vi.fn(),
+  mockHandleRemoveShare: vi.fn(),
+  mockSearchUsers: vi.fn(),
+  mockToastError: vi.fn(),
+  mockToastSuccess: vi.fn(),
+  mockConfirm: vi.fn()
+}))
 
 const mockUser: User = {
   id: 'user-1',
@@ -40,10 +59,33 @@ const mockUser: User = {
   }
 }
 
+// Mock data that will be used by the mock hooks
+let mockCurrentProjectForHook: Project | null = null
+let mockAvailableDepsForHook: Project[] = []
+
 vi.mock('@/hooks', () => ({
   useAuth: () => ({
     user: mockUser
   }),
+  useConfirmDialog: () => ({
+    confirm: mockConfirm,
+    dialogProps: {
+      open: false,
+      title: '',
+      message: '',
+      onConfirm: vi.fn(),
+      onCancel: vi.fn()
+    }
+  }),
+  useCurrentProject: () => ({
+    project: mockCurrentProjectForHook,
+    isLoading: false
+  }),
+  useUserProjects: () => ({
+    projects: mockAvailableDepsForHook,
+    isLoading: false
+  }),
+  useAvailableDependencies: () => mockAvailableDepsForHook,
   useHandleSaveProject: () => ({
     handleSave: mockHandleSave,
     loading: false
@@ -75,6 +117,19 @@ vi.mock('@/hooks', () => ({
   useHandleRemoveShare: () => ({
     handleRemoveShare: mockHandleRemoveShare,
     loading: false
+  }),
+  useSearchUsers: () => ({
+    users: [],
+    loading: false,
+    error: null,
+    searchUsers: mockSearchUsers
+  }),
+  useToastActions: () => ({
+    success: mockToastSuccess,
+    error: mockToastError,
+    warning: vi.fn(),
+    info: vi.fn(),
+    remove: vi.fn()
   })
 }))
 
@@ -125,6 +180,10 @@ describe('ProjectSettingsModal', () => {
     store.set(projectsAtom, [mockProject, mockLibraryProject])
     store.set(currentProjectIdAtom, 'project-1')
 
+    // Set mock hook values
+    mockCurrentProjectForHook = mockProject
+    mockAvailableDepsForHook = [mockLibraryProject]
+
     // Default mock implementations
     mockHandleSave.mockResolvedValue({ success: true })
     mockHandleDelete.mockResolvedValue({ success: true })
@@ -135,12 +194,13 @@ describe('ProjectSettingsModal', () => {
     mockHandleAddShare.mockResolvedValue({ success: true })
     mockHandleRemoveShare.mockResolvedValue({ success: true })
 
-    // Mock window.alert
-    vi.spyOn(globalThis, 'alert').mockImplementation(() => {})
+    // Mock confirm dialog
+    mockConfirm.mockResolvedValue(true)
   })
 
   describe('rendering', () => {
     it('renders nothing when no project', () => {
+      mockCurrentProjectForHook = null
       store.set(currentProjectIdAtom, null)
 
       const { container } = renderComponent()
@@ -220,7 +280,10 @@ describe('ProjectSettingsModal', () => {
       await user.click(screen.getByRole('button', { name: /save/i }))
 
       await waitFor(() => {
-        expect(globalThis.alert).toHaveBeenCalledWith('Save failed')
+        expect(mockToastError).toHaveBeenCalledWith(
+          'Failed to save settings',
+          'Save failed'
+        )
       })
     })
   })
@@ -233,11 +296,8 @@ describe('ProjectSettingsModal', () => {
       await user.click(screen.getByRole('button', { name: /delete project/i }))
 
       await waitFor(() => {
-        expect(mockHandleDelete).toHaveBeenCalledWith(
-          'project-1',
-          'user-1',
-          'Test Project'
-        )
+        expect(mockConfirm).toHaveBeenCalled()
+        expect(mockHandleDelete).toHaveBeenCalledWith('project-1', 'user-1')
       })
     })
 
