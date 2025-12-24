@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { Project } from '@/domain/entities/project.entity'
 import { container } from '@/infrastructure/container'
 
 /**
@@ -27,10 +28,22 @@ export function useAddTag() {
         userId,
         tagName
       })
-      return { result, userId, projectId }
+      return { result, userId, projectId, tagName }
     },
-    onSuccess: ({ projectId }) => {
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    onSuccess: ({ userId, projectId, tagName }) => {
+      // Update the project in cache directly to add the new tag
+      queryClient.setQueryData<Project>(
+        ['project', projectId],
+        (oldProject) => {
+          if (!oldProject) return oldProject
+          return {
+            ...oldProject,
+            tags: [...(oldProject.tags || []), tagName]
+          }
+        }
+      )
+      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
     }
   })
 }
@@ -56,10 +69,20 @@ export function useRemoveTag() {
         userId,
         tagIdOrName
       })
-      return { result, userId, projectId }
+      return { result, userId, projectId, tagIdOrName }
     },
-    onSuccess: ({ userId, projectId }) => {
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    onSuccess: ({ userId, projectId, tagIdOrName }) => {
+      // Update the project in cache directly to remove the tag
+      queryClient.setQueryData<Project>(
+        ['project', projectId],
+        (oldProject) => {
+          if (!oldProject) return oldProject
+          return {
+            ...oldProject,
+            tags: (oldProject.tags || []).filter((tag) => tag !== tagIdOrName)
+          }
+        }
+      )
       queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
       queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
     }

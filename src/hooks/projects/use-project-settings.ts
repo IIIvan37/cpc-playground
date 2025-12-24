@@ -185,12 +185,18 @@ export function useHandleAddDependency() {
     async (
       projectId: string,
       userId: string,
-      dependencyId: string
+      dependencyId: string,
+      dependencyName: string
     ): Promise<OperationResult> => {
       if (!dependencyId) return { success: false }
 
       try {
-        await mutation.mutateAsync({ projectId, userId, dependencyId })
+        await mutation.mutateAsync({
+          projectId,
+          userId,
+          dependencyId,
+          dependencyName
+        })
         return { success: true }
       } catch (error) {
         return {

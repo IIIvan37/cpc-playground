@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { Project } from '@/domain/entities/project.entity'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('Dependencies')
@@ -24,21 +25,38 @@ export function useAddDependency() {
     mutationFn: async ({
       projectId,
       userId,
-      dependencyId
+      dependencyId,
+      dependencyName
     }: {
       projectId: string
       userId: string
       dependencyId: string
+      dependencyName: string
     }) => {
       const result = await container.addDependency.execute({
         projectId,
         userId,
         dependencyId
       })
-      return { result, userId, projectId }
+      return {
+        result,
+        userId,
+        projectId,
+        dependency: { id: dependencyId, name: dependencyName }
+      }
     },
-    onSuccess: ({ projectId }) => {
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    onSuccess: ({ projectId, dependency }) => {
+      // Update the project in cache directly to add the new dependency
+      queryClient.setQueryData<Project>(
+        ['project', projectId],
+        (oldProject) => {
+          if (!oldProject) return oldProject
+          return {
+            ...oldProject,
+            dependencies: [...(oldProject.dependencies || []), dependency]
+          }
+        }
+      )
     }
   })
 }
@@ -64,10 +82,22 @@ export function useRemoveDependency() {
         userId,
         dependencyId
       })
-      return { result, userId, projectId }
+      return { result, userId, projectId, dependencyId }
     },
-    onSuccess: ({ userId, projectId }) => {
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    onSuccess: ({ userId, projectId, dependencyId }) => {
+      // Update the project in cache directly to remove the dependency
+      queryClient.setQueryData<Project>(
+        ['project', projectId],
+        (oldProject) => {
+          if (!oldProject) return oldProject
+          return {
+            ...oldProject,
+            dependencies: (oldProject.dependencies || []).filter(
+              (dep) => dep.id !== dependencyId
+            )
+          }
+        }
+      )
       queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
       queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
     }

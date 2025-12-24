@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { Project } from '@/domain/entities/project.entity'
 import { container } from '@/infrastructure/container'
 
 /**
@@ -29,8 +30,18 @@ export function useAddUserShare() {
       })
       return { result, userId, projectId }
     },
-    onSuccess: ({ projectId }) => {
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    onSuccess: ({ result, projectId }) => {
+      // Update the project in cache directly to add the new share
+      queryClient.setQueryData<Project>(
+        ['project', projectId],
+        (oldProject) => {
+          if (!oldProject) return oldProject
+          return {
+            ...oldProject,
+            userShares: [...(oldProject.userShares || []), result.share]
+          }
+        }
+      )
     }
   })
 }
@@ -56,10 +67,22 @@ export function useRemoveUserShare() {
         userId,
         targetUserId
       })
-      return { result, userId, projectId }
+      return { result, userId, projectId, targetUserId }
     },
-    onSuccess: ({ projectId }) => {
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    onSuccess: ({ projectId, targetUserId }) => {
+      // Update the project in cache directly to remove the share
+      queryClient.setQueryData<Project>(
+        ['project', projectId],
+        (oldProject) => {
+          if (!oldProject) return oldProject
+          return {
+            ...oldProject,
+            userShares: (oldProject.userShares || []).filter(
+              (share) => share.userId !== targetUserId
+            )
+          }
+        }
+      )
     }
   })
 }

@@ -166,10 +166,15 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   }
 
   const onAddDependency = async () => {
+    // Find the dependency name from available dependencies
+    const dep = availableDependencies.find((d) => d.id === selectedDependency)
+    const dependencyName = dep?.name.value || selectedDependency
+
     const result = await handleAddDependency(
       currentProject.id,
       user.id,
-      selectedDependency
+      selectedDependency,
+      dependencyName
     )
     if (result.success) {
       setSelectedDependency('')
