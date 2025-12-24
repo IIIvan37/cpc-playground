@@ -1,12 +1,9 @@
 import { useSetAtom } from 'jotai'
 import { useEffect } from 'react'
 import { codeAtom } from '@/store'
-import {
-  fetchProjectAtom,
-  isReadOnlyModeAtom,
-  viewOnlyProjectAtom
-} from '@/store/projects'
-import { useAuth } from './use-auth'
+import { isReadOnlyModeAtom, viewOnlyProjectAtom } from '@/store/projects'
+import { useAuth } from '../auth'
+import { useFetchProject } from './use-projects'
 
 /**
  * Hook to load a project from URL query parameter
@@ -14,7 +11,7 @@ import { useAuth } from './use-auth'
  */
 export function useProjectFromUrl() {
   const { user, loading: authLoading } = useAuth()
-  const fetchProject = useSetAtom(fetchProjectAtom)
+  const { fetchProject } = useFetchProject()
   const setViewOnlyProject = useSetAtom(viewOnlyProjectAtom)
   const setIsReadOnlyMode = useSetAtom(isReadOnlyModeAtom)
   const setCode = useSetAtom(codeAtom)

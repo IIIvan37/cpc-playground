@@ -3,21 +3,20 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/button/button'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
-import { useAuth } from '@/hooks'
+import {
+  useAuth,
+  useCreateFile,
+  useDeleteFile,
+  useFetchDependencyFiles,
+  useSetMainFile
+} from '@/hooks'
 import {
   activeProjectAtom,
   codeAtom,
   currentFileIdAtom,
   isReadOnlyModeAtom
 } from '@/store'
-import {
-  createFileAtom,
-  currentProjectIdAtom,
-  deleteFileAtom,
-  dependencyFilesAtom,
-  fetchDependencyFilesAtom,
-  setMainFileAtom
-} from '@/store/projects'
+import { currentProjectIdAtom, dependencyFilesAtom } from '@/store/projects'
 import styles from './file-browser.module.css'
 import { FileBrowserView } from './file-browser.view'
 
@@ -41,10 +40,10 @@ export function FileBrowser() {
   const dependencyFiles = useAtomValue(dependencyFilesAtom)
   const setCode = useSetAtom(codeAtom)
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
-  const createFile = useSetAtom(createFileAtom)
-  const deleteFile = useSetAtom(deleteFileAtom)
-  const setMainFile = useSetAtom(setMainFileAtom)
-  const fetchDependencies = useSetAtom(fetchDependencyFilesAtom)
+  const { createFile } = useCreateFile()
+  const { deleteFile } = useDeleteFile()
+  const { setMainFile } = useSetMainFile()
+  const { fetchDependencyFiles } = useFetchDependencyFiles()
 
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [selectedDependencyFileId, setSelectedDependencyFileId] = useState<
@@ -71,11 +70,11 @@ export function FileBrowser() {
 
         // Fetch dependencies when project changes
         if (project.dependencies.length > 0) {
-          fetchDependencies()
+          fetchDependencyFiles()
         }
       }
     }
-  }, [project, setCurrentFileId, setCode, fetchDependencies])
+  }, [project, setCurrentFileId, setCode, fetchDependencyFiles])
 
   const handleSelectFile = useCallback(
     (fileId: string) => {

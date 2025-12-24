@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { UserProfile } from '@/domain/entities/user.entity'
 import { container } from '@/infrastructure/container'
-import { useAuth } from './use-auth'
+import { useAuth } from '../auth'
 
 export type { UserProfile } from '@/domain/entities/user.entity'
 
