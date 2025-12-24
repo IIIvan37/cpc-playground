@@ -301,14 +301,14 @@ describe('ProjectSettingsModal', () => {
       })
     })
 
-    it('navigates to home on successful delete', async () => {
+    it('navigates to explore on successful delete', async () => {
       const user = userEvent.setup()
       renderComponent()
 
       await user.click(screen.getByRole('button', { name: /delete project/i }))
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/')
+        expect(mockNavigate).toHaveBeenCalledWith('/explore')
       })
     })
   })

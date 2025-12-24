@@ -2,10 +2,6 @@ import { PlusIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/button/button'
-import { createLogger } from '@/lib/logger'
-
-const logger = createLogger('ExplorePage')
-
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
@@ -14,8 +10,9 @@ import { filterProjects } from '@/domain/services'
 import {
   getThumbnailUrl,
   useAuth,
-  useCreateProject,
-  useFetchVisibleProjects
+  useFetchVisibleProjects,
+  useHandleCreateProject,
+  useHandleForkProject
 } from '@/hooks'
 import styles from './explore.module.css'
 import { ExploreListView } from './explore.view'
@@ -30,12 +27,13 @@ export function ExplorePage() {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
-  const [creating, setCreating] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
-  const { create: createProject } = useCreateProject()
+  const { handleCreate: createProject, loading: creating } =
+    useHandleCreateProject()
+  const { handleFork: forkProject } = useHandleForkProject()
 
   const { projects, loading, error } = useFetchVisibleProjects(
     user?.id,
@@ -44,34 +42,17 @@ export function ExplorePage() {
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return
-    setCreating(true)
-    try {
-      const initialFile = {
-        name: newProjectIsLibrary ? 'lib.asm' : 'main.asm',
-        content: '',
-        isMain: !newProjectIsLibrary
-      }
 
-      const result = await createProject({
-        userId: user.id,
-        name: newProjectName.trim(),
-        visibility: 'private',
-        isLibrary: newProjectIsLibrary,
-        files: [initialFile]
-      })
+    const result = await createProject({
+      userId: user.id,
+      name: newProjectName.trim(),
+      isLibrary: newProjectIsLibrary
+    })
 
+    if (result.success) {
       setShowNewProjectDialog(false)
       setNewProjectName('')
       setNewProjectIsLibrary(false)
-
-      // Navigate to the new project
-      if (result?.project) {
-        navigate(`/?project=${result.project.id}`)
-      }
-    } catch (err) {
-      logger.error('Failed to create project:', err)
-    } finally {
-      setCreating(false)
     }
   }
 
@@ -79,6 +60,11 @@ export function ExplorePage() {
     // Navigate to project (using a query param or similar approach)
     // For now, we'll use the project ID in the URL
     navigate(`/?project=${project.id}`)
+  }
+
+  const handleForkProject = async (projectId: string) => {
+    if (!user) return
+    await forkProject({ projectId, userId: user.id })
   }
 
   // Prepare searchable projects for domain filter
@@ -116,7 +102,9 @@ export function ExplorePage() {
       updatedAt: project.updatedAt,
       createdAt: project.createdAt,
       thumbnailUrl: getThumbnailUrl(project.thumbnailPath),
-      onClick: () => handleProjectClick(project)
+      onClick: () => handleProjectClick(project),
+      onFork: () => handleForkProject(project.id),
+      canFork: !!user && !isOwner
     }
   })
 

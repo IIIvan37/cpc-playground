@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
+import Button from '@/components/ui/button/button'
 import { Input } from '@/components/ui/input'
 import { TagsList } from '@/components/ui/tag'
 import styles from './explore.module.css'
@@ -65,7 +67,12 @@ export function ExploreListView({
           {searchQuery ? (
             <p>Try a different search term</p>
           ) : (
-            <p>Be the first to share a project!</p>
+            <>
+              <p>Be the first to share a project!</p>
+              <Link to='/' style={{ marginTop: '1rem' }}>
+                <Button>Try the Playground</Button>
+              </Link>
+            </>
           )}
         </div>
       ) : (
@@ -94,6 +101,8 @@ export type ProjectListItemProps = {
   readonly createdAt: Date
   readonly thumbnailUrl?: string | null
   readonly onClick: () => void
+  readonly onFork?: () => void
+  readonly canFork?: boolean
 }
 
 export function ProjectListItem({
@@ -110,8 +119,15 @@ export function ProjectListItem({
   updatedAt,
   createdAt: _createdAt,
   thumbnailUrl,
-  onClick
+  onClick,
+  onFork,
+  canFork
 }: ProjectListItemProps) {
+  const handleFork = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onFork?.()
+  }
+
   return (
     <button
       type='button'
@@ -155,6 +171,11 @@ export function ProjectListItem({
           <span>{pluralize(filesCount, 'file')}</span>
           <span>{pluralize(sharesCount, 'share')}</span>
           <span>Updated {formatDate(updatedAt)}</span>
+          {canFork && (
+            <Button className={styles.forkButton} onClick={handleFork}>
+              Fork
+            </Button>
+          )}
         </div>
       </div>
     </button>

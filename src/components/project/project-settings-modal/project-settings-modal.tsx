@@ -143,7 +143,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
     if (result.success) {
       toast.success('Project deleted')
       onClose()
-      navigate('/')
+      navigate('/explore')
     } else if (result.error) {
       toast.error('Failed to delete project', result.error)
     }

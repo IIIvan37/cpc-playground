@@ -17,6 +17,10 @@ export {
   useFetchDependencyFiles,
   useRemoveDependency
 } from './use-dependencies'
+export {
+  useHandleCreateProject,
+  useHandleForkProject
+} from './use-explore-actions'
 export { useFetchVisibleProjects } from './use-fetch-visible-projects'
 export { useProjectFromUrl } from './use-project-from-url'
 // Project settings operations
@@ -35,6 +39,7 @@ export {
   useCreateProject,
   useDeleteProject,
   useFetchProject,
+  useForkProject,
   useGetProject,
   useGetProjects,
   useGetProjectWithDependencies,

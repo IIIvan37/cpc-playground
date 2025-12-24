@@ -62,10 +62,14 @@ export function useUpdateFile() {
     async (params: Parameters<typeof execute>[0]) => {
       const result = await execute(params)
       if (result?.file) {
-        // Invalidate project cache to refresh file data
-        queryClient.invalidateQueries({
-          queryKey: ['project', params.projectId]
+        // Fetch fresh project from API and update cache directly
+        const res = await container.getProject.execute({
+          projectId: params.projectId,
+          userId: params.userId
         })
+        if (res.project) {
+          queryClient.setQueryData(['project', params.projectId], res.project)
+        }
       }
       return result
     },

@@ -48,6 +48,7 @@ export {
   useFetchProject,
   // Utilities
   useFetchVisibleProjects,
+  useForkProject,
   useGetProject,
   useGetProjects,
   useGetProjectWithDependencies,
@@ -55,7 +56,9 @@ export {
   useHandleAddDependency,
   useHandleAddShare,
   useHandleAddTag,
+  useHandleCreateProject,
   useHandleDeleteProject,
+  useHandleForkProject,
   useHandleRemoveDependency,
   useHandleRemoveShare,
   useHandleRemoveTag,

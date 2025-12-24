@@ -74,6 +74,7 @@ const mockProjectRow = {
   description: 'A test project',
   visibility: 'private' as const,
   is_library: false,
+  thumbnail_path: null,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-06-01T00:00:00Z',
   project_files: [
@@ -646,23 +647,87 @@ describe('SupabaseProjectsRepository', () => {
   })
 
   describe('delete', () => {
-    it('should delete a project', async () => {
-      const chainMock = createFullChainMock()
-      chainMock.eq = vi.fn(() => Promise.resolve({ error: null }))
-      mockSupabase.from.mockReturnValue(chainMock)
+    it('should delete a project without thumbnail', async () => {
+      // First call: findById returns project without thumbnail
+      const findByIdMock = createFullChainMock()
+      findByIdMock.single = vi.fn(() =>
+        Promise.resolve({
+          data: { ...mockProjectRow, thumbnail_path: null },
+          error: null
+        })
+      )
+
+      // Second call: delete
+      const deleteMock = createFullChainMock()
+      deleteMock.eq = vi.fn(() => Promise.resolve({ error: null }))
+
+      mockSupabase.from
+        .mockReturnValueOnce(findByIdMock)
+        .mockReturnValueOnce(deleteMock)
 
       await repository.delete('project-123')
 
       expect(mockSupabase.from).toHaveBeenCalledWith('projects')
-      expect(chainMock.delete).toHaveBeenCalled()
+      expect(deleteMock.delete).toHaveBeenCalled()
+    })
+
+    it('should delete a project with thumbnail', async () => {
+      // First call: findById returns project with thumbnail
+      const findByIdMock = createFullChainMock()
+      findByIdMock.single = vi.fn(() =>
+        Promise.resolve({
+          data: {
+            ...mockProjectRow,
+            thumbnail_path: 'user-123/project-123.webp'
+          },
+          error: null
+        })
+      )
+
+      // Second call: delete project
+      const deleteMock = createFullChainMock()
+      deleteMock.eq = vi.fn(() => Promise.resolve({ error: null }))
+
+      // Storage mock
+      const storageMock = {
+        from: vi.fn(() => ({
+          remove: vi.fn(() => Promise.resolve({ error: null }))
+        }))
+      }
+
+      mockSupabase.from
+        .mockReturnValueOnce(findByIdMock)
+        .mockReturnValueOnce(deleteMock)
+
+      // Add storage to mock
+      ;(mockSupabase as unknown as { storage: typeof storageMock }).storage =
+        storageMock
+
+      await repository.delete('project-123')
+
+      expect(storageMock.from).toHaveBeenCalledWith('thumbnails')
+      expect(deleteMock.delete).toHaveBeenCalled()
     })
 
     it('should throw on delete error', async () => {
-      const chainMock = createFullChainMock()
-      chainMock.eq = vi.fn(() =>
+      // First call: findById
+      const findByIdMock = createFullChainMock()
+      findByIdMock.single = vi.fn(() =>
+        Promise.resolve({
+          data: { ...mockProjectRow, thumbnail_path: null },
+          error: null
+        })
+      )
+
+      // Second call: delete fails
+      const deleteMock = createFullChainMock()
+      deleteMock.eq = vi.fn(() =>
         Promise.resolve({ error: { message: 'Delete failed' } })
       )
-      mockSupabase.from.mockReturnValue(chainMock)
+
+      mockSupabase.from
+        .mockReturnValueOnce(findByIdMock)
+        .mockReturnValueOnce(deleteMock)
 
       await expect(repository.delete('project-123')).rejects.toEqual({
         message: 'Delete failed'

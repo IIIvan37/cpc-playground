@@ -51,6 +51,7 @@ import {
 import type {
   CreateProjectUseCase,
   DeleteProjectUseCase,
+  ForkProjectUseCase,
   GetProjectsUseCase,
   GetProjectUseCase,
   GetProjectWithDependenciesUseCase,
@@ -61,6 +62,7 @@ import type {
 import {
   createCreateProjectUseCase,
   createDeleteProjectUseCase,
+  createForkProjectUseCase,
   createGetProjectsUseCase,
   createGetProjectUseCase,
   createGetProjectWithDependenciesUseCase,
@@ -110,6 +112,7 @@ export type Container = {
   getProjectWithDependencies: GetProjectWithDependenciesUseCase
   updateProject: UpdateProjectUseCase
   deleteProject: DeleteProjectUseCase
+  forkProject: ForkProjectUseCase
   saveThumbnail: SaveThumbnailUseCase
   // Files use cases
   createFile: CreateFileUseCase
@@ -178,6 +181,7 @@ export function createContainer(): Container {
       projectsRepository,
       authorizationService
     ),
+    forkProject: createForkProjectUseCase(projectsRepository),
     saveThumbnail: createSaveThumbnailUseCase(
       projectsRepository,
       authorizationService,

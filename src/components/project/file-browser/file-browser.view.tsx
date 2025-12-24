@@ -181,6 +181,9 @@ function FileItemView({
     onDelete()
   }
 
+  const isAsmFile = file.name.toLowerCase().endsWith('.asm')
+  const canSetAsMain = !file.isMain && canEdit && !isLibrary && isAsmFile
+
   return (
     <div className={`${styles.fileItem} ${isSelected ? styles.active : ''}`}>
       <button type='button' className={styles.fileButton} onClick={onSelect}>
@@ -189,7 +192,7 @@ function FileItemView({
         {file.isMain && <StarFilledIcon className={styles.mainIcon} />}
       </button>
       <div className={styles.fileActions}>
-        {!file.isMain && canEdit && !isLibrary && (
+        {canSetAsMain && (
           <button
             type='button'
             className={styles.actionButton}

@@ -9,7 +9,8 @@ import { ExplorePage } from './explore'
 
 vi.mock('@/hooks', () => ({
   useAuth: vi.fn(),
-  useCreateProject: vi.fn(),
+  useHandleCreateProject: vi.fn(),
+  useHandleForkProject: vi.fn(),
   useFetchVisibleProjects: vi.fn(),
   getThumbnailUrl: vi.fn((path: string | null | undefined) =>
     path
@@ -19,7 +20,8 @@ vi.mock('@/hooks', () => ({
 }))
 
 describe('ExplorePage', () => {
-  const mockCreateProject = vi.fn()
+  const mockHandleCreate = vi.fn()
+  const mockHandleFork = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -33,12 +35,13 @@ describe('ExplorePage', () => {
       requestPasswordReset: vi.fn(),
       updatePassword: vi.fn()
     })
-    vi.mocked(hooks.useCreateProject).mockReturnValue({
-      create: mockCreateProject,
-      loading: false,
-      error: null,
-      reset: vi.fn(),
-      data: undefined
+    vi.mocked(hooks.useHandleCreateProject).mockReturnValue({
+      handleCreate: mockHandleCreate,
+      loading: false
+    })
+    vi.mocked(hooks.useHandleForkProject).mockReturnValue({
+      handleFork: mockHandleFork,
+      loading: false
     })
   })
 

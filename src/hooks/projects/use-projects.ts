@@ -37,6 +37,8 @@ export function useCreateProject() {
     },
     onSuccess: (result, variables) => {
       if (result?.project) {
+        // Put the new project in the cache so it's immediately available
+        queryClient.setQueryData(['project', result.project.id], result.project)
         // Set as current project
         setCurrentProjectId(result.project.id)
         // Set main file as current if exists
@@ -112,14 +114,64 @@ export function useDeleteProject() {
     onSuccess: ({ userId, projectId }) => {
       // Remove the deleted project from cache (don't refetch it!)
       queryClient.removeQueries({ queryKey: ['project', projectId] })
-      // Invalidate lists to refresh them
-      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      // Invalidate lists and force refetch even if not currently active
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'user', userId],
+        refetchType: 'all'
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'visible'],
+        refetchType: 'all'
+      })
     }
   })
 
   return {
     deleteProject: mutation.mutateAsync,
+    loading: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+    data: mutation.data
+  }
+}
+
+/**
+ * Hook to fork (copy) a project
+ * Creates a copy of an existing project for the current user
+ */
+export function useForkProject() {
+  const queryClient = useQueryClient()
+  const setCurrentProjectId = useSetAtom(currentProjectIdAtom)
+  const setCurrentFileId = useSetAtom(currentFileIdAtom)
+
+  const mutation = useMutation({
+    mutationFn: async (
+      params: Parameters<typeof container.forkProject.execute>[0]
+    ) => {
+      return container.forkProject.execute(params)
+    },
+    onSuccess: (result, variables) => {
+      if (result?.project) {
+        // Put the forked project in the cache
+        queryClient.setQueryData(['project', result.project.id], result.project)
+        // Set as current project
+        setCurrentProjectId(result.project.id)
+        // Set main file as current if exists
+        const mainFile = result.project.files.find((f) => f.isMain)
+        if (mainFile) {
+          setCurrentFileId(mainFile.id)
+        }
+      }
+      // Invalidate projects cache to include new project
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'user', variables.userId]
+      })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+    }
+  })
+
+  return {
+    forkProject: mutation.mutateAsync,
     loading: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,
