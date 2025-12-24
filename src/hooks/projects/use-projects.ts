@@ -37,6 +37,8 @@ export function useCreateProject() {
     },
     onSuccess: (result, variables) => {
       if (result?.project) {
+        // Put the new project in the cache so it's immediately available
+        queryClient.setQueryData(['project', result.project.id], result.project)
         // Set as current project
         setCurrentProjectId(result.project.id)
         // Set main file as current if exists
