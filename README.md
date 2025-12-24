@@ -2,57 +2,39 @@
 
 A web-based Amstrad CPC development environment with integrated assembler and emulator.
 
-🚀 **Live demo**: [cpc-playground.iiivan.org](https://cpc-playground.iiivan.org)
+**Live demo**: [cpc-playground.iiivan.org](https://cpc-playground.iiivan.org)
 
 ## Features
 
-- **Code Editor** - Write Z80 assembly code with syntax highlighting and error markers
-- **RASM Assembler** - Compile your code using [RASM](http://rasm.music.world) (WebAssembly)
-- **CPCEC Emulator** - Run programs instantly in [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) (WebAssembly)
-- **CPC Plus Support** - Full support for Plus hardware (sprites, enhanced palette, DMA)
-- **Multi-file Projects** - Organize code with includes and dependencies
-- **Cloud Storage** - Save projects with Supabase authentication
-- **Project Libraries** - Create reusable code libraries
-- **Sharing** - Public, private, or shared with specific users
+- Code editor with Z80 syntax highlighting and error markers
+- [RASM](https://github.com/EdouardBERGE/rasm) assembler (WebAssembly)
+- [CPCEC](https://github.com/cpcitor/cpcec) emulator (WebAssembly)
+- CPC Plus hardware support (sprites, enhanced palette, DMA)
+- Multi-file projects with includes and dependencies
+- Cloud storage with Supabase authentication
+- Reusable code libraries
+- Project sharing (public, private, or with specific users)
 
 ## Quick Start
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Start local Supabase
 supabase start
-
-# Start dev server
 pnpm dev
 ```
 
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [Architecture](docs/architecture.md) | Clean Architecture, domain model, patterns |
-| [Architecture Debt](docs/architecture-debt.md) | Technical debt tracking, remediation plan |
-| [Component Style Guide](docs/component-style-guide.md) | Container/View pattern, props guidelines |
-| [Setup Guide](docs/setup.md) | Installation, Supabase, environments |
-| [Features](docs/features.md) | Projects, sharing, tags, dependencies, includes |
-| [Development](docs/development.md) | CLI commands, migrations, testing |
-
 ## Tech Stack
 
-- **Frontend**: React + TypeScript + Vite
-- **State**: Jotai
-- **Backend**: Supabase (PostgreSQL + Auth)
-- **Assembler**: [RASM](http://rasm.music.world) (WebAssembly)
-- **Emulator**: [CPCEC](http://cngsoft.no-ip.org/cpcec.htm) (WebAssembly)
-- **Hosting**: Netlify
+- React, TypeScript, Vite
+- Jotai (state management)
+- Supabase (PostgreSQL + Auth)
+- Netlify (hosting)
 
 ## Credits
 
-- **RASM** by Roudoudou - [Rasm]https://github.com/EdouardBERGE/rasm)
-- **CPCEC** by CNGsoft - [CPCEC](https://github.com/cpcitor/cpcec)
+- **RASM** by Roudoudou - [GitHub](https://github.com/EdouardBERGE/rasm)
+- **CPCEC** by CNGsoft - [GitHub](https://github.com/cpcitor/cpcec)
 
 ## License
 
-GNU General Public License v3.0 (GPL-3.0) - See [LICENSE](LICENSE)
+GPL-3.0 - See [LICENSE](LICENSE)
