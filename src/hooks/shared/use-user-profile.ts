@@ -72,7 +72,7 @@ export function useUserProfile() {
   return {
     profile: profile ?? null,
     loading: isLoading,
-    error: error as Error | null,
+    error: error ?? null,
     updateUsername
   }
 }

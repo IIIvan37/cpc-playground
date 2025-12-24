@@ -135,13 +135,15 @@ export default function Combobox({
       />
       {isOpen && (options.length > 0 || loading) && (
         <div ref={dropdownRef} className={styles.dropdown}>
-          {loading ? (
-            <div className={styles.loading}>Loading...</div>
-          ) : options.length === 0 ? (
+          {loading && <div className={styles.loading}>Loading...</div>}
+          {!loading && options.length === 0 && (
             <div className={styles.empty}>{emptyMessage}</div>
-          ) : (
+          )}
+          {!loading &&
+            options.length > 0 &&
             options.map((option, index) => (
-              <div
+              <button
+                type='button'
                 key={option.value}
                 className={`${styles.option} ${
                   index === highlightedIndex ? styles.highlighted : ''
@@ -150,9 +152,8 @@ export default function Combobox({
                 onMouseEnter={() => setHighlightedIndex(index)}
               >
                 {option.label}
-              </div>
-            ))
-          )}
+              </button>
+            ))}
         </div>
       )}
     </div>

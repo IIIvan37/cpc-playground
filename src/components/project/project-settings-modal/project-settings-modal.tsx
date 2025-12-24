@@ -70,12 +70,10 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
     if (currentProject) {
       setName(currentProject.name?.value || '')
       setDescription(currentProject.description || '')
-      setVisibility(
-        currentProject.visibility?.value === 'unlisted'
-          ? 'private'
-          : (currentProject.visibility?.value as 'private' | 'public') ||
-              'private'
-      )
+      const visibilityValue = currentProject.visibility?.value
+      const resolvedVisibility =
+        visibilityValue === 'public' ? 'public' : 'private'
+      setVisibility(resolvedVisibility)
       setIsLibrary(currentProject.isLibrary || false)
     }
   }, [currentProject])

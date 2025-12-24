@@ -132,6 +132,87 @@ function mapToDomainWithEmbeddedRelations(data: ProjectWithRelations): Project {
   })
 }
 
+// =============================================================================
+// Query Select Strings (reusable across repository methods)
+// =============================================================================
+
+/** Full project select with all relations (for authenticated users) */
+const PROJECT_SELECT_FULL = `
+  *,
+  author:user_profiles!projects_user_id_fkey_user_profiles (username),
+  project_files (*),
+  project_shares (
+    project_id,
+    user_id,
+    created_at,
+    user:user_profiles!project_shares_user_id_fkey_user_profiles (username)
+  ),
+  project_tags (
+    tags (*)
+  ),
+  project_dependencies!project_dependencies_project_id_fkey (
+    dependency:projects!project_dependencies_dependency_id_fkey (
+      id,
+      name,
+      is_library
+    )
+  )
+`
+
+/** Simplified project select for anonymous users (no user-related joins) */
+const PROJECT_SELECT_ANON = `
+  *,
+  author:user_profiles!projects_user_id_fkey_user_profiles (username),
+  project_files (*),
+  project_tags (
+    tags (*)
+  ),
+  project_dependencies!project_dependencies_project_id_fkey (
+    dependency:projects!project_dependencies_dependency_id_fkey (
+      id,
+      name,
+      is_library
+    )
+  )
+`
+
+// =============================================================================
+// Helper Functions for Repository
+// =============================================================================
+
+/**
+ * Deduplicate and merge project arrays, keeping the order
+ */
+function mergeAndDeduplicateProjects(
+  ...projectArrays: ProjectWithRelations[][]
+): ProjectWithRelations[] {
+  const result: ProjectWithRelations[] = []
+  const seenIds = new Set<string>()
+
+  for (const projects of projectArrays) {
+    for (const project of projects) {
+      if (!seenIds.has(project.id)) {
+        seenIds.add(project.id)
+        result.push(project)
+      }
+    }
+  }
+
+  return result
+}
+
+/**
+ * Sort projects by updated_at descending
+ */
+function sortProjectsByUpdatedAt(
+  projects: ProjectWithRelations[]
+): ProjectWithRelations[] {
+  return projects.sort(
+    (a, b) =>
+      new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+  )
+}
+
 /**
  * Factory function that creates a Supabase implementation of IProjectsRepository
  * Pure functional approach - returns an object implementing the interface
@@ -140,128 +221,60 @@ function mapToDomainWithEmbeddedRelations(data: ProjectWithRelations): Project {
 export function createSupabaseProjectsRepository(
   supabase: SupabaseClient<Database>
 ): IProjectsRepository {
+  // Helper to fetch projects shared with a user
+  async function fetchSharedProjects(
+    userId: string
+  ): Promise<ProjectWithRelations[]> {
+    const { data: sharedProjectIds, error: sharedIdsError } = await supabase
+      .from('project_shares')
+      .select('project_id')
+      .eq('user_id', userId)
+
+    if (sharedIdsError) throw sharedIdsError
+    if (!sharedProjectIds || sharedProjectIds.length === 0) return []
+
+    const ids = sharedProjectIds.map((s) => s.project_id)
+    const { data, error } = await supabase
+      .from('projects')
+      .select(PROJECT_SELECT_FULL)
+      .in('id', ids)
+      .order('updated_at', { ascending: false })
+
+    if (error) throw error
+    return (data || []) as unknown as ProjectWithRelations[]
+  }
+
   return {
     async findAll(userId: string): Promise<readonly Project[]> {
-      const projectSelect = `
-        *,
-        author:user_profiles!projects_user_id_fkey_user_profiles (username),
-        project_files (*),
-        project_shares (
-          project_id,
-          user_id,
-          created_at,
-          user:user_profiles!project_shares_user_id_fkey_user_profiles (username)
-        ),
-        project_tags (
-          tags (*)
-        ),
-        project_dependencies!project_dependencies_project_id_fkey (
-          dependency:projects!project_dependencies_dependency_id_fkey (
-            id,
-            name,
-            is_library
-          )
-        )
-      `
-
-      // First, get user's own projects
+      // Get user's own projects
       const { data: ownProjects, error: ownError } = await supabase
         .from('projects')
-        .select(projectSelect)
+        .select(PROJECT_SELECT_FULL)
         .eq('user_id', userId)
         .order('updated_at', { ascending: false })
 
       if (ownError) throw ownError
 
-      // Then, get project IDs shared with this user
-      const { data: sharedProjectIds, error: sharedIdsError } = await supabase
-        .from('project_shares')
-        .select('project_id')
-        .eq('user_id', userId)
+      // Fetch projects shared with this user
+      const sharedProjects = await fetchSharedProjects(userId)
 
-      if (sharedIdsError) throw sharedIdsError
-
-      // Fetch shared projects if any
-      let sharedProjects: ProjectWithRelations[] = []
-      if (sharedProjectIds && sharedProjectIds.length > 0) {
-        const ids = sharedProjectIds.map((s) => s.project_id)
-        const { data, error } = await supabase
-          .from('projects')
-          .select(projectSelect)
-          .in('id', ids)
-          .order('updated_at', { ascending: false })
-
-        if (error) throw error
-        // Cast to ProjectWithRelations[] - the select query returns the correct shape
-        // but TypeScript can't infer it correctly due to complex FK hints
-        sharedProjects = (data || []) as unknown as ProjectWithRelations[]
-      }
-
-      // Combine and deduplicate (in case user owns a project that's also shared)
-      const allProjects: ProjectWithRelations[] = [
-        ...((ownProjects || []) as unknown as ProjectWithRelations[])
-      ]
-      const ownIds = new Set(allProjects.map((p) => p.id))
-      for (const p of sharedProjects) {
-        if (!ownIds.has(p.id)) {
-          allProjects.push(p)
-        }
-      }
-
-      // Sort by updated_at descending
-      allProjects.sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      // Combine, deduplicate and sort
+      const allProjects = mergeAndDeduplicateProjects(
+        (ownProjects || []) as unknown as ProjectWithRelations[],
+        sharedProjects
       )
 
-      return allProjects.map((p) => mapToDomainWithEmbeddedRelations(p))
+      return sortProjectsByUpdatedAt(allProjects).map((p) =>
+        mapToDomainWithEmbeddedRelations(p)
+      )
     },
 
     async findVisible(userId?: string): Promise<readonly Project[]> {
-      const projectSelect = `
-        *,
-        author:user_profiles!projects_user_id_fkey_user_profiles (username),
-        project_files (*),
-        project_shares (
-          project_id,
-          user_id,
-          created_at,
-          user:user_profiles!project_shares_user_id_fkey_user_profiles (username)
-        ),
-        project_tags (
-          tags (*)
-        ),
-        project_dependencies!project_dependencies_project_id_fkey (
-          dependency:projects!project_dependencies_dependency_id_fkey (
-            id,
-            name,
-            is_library
-          )
-        )
-      `
-
-      // Simpler select for anonymous users (no user-related joins)
-      const anonProjectSelect = `
-        *,
-        author:user_profiles!projects_user_id_fkey_user_profiles (username),
-        project_files (*),
-        project_tags (
-          tags (*)
-        ),
-        project_dependencies!project_dependencies_project_id_fkey (
-          dependency:projects!project_dependencies_dependency_id_fkey (
-            id,
-            name,
-            is_library
-          )
-        )
-      `
-
       // If no user, return only public projects with simpler query
       if (!userId) {
         const { data: publicProjects, error: publicError } = await supabase
           .from('projects')
-          .select(anonProjectSelect)
+          .select(PROJECT_SELECT_ANON)
           .eq('visibility', 'public')
           .order('updated_at', { ascending: false })
 
@@ -279,7 +292,7 @@ export function createSupabaseProjectsRepository(
       // Get public projects
       const { data: publicProjects, error: publicError } = await supabase
         .from('projects')
-        .select(projectSelect)
+        .select(PROJECT_SELECT_FULL)
         .eq('visibility', 'public')
         .order('updated_at', { ascending: false })
 
@@ -288,73 +301,25 @@ export function createSupabaseProjectsRepository(
       // Get user's own projects (all visibilities)
       const { data: ownProjects, error: ownError } = await supabase
         .from('projects')
-        .select(projectSelect)
+        .select(PROJECT_SELECT_FULL)
         .eq('user_id', userId)
         .order('updated_at', { ascending: false })
 
       if (ownError) throw ownError
 
-      // Get project IDs shared with this user
-      const { data: sharedProjectIds, error: sharedIdsError } = await supabase
-        .from('project_shares')
-        .select('project_id')
-        .eq('user_id', userId)
+      // Fetch projects shared with this user
+      const sharedProjects = await fetchSharedProjects(userId)
 
-      if (sharedIdsError) throw sharedIdsError
-
-      // Fetch shared projects if any
-      let sharedProjects: ProjectWithRelations[] = []
-      if (sharedProjectIds && sharedProjectIds.length > 0) {
-        const ids = sharedProjectIds.map((s) => s.project_id)
-        const { data, error } = await supabase
-          .from('projects')
-          .select(projectSelect)
-          .in('id', ids)
-          .order('updated_at', { ascending: false })
-
-        if (error) throw error
-        // Cast to ProjectWithRelations[] - the select query returns the correct shape
-        // but TypeScript can't infer it correctly due to complex FK hints
-        sharedProjects = (data || []) as unknown as ProjectWithRelations[]
-      }
-
-      // Combine and deduplicate
-      const allProjects: ProjectWithRelations[] = []
-      const seenIds = new Set<string>()
-
-      // Add own projects first
-      for (const p of (ownProjects ||
-        []) as unknown as ProjectWithRelations[]) {
-        if (!seenIds.has(p.id)) {
-          seenIds.add(p.id)
-          allProjects.push(p)
-        }
-      }
-
-      // Add shared projects
-      for (const p of sharedProjects) {
-        if (!seenIds.has(p.id)) {
-          seenIds.add(p.id)
-          allProjects.push(p)
-        }
-      }
-
-      // Add public projects
-      for (const p of (publicProjects ||
-        []) as unknown as ProjectWithRelations[]) {
-        if (!seenIds.has(p.id)) {
-          seenIds.add(p.id)
-          allProjects.push(p)
-        }
-      }
-
-      // Sort by updated_at descending
-      allProjects.sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      // Combine and deduplicate (own projects first, then shared, then public)
+      const allProjects = mergeAndDeduplicateProjects(
+        (ownProjects || []) as unknown as ProjectWithRelations[],
+        sharedProjects,
+        (publicProjects || []) as unknown as ProjectWithRelations[]
       )
 
-      return allProjects.map((p) => mapToDomainWithEmbeddedRelations(p))
+      return sortProjectsByUpdatedAt(allProjects).map((p) =>
+        mapToDomainWithEmbeddedRelations(p)
+      )
     },
 
     async findById(projectId: string): Promise<Project | null> {
