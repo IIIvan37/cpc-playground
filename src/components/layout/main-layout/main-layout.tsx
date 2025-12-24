@@ -9,10 +9,11 @@ import { ResizableSidebar } from '@/components/ui/resizable-sidebar'
 import {
   useActiveProject,
   useAutoSaveFile,
+  useIsMarkdownFile,
   useProjectFromUrl,
   useSharedCode
 } from '@/hooks'
-import { isMarkdownFileAtom, viewModeAtom } from '@/store'
+import { viewModeAtom } from '@/store'
 import { Toolbar } from '../toolbar/toolbar'
 import { MainLayoutView } from './main-layout.view'
 
@@ -48,7 +49,7 @@ const MemoizedEditor = memo(function MemoizedEditor() {
 export function MainLayout() {
   const viewMode = useAtomValue(viewModeAtom)
   const { activeProject } = useActiveProject()
-  const isMarkdownFile = useAtomValue(isMarkdownFileAtom)
+  const isMarkdownFile = useIsMarkdownFile()
 
   // Load shared code from URL if present
   useSharedCode()

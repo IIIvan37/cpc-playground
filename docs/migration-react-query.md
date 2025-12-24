@@ -57,8 +57,8 @@
 |------|------|--------|
 | `codeAtom` | UI state (buffer) | ✅ GARDER |
 | `selectedAssemblerAtom` | UI state | ✅ GARDER |
-| `currentFileNameAtom` (derived) | Derived from server | ⚠️ **REFACTORER** → dériver du hook React Query |
-| `isMarkdownFileAtom` (derived) | Derived | ⚠️ **REFACTORER** |
+| ~~`currentFileNameAtom`~~ | ~~Derived~~ | ✅ **SUPPRIMÉ** → remplacé par `useCurrentFile()` |
+| ~~`isMarkdownFileAtom`~~ | ~~Derived~~ | ✅ **SUPPRIMÉ** → remplacé par `useIsMarkdownFile()` |
 
 ### 📁 `hooks/auth/use-auth.ts`
 
@@ -187,20 +187,25 @@ const { data: programs } = useQuery({
 })
 ```
 
-### Phase 5 : Refactorer `store/editor.ts`
+### Phase 5 : Refactorer `store/editor.ts` ✅
 
-Les atoms dérivés (`currentFileNameAtom`, `isMarkdownFileAtom`) dépendent de `activeProjectAtom`.
+Les atoms dérivés (`currentFileNameAtom`, `isMarkdownFileAtom`) ont été **supprimés** car ils dépendaient de `activeProjectAtom` qui n'était pas synchronisé avec React Query.
 
-**Solution :** Créer des hooks qui dérivent directement des données React Query.
+**Solution implémentée :** Hooks qui dérivent directement des données React Query.
 
 ```typescript
-function useCurrentFileName() {
-  const { activeProject } = useActiveProject()
-  const currentFileId = useAtomValue(currentFileIdAtom)
-  
-  if (!activeProject || !currentFileId) return null
-  const file = activeProject.files.find(f => f.id === currentFileId)
-  return file?.name.value ?? null
+// src/hooks/projects/use-current-project.ts
+export function useCurrentFile() {
+  const { activeProject } = useActiveProject();
+  const currentFileId = useAtomValue(currentFileIdAtom);
+  if (!activeProject || !currentFileId) return null;
+  return activeProject.files.find((f) => f.id === currentFileId) ?? null;
+}
+
+export function useIsMarkdownFile() {
+  const currentFile = useCurrentFile();
+  if (!currentFile) return false;
+  return currentFile.name.value.toLowerCase().endsWith(".md");
 }
 ```
 

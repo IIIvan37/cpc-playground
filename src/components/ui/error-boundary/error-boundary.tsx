@@ -44,7 +44,9 @@ function DefaultFallback({ error, resetError, fullPage }: FallbackProps) {
         <Button onClick={resetError} variant='outline'>
           Try Again
         </Button>
-        <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+        <Button onClick={() => globalThis.location.reload()}>
+          Refresh Page
+        </Button>
       </div>
       {isDev && (
         <div className={styles.details}>

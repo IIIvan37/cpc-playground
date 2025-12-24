@@ -109,3 +109,13 @@ export function useProjectFiles() {
     isLoading
   }
 }
+
+/**
+ * Hook to check if the current file is a markdown file
+ * Uses React Query data instead of atoms
+ */
+export function useIsMarkdownFile() {
+  const currentFile = useCurrentFile()
+  if (!currentFile) return false
+  return currentFile.name.value.toLowerCase().endsWith('.md')
+}

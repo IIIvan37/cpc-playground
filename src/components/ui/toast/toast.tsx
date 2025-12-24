@@ -131,14 +131,10 @@ export function ToastContainer() {
   if (toasts.length === 0) return null
 
   return (
-    <div
-      className={styles.toastContainer}
-      role='region'
-      aria-label='Notifications'
-    >
+    <section className={styles.toastContainer} aria-label='Notifications'>
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={removeToast} />
       ))}
-    </div>
+    </section>
   )
 }

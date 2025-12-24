@@ -5,7 +5,8 @@ import {
   useCurrentFile,
   useCurrentProject,
   useEmulator,
-  useGetProjectWithDependencies
+  useGetProjectWithDependencies,
+  useIsMarkdownFile
 } from '@/hooks'
 import { createLogger } from '@/lib/logger'
 
@@ -14,7 +15,6 @@ const logger = createLogger('Toolbar')
 import {
   codeAtom,
   compilationStatusAtom,
-  isMarkdownFileAtom,
   type OutputFormat,
   outputFormatAtom,
   type ViewMode,
@@ -33,7 +33,7 @@ export function Toolbar() {
   const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
   const { project: currentProject } = useCurrentProject()
   const currentFile = useCurrentFile()
-  const isMarkdownFile = useAtomValue(isMarkdownFileAtom)
+  const isMarkdownFile = useIsMarkdownFile()
   const { getProjectWithDependencies } = useGetProjectWithDependencies()
   const { compile } = useAssembler()
   const { isReady, loadSna, loadDsk, reset } = useEmulator()

@@ -222,7 +222,15 @@ export function useFetchProject() {
         setIsReadOnlyMode(true)
         setViewOnlyProject(result.project)
         setCurrentProjectId(null)
-        setCurrentFileId(null)
+        // Select the main file or first file in read-only mode too
+        const mainFile =
+          result.project.files?.find((f) => f.isMain) ||
+          result.project.files?.[0]
+        if (mainFile) {
+          setCurrentFileId(mainFile.id)
+        } else {
+          setCurrentFileId(null)
+        }
       }
 
       return result.project

@@ -55,6 +55,8 @@ export {
   useHandleRemoveShare,
   useHandleRemoveTag,
   useHandleSaveProject,
+  // File state
+  useIsMarkdownFile,
   useMainFile,
   useProjectFiles,
   useProjectFromCache,

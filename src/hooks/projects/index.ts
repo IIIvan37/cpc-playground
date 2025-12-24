@@ -7,6 +7,7 @@ export {
   useActiveProject,
   useCurrentFile,
   useCurrentProject,
+  useIsMarkdownFile,
   useMainFile,
   useProjectFiles
 } from './use-current-project'

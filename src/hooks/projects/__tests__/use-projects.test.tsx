@@ -19,7 +19,11 @@ import {
   projectsAtom,
   viewOnlyProjectAtom
 } from '@/store/projects'
-import { useActiveProject, useCurrentProject } from '../use-current-project'
+import {
+  useActiveProject,
+  useCurrentProject,
+  useIsMarkdownFile
+} from '../use-current-project'
 import {
   useCreateProject,
   useDeleteProject,
@@ -339,7 +343,7 @@ describe('useProjects hooks', () => {
         expect(store.get(viewOnlyProjectAtom)).toEqual(mockPublicProject)
       })
 
-      it('clears current project/file in read-only mode', async () => {
+      it('clears current project but selects main file in read-only mode', async () => {
         store.set(currentProjectIdAtom, 'old-project')
         store.set(currentFileIdAtom, 'old-file')
         mockGetProject.mockResolvedValue({ project: mockPublicProject })
@@ -354,7 +358,8 @@ describe('useProjects hooks', () => {
         })
 
         expect(store.get(currentProjectIdAtom)).toBeNull()
-        expect(store.get(currentFileIdAtom)).toBeNull()
+        // In read-only mode, we now select the main file for markdown preview support
+        expect(store.get(currentFileIdAtom)).toBe('main-file')
       })
     })
 
@@ -466,6 +471,87 @@ describe('useProjects hooks', () => {
       // But cache stores Project directly for useCurrentProject compatibility
       const cachedData = queryClient.getQueryData(['project', 'project-1'])
       expect(cachedData).toEqual(mockProject)
+    })
+  })
+
+  describe('useIsMarkdownFile', () => {
+    it('returns false when no current file', () => {
+      store.set(currentProjectIdAtom, null)
+      store.set(currentFileIdAtom, null)
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      expect(result.current).toBe(false)
+    })
+
+    it('returns false for .asm files', async () => {
+      mockGetProject.mockResolvedValue({ project: mockProject })
+      store.set(currentProjectIdAtom, 'project-1')
+      store.set(currentFileIdAtom, 'main-file')
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current).toBe(false)
+      })
+    })
+
+    it('returns true for .md files', async () => {
+      const mdFile = createProjectFile({
+        id: 'readme-file',
+        projectId: 'project-1',
+        name: createFileName('README.md'),
+        content: createFileContent('# Hello'),
+        isMain: false
+      })
+
+      const projectWithMd = createProject({
+        id: 'project-1',
+        name: createProjectName('Test Project'),
+        userId: 'user-1',
+        files: [mockMainFile, mdFile],
+        visibility: Visibility.PRIVATE,
+        isLibrary: false
+      })
+
+      mockGetProject.mockResolvedValue({ project: projectWithMd })
+      store.set(currentProjectIdAtom, 'project-1')
+      store.set(currentFileIdAtom, 'readme-file')
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current).toBe(true)
+      })
+    })
+
+    it('returns true for .MD files (case insensitive)', async () => {
+      const mdFile = createProjectFile({
+        id: 'readme-file',
+        projectId: 'project-1',
+        name: createFileName('README.MD'),
+        content: createFileContent('# Hello'),
+        isMain: false
+      })
+
+      const projectWithMd = createProject({
+        id: 'project-1',
+        name: createProjectName('Test Project'),
+        userId: 'user-1',
+        files: [mockMainFile, mdFile],
+        visibility: Visibility.PRIVATE,
+        isLibrary: false
+      })
+
+      mockGetProject.mockResolvedValue({ project: projectWithMd })
+      store.set(currentProjectIdAtom, 'project-1')
+      store.set(currentFileIdAtom, 'readme-file')
+
+      const { result } = renderHook(() => useIsMarkdownFile(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current).toBe(true)
+      })
     })
   })
 })

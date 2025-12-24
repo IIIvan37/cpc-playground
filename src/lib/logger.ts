@@ -8,12 +8,10 @@
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
-type LogContext = Record<string, unknown> | unknown
-
 interface LogEntry {
   level: LogLevel
   message: string
-  context?: LogContext
+  context?: unknown
   timestamp: Date
   source?: string
 }
@@ -30,7 +28,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 class Logger {
   private minLevel: LogLevel = import.meta.env.DEV ? 'debug' : 'info'
   private handlers: LogHandler[] = []
-  private source?: string
+  private readonly source?: string
 
   constructor(source?: string) {
     this.source = source
@@ -67,7 +65,7 @@ class Logger {
     }
   }
 
-  private log(level: LogLevel, message: string, context?: LogContext): void {
+  private log(level: LogLevel, message: string, context?: unknown): void {
     if (!this.shouldLog(level)) return
 
     const entry: LogEntry = {
@@ -87,19 +85,19 @@ class Logger {
     }
   }
 
-  debug(message: string, context?: LogContext): void {
+  debug(message: string, context?: unknown): void {
     this.log('debug', message, context)
   }
 
-  info(message: string, context?: LogContext): void {
+  info(message: string, context?: unknown): void {
     this.log('info', message, context)
   }
 
-  warn(message: string, context?: LogContext): void {
+  warn(message: string, context?: unknown): void {
     this.log('warn', message, context)
   }
 
-  error(message: string, context?: LogContext): void {
+  error(message: string, context?: unknown): void {
     this.log('error', message, context)
   }
 
@@ -138,4 +136,4 @@ export function createLogger(source: string): Logger {
   return logger.child(source)
 }
 
-export type { LogLevel, LogContext, LogEntry, LogHandler }
+export type { LogLevel, LogEntry, LogHandler }
