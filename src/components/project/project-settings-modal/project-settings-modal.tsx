@@ -1,8 +1,10 @@
-import { useAtomValue } from 'jotai'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import {
   useAuth,
+  useAvailableDependencies,
+  useCurrentProject,
   useHandleAddDependency,
   useHandleAddShare,
   useHandleAddTag,
@@ -10,9 +12,9 @@ import {
   useHandleRemoveDependency,
   useHandleRemoveShare,
   useHandleRemoveTag,
-  useHandleSaveProject
+  useHandleSaveProject,
+  useSearchUsers
 } from '@/hooks'
-import { currentProjectAtom, projectsAtom } from '@/store/projects'
 import { ProjectSettingsModalView } from './project-settings-modal.view'
 
 type ProjectSettingsModalProps = Readonly<{
@@ -20,10 +22,9 @@ type ProjectSettingsModalProps = Readonly<{
 }>
 
 /**
- * Container component for project settings modal
- * Handles business logic and delegates rendering to ProjectSettingsModalView
+ * Inner component that uses Suspense query
  */
-export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
+function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
 
@@ -40,26 +41,64 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
   const { handleRemoveShare, loading: removeShareLoading } =
     useHandleRemoveShare()
 
-  // Read from global state
-  const currentProject = useAtomValue(currentProjectAtom)
-  const projects = useAtomValue(projectsAtom)
+  // User search
+  const {
+    users: foundUsers,
+    loading: searchUsersLoading,
+    searchUsers
+  } = useSearchUsers()
 
-  // Form state
-  const [name, setName] = useState(currentProject?.name.value || '')
-  const [description, setDescription] = useState(
-    currentProject?.description || ''
+  // Read project directly from React Query (single source of truth)
+  const { project: currentProject } = useCurrentProject()
+
+  // Get available dependencies (libraries) from React Query
+  const availableDependencies = useAvailableDependencies(
+    currentProject?.id ?? null
   )
+
+  // Form state - initialize with empty values
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
   const [visibility, setVisibility] = useState<'private' | 'public' | 'shared'>(
-    currentProject?.visibility.value === 'unlisted'
-      ? 'private'
-      : (currentProject?.visibility.value as 'private' | 'public') || 'private'
+    'private'
   )
-  const [isLibrary, setIsLibrary] = useState(currentProject?.isLibrary || false)
+  const [isLibrary, setIsLibrary] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [selectedDependency, setSelectedDependency] = useState('')
   const [shareUsername, setShareUsername] = useState('')
 
-  if (!currentProject || !user) return null
+  // Sync form state when project data loads or changes
+  useEffect(() => {
+    if (currentProject) {
+      setName(currentProject.name?.value || '')
+      setDescription(currentProject.description || '')
+      setVisibility(
+        currentProject.visibility?.value === 'unlisted'
+          ? 'private'
+          : (currentProject.visibility?.value as 'private' | 'public') ||
+              'private'
+      )
+      setIsLibrary(currentProject.isLibrary || false)
+    }
+  }, [currentProject])
+
+  // Debounce user search
+  useEffect(() => {
+    if (!shareUsername.trim()) return
+
+    const timer = setTimeout(() => {
+      searchUsers(shareUsername, 10)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [shareUsername, searchUsers])
+
+  // Handle user selection from combobox
+  const handleUserSelect = useCallback((username: string) => {
+    setShareUsername(username)
+  }, [])
+
+  if (!user || !currentProject) return null
 
   // Combined loading state
   const loading =
@@ -151,6 +190,11 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
     )
     if (result.success) {
       setShareUsername('')
+      // Switch to shared visibility if not already
+      if (visibility !== 'shared') {
+        setVisibility('shared')
+      }
+      // Cache automatically invalidated by useMutation
     } else if (result.error) {
       alert(result.error)
     }
@@ -173,13 +217,8 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
   )
 
   // Filter available dependencies (libraries not already added)
-  const availableDependencies = projects
-    .filter(
-      (p) =>
-        p.isLibrary &&
-        p.id !== currentProject.id &&
-        !currentDependencyIds.has(p.id)
-    )
+  const filteredDependencies = availableDependencies
+    .filter((p) => !currentDependencyIds.has(p.id))
     .map((p) => ({ id: p.id, name: p.name.value }))
 
   // Current dependencies already have name info from the entity
@@ -198,7 +237,9 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       currentTags={currentProject.tags || []}
       currentDependencies={currentDependencies}
       currentUserShares={currentProject.userShares || []}
-      availableDependencies={availableDependencies}
+      availableDependencies={filteredDependencies}
+      foundUsers={foundUsers}
+      searchingUsers={searchUsersLoading}
       onNameChange={setName}
       onDescriptionChange={setDescription}
       onVisibilityChange={setVisibility}
@@ -206,6 +247,7 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       onNewTagChange={setNewTag}
       onSelectedDependencyChange={setSelectedDependency}
       onShareUsernameChange={setShareUsername}
+      onUserSelect={handleUserSelect}
       onSave={onSave}
       onClose={onClose}
       onAddTag={onAddTag}
@@ -217,4 +259,12 @@ export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
       onDelete={onDelete}
     />
   )
+}
+
+/**
+ * Container component for project settings modal
+ * Handles business logic and delegates rendering to ProjectSettingsModalView
+ */
+export function ProjectSettingsModal({ onClose }: ProjectSettingsModalProps) {
+  return <ProjectSettingsModalContent onClose={onClose} />
 }

@@ -2,10 +2,11 @@
  * React hooks for projects use-cases
  * Provides a clean interface to interact with the domain layer
  *
- * Uses the generic useUseCase hook to reduce boilerplate
- * Hooks automatically update the global Jotai state after mutations
+ * Uses React Query as single source of truth for server state
+ * Jotai is used only for UI state (current project ID, current file ID, read-only mode)
  */
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
 import { useCallback } from 'react'
 import type { Project } from '@/domain/entities/project.entity'
@@ -15,29 +16,27 @@ import {
   currentFileIdAtom,
   currentProjectIdAtom,
   isReadOnlyModeAtom,
-  projectsAtom,
   viewOnlyProjectAtom
 } from '@/store/projects'
 import { useUseCase } from '../core'
 
 /**
  * Hook to create a new project
- * Automatically updates the global projects state
+ * Invalidates cache to refresh project lists
  */
 export function useCreateProject() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.createProject
-  )
-  const setProjects = useSetAtom(projectsAtom)
+  const queryClient = useQueryClient()
   const setCurrentProjectId = useSetAtom(currentProjectIdAtom)
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
 
-  const create = useCallback(
-    async (params: Parameters<typeof execute>[0]) => {
-      const result = await execute(params)
+  const mutation = useMutation({
+    mutationFn: async (
+      params: Parameters<typeof container.createProject.execute>[0]
+    ) => {
+      return container.createProject.execute(params)
+    },
+    onSuccess: (result, variables) => {
       if (result?.project) {
-        // Add to projects list
-        setProjects((prev) => [...prev, result.project])
         // Set as current project
         setCurrentProjectId(result.project.id)
         // Set main file as current if exists
@@ -46,79 +45,146 @@ export function useCreateProject() {
           setCurrentFileId(mainFile.id)
         }
       }
-      return result
-    },
-    [execute, setProjects, setCurrentProjectId, setCurrentFileId]
-  )
+      // Invalidate projects cache to include new project
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'user', variables.userId]
+      })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+    }
+  })
 
-  return { create, loading, error, reset, data }
+  return {
+    create: mutation.mutateAsync,
+    loading: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+    data: mutation.data
+  }
 }
 
 /**
  * Hook to update an existing project
  */
 export function useUpdateProject() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.updateProject
-  )
-  return { update: execute, loading, error, reset, data }
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: async (
+      params: Parameters<typeof container.updateProject.execute>[0]
+    ) => {
+      const result = await container.updateProject.execute(params)
+      return { result, userId: params.userId, projectId: params.projectId }
+    },
+    onSuccess: ({ projectId }) => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    }
+  })
+
+  return {
+    update: mutation.mutateAsync,
+    loading: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+    data: mutation.data
+  }
 }
 
 /**
  * Hook to delete a project
  */
 export function useDeleteProject() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.deleteProject
-  )
+  const queryClient = useQueryClient()
 
-  const deleteProject = useCallback(
-    (projectId: string, userId: string) => execute({ projectId, userId }),
-    [execute]
-  )
+  const mutation = useMutation({
+    mutationFn: async ({
+      projectId,
+      userId
+    }: {
+      projectId: string
+      userId: string
+    }) => {
+      const result = await container.deleteProject.execute({
+        projectId,
+        userId
+      })
+      return { result, userId, projectId }
+    },
+    onSuccess: ({ userId, projectId }) => {
+      // Remove the deleted project from cache (don't refetch it!)
+      queryClient.removeQueries({ queryKey: ['project', projectId] })
+      // Invalidate lists to refresh them
+      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+    }
+  })
 
-  return { deleteProject, loading, error, reset, data }
+  return {
+    deleteProject: mutation.mutateAsync,
+    loading: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+    data: mutation.data
+  }
 }
 
 /**
- * Hook to fetch all projects for a user
+ * Hook to fetch all projects for a user with caching
  */
 export function useGetProjects() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.getProjects
-  )
+  const queryClient = useQueryClient()
 
   const getProjects = useCallback(
-    (userId: string) => execute({ userId }),
-    [execute]
+    async (userId: string) => {
+      const data = await queryClient.fetchQuery({
+        queryKey: ['projects', 'user', userId],
+        queryFn: async () => {
+          const result = await container.getProjects.execute({ userId })
+          return result
+        },
+        staleTime: 1000 * 30 // 30 seconds
+      })
+      return data
+    },
+    [queryClient]
   )
 
-  return { getProjects, loading, error, reset, data }
+  return { getProjects }
 }
 
 /**
- * Hook to fetch a single project by ID
+ * Hook to fetch a single project by ID with caching
  */
 export function useGetProject() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.getProject
-  )
+  const queryClient = useQueryClient()
 
   const getProject = useCallback(
-    (projectId: string, userId?: string) => execute({ projectId, userId }),
-    [execute]
+    async (projectId: string, userId?: string) => {
+      const data = await queryClient.ensureQueryData({
+        queryKey: ['project', projectId],
+        queryFn: async () => {
+          const result = await container.getProject.execute({
+            projectId,
+            userId
+          })
+          return result
+        },
+        staleTime: 1000 * 30 // 30 seconds
+      })
+      return data
+    },
+    [queryClient]
   )
 
-  return { getProject, loading, error, reset, data }
+  return { getProject }
 }
 
 /**
- * Hook to fetch a project and update global state
- * Handles both owner mode (adds to projects list) and read-only mode (public projects)
+ * Hook to fetch a project and update UI state
+ * Handles both owner mode (sets as current) and read-only mode (public projects)
+ * Data is stored in React Query cache, not Jotai
  */
 export function useFetchProject() {
-  const { getProject, loading, error, reset, data } = useGetProject()
-  const setProjects = useSetAtom(projectsAtom)
+  const { getProject } = useGetProject()
   const setCurrentProjectId = useSetAtom(currentProjectIdAtom)
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
   const setIsReadOnlyMode = useSetAtom(isReadOnlyModeAtom)
@@ -138,18 +204,9 @@ export function useFetchProject() {
       const isOwner = params.userId && result.project.userId === params.userId
 
       if (isOwner) {
-        // User owns this project - add to their list and set as current
+        // User owns this project - set as current
         setIsReadOnlyMode(false)
         setViewOnlyProject(null)
-        setProjects((prev) => {
-          const index = prev.findIndex((p) => p.id === result.project.id)
-          if (index >= 0) {
-            const updated = [...prev]
-            updated[index] = result.project
-            return updated
-          }
-          return [...prev, result.project]
-        })
         // Set the project as the current project
         setCurrentProjectId(result.project.id)
         // Select the main file or first file
@@ -170,7 +227,6 @@ export function useFetchProject() {
     },
     [
       getProject,
-      setProjects,
       setCurrentProjectId,
       setCurrentFileId,
       setIsReadOnlyMode,
@@ -178,7 +234,7 @@ export function useFetchProject() {
     ]
   )
 
-  return { fetchProject, loading, error, reset, data }
+  return { fetchProject }
 }
 
 /**

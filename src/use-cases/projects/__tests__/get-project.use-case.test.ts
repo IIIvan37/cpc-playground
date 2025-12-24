@@ -39,8 +39,6 @@ describe('GetProjectUseCase', () => {
       createFile: vi.fn(),
       updateFile: vi.fn(),
       deleteFile: vi.fn(),
-      getShares: vi.fn(),
-      createShare: vi.fn(),
       getTags: vi.fn(),
       addTag: vi.fn(),
       removeTag: vi.fn(),
@@ -49,6 +47,7 @@ describe('GetProjectUseCase', () => {
       removeDependency: vi.fn(),
       getUserShares: vi.fn(),
       findUserByUsername: vi.fn(),
+      searchUsers: vi.fn(),
       addUserShare: vi.fn(),
       removeUserShare: vi.fn()
     }

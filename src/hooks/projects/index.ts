@@ -2,6 +2,14 @@
  * Project management hooks
  */
 
+export {
+  projectKeys,
+  useActiveProject,
+  useCurrentFile,
+  useCurrentProject,
+  useMainFile,
+  useProjectFiles
+} from './use-current-project'
 // Dependencies
 export {
   useAddDependency,
@@ -31,10 +39,15 @@ export {
   useGetProjectWithDependencies,
   useUpdateProject
 } from './use-projects'
-
-// Utilities
-export { useRefreshProjects } from './use-refresh-projects'
 // Shares
 export { useAddUserShare, useRemoveUserShare } from './use-shares'
 // Tags
 export { useAddTag, useRemoveTag } from './use-tags'
+// New React Query based hooks (single source of truth)
+export {
+  projectsKeys,
+  useAvailableDependencies,
+  useAvailableLibraries,
+  useProjectFromCache,
+  useUserProjects
+} from './use-user-projects'

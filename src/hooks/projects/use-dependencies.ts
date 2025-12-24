@@ -3,51 +3,71 @@
  * Provides a clean interface to interact with the domain layer
  */
 
-import { useAtomValue, useSetAtom } from 'jotai'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSetAtom } from 'jotai'
 import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
-import {
-  currentProjectIdAtom,
-  type DependencyProject,
-  dependencyFilesAtom,
-  isReadOnlyModeAtom,
-  projectsAtom,
-  viewOnlyProjectAtom
-} from '@/store/projects'
-import { useUseCase } from '../core'
+import { type DependencyProject, dependencyFilesAtom } from '@/store/projects'
+import { useActiveProject } from './use-current-project'
 
 /**
  * Hook to add a dependency to a project
  */
 export function useAddDependency() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.addDependency
-  )
+  const queryClient = useQueryClient()
 
-  const addDependency = useCallback(
-    (projectId: string, userId: string, dependencyId: string) =>
-      execute({ projectId, userId, dependencyId }),
-    [execute]
-  )
-
-  return { addDependency, loading, error, reset, data }
+  return useMutation({
+    mutationFn: async ({
+      projectId,
+      userId,
+      dependencyId
+    }: {
+      projectId: string
+      userId: string
+      dependencyId: string
+    }) => {
+      const result = await container.addDependency.execute({
+        projectId,
+        userId,
+        dependencyId
+      })
+      return { result, userId, projectId }
+    },
+    onSuccess: ({ projectId }) => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    }
+  })
 }
 
 /**
  * Hook to remove a dependency from a project
  */
 export function useRemoveDependency() {
-  const { execute, loading, error, reset, data } = useUseCase(
-    container.removeDependency
-  )
+  const queryClient = useQueryClient()
 
-  const removeDependency = useCallback(
-    (projectId: string, userId: string, dependencyId: string) =>
-      execute({ projectId, userId, dependencyId }),
-    [execute]
-  )
-
-  return { removeDependency, loading, error, reset, data }
+  return useMutation({
+    mutationFn: async ({
+      projectId,
+      userId,
+      dependencyId
+    }: {
+      projectId: string
+      userId: string
+      dependencyId: string
+    }) => {
+      const result = await container.removeDependency.execute({
+        projectId,
+        userId,
+        dependencyId
+      })
+      return { result, userId, projectId }
+    },
+    onSuccess: ({ userId, projectId }) => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+    }
+  })
 }
 
 /**
@@ -55,29 +75,21 @@ export function useRemoveDependency() {
  * Groups files by their parent project
  */
 export function useFetchDependencyFiles() {
-  const isReadOnly = useAtomValue(isReadOnlyModeAtom)
-  const currentProjectId = useAtomValue(currentProjectIdAtom)
-  const viewOnlyProject = useAtomValue(viewOnlyProjectAtom)
-  const projects = useAtomValue(projectsAtom)
+  const { activeProject } = useActiveProject()
   const setDependencyFiles = useSetAtom(dependencyFilesAtom)
 
   const fetchDependencyFiles = useCallback(async (): Promise<
     DependencyProject[]
   > => {
-    // Get the active project based on mode
-    const currentProject = isReadOnly
-      ? viewOnlyProject
-      : projects.find((p) => p.id === currentProjectId)
-
-    if (!currentProject || currentProject.dependencies.length === 0) {
+    if (!activeProject || activeProject.dependencies.length === 0) {
       setDependencyFiles([])
       return []
     }
 
     try {
       const result = await container.getProjectWithDependencies.execute({
-        projectId: currentProject.id,
-        userId: currentProject.userId
+        projectId: activeProject.id,
+        userId: activeProject.userId
       })
 
       // Group files by project (excluding the current project's files)
@@ -85,7 +97,7 @@ export function useFetchDependencyFiles() {
 
       for (const file of result.files) {
         // Skip files from the current project
-        if (file.projectId === currentProject.id) continue
+        if (file.projectId === activeProject.id) continue
 
         if (!projectsMap.has(file.projectId)) {
           projectsMap.set(file.projectId, {
@@ -111,13 +123,7 @@ export function useFetchDependencyFiles() {
       setDependencyFiles([])
       return []
     }
-  }, [
-    isReadOnly,
-    currentProjectId,
-    viewOnlyProject,
-    projects,
-    setDependencyFiles
-  ])
+  }, [activeProject, setDependencyFiles])
 
   return { fetchDependencyFiles }
 }

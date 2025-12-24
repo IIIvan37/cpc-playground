@@ -1,19 +1,20 @@
-import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { container } from '@/infrastructure/container'
-import { useUseCase } from '../core'
 
-export function useFetchVisibleProjects(userId?: string) {
-  const { execute, loading, error, data } = useUseCase(
-    container.getVisibleProjects
-  )
-
-  useEffect(() => {
-    execute({ userId })
-  }, [userId, execute])
+export function useFetchVisibleProjects(userId?: string, enabled = true) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['projects', 'visible', userId],
+    queryFn: async () => {
+      const result = await container.getVisibleProjects.execute({ userId })
+      return result.projects
+    },
+    staleTime: 1000 * 30, // 30 seconds
+    enabled // Only run when explicitly enabled
+  })
 
   return {
-    projects: data?.projects ?? [],
-    loading,
+    projects: data ?? [],
+    loading: isLoading,
     error: error?.message ?? null
   }
 }

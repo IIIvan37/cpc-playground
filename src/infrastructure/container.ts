@@ -70,11 +70,13 @@ import type { GetSharedCodeUseCase } from '@/use-cases/shared-code'
 import { createGetSharedCodeUseCase } from '@/use-cases/shared-code'
 import type {
   AddUserShareUseCase,
-  RemoveUserShareUseCase
+  RemoveUserShareUseCase,
+  SearchUsersUseCase
 } from '@/use-cases/shares'
 import {
   createAddUserShareUseCase,
-  createRemoveUserShareUseCase
+  createRemoveUserShareUseCase,
+  createSearchUsersUseCase
 } from '@/use-cases/shares'
 import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
 import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
@@ -118,6 +120,7 @@ export type Container = {
   // Shares use cases
   addUserShare: AddUserShareUseCase
   removeUserShare: RemoveUserShareUseCase
+  searchUsers: SearchUsersUseCase
   // Shared code use cases
   getSharedCode: GetSharedCodeUseCase
 }
@@ -200,6 +203,7 @@ export function createContainer(): Container {
       projectsRepository,
       authorizationService
     ),
+    searchUsers: createSearchUsersUseCase(projectsRepository),
     // Shared code use cases
     getSharedCode: createGetSharedCodeUseCase(sharedCodeRepository)
   }

@@ -26,7 +26,6 @@ import type { Database, Tables } from '@/types/database.types'
 
 type ProjectRow = Tables<'projects'>
 type ProjectFileRow = Tables<'project_files'>
-type ProjectShareRow = Tables<'project_shares'>
 type TagRow = Tables<'tags'>
 
 /** DB visibility enum - maps to domain VisibilityValue */
@@ -34,8 +33,14 @@ type DbVisibility = Database['public']['Enums']['project_visibility']
 
 /** Result of project query with nested relations */
 interface ProjectWithRelations extends ProjectRow {
+  author?: { username: string } | null
   project_files: ProjectFileRow[]
-  project_shares: ProjectShareRow[]
+  project_shares: Array<{
+    project_id: string
+    user_id: string
+    created_at: string
+    user?: { username: string } | null
+  }>
   project_tags: Array<{ tags: TagRow | null }>
   project_dependencies: Array<{
     dependency: { id: string; name: string; is_library: boolean } | null
@@ -62,20 +67,9 @@ interface ShareWithUserProfile {
 }
 
 /**
- * Supabase project_shares table result with share_code
- * Note: This assumes the DB schema has share_code column which may not match generated types
+ * Map Supabase data to domain entity with embedded author and user shares (using JOINs)
  */
-interface ProjectShareDbRow {
-  id: string
-  project_id: string
-  share_code: string
-  created_at: string
-}
-
-/**
- * Map Supabase data to domain entity
- */
-function mapToDomain(data: ProjectWithRelations): Project {
+function mapToDomainWithEmbeddedRelations(data: ProjectWithRelations): Project {
   // Map files
   const files: ProjectFile[] = (data.project_files || []).map((f) =>
     createProjectFile({
@@ -90,16 +84,9 @@ function mapToDomain(data: ProjectWithRelations): Project {
     })
   )
 
-  // Map shares
-  // Note: The DB schema for project_shares may have share_code (production) or not (local)
-  // We cast to the expected shape with share_code
-  const shares: ProjectShare[] = (
-    data.project_shares as unknown as ProjectShareDbRow[]
-  ).map((s) => ({
-    id: s.id,
-    shareCode: s.share_code,
-    createdAt: new Date(s.created_at)
-  }))
+  // Map shares - project_shares table is for user shares, not link shares
+  // Link shares (with shareCode) would come from a separate table if implemented
+  const shares: ProjectShare[] = []
 
   // Map tags
   const tags: string[] = (data.project_tags || [])
@@ -114,10 +101,23 @@ function mapToDomain(data: ProjectWithRelations): Project {
       name: pd.dependency!.name
     }))
 
+  // Map user shares from embedded data
+  const userShares: UserShare[] = (data.project_shares || [])
+    .filter((share) => share.user?.username)
+    .map((share) => ({
+      projectId: data.id,
+      userId: share.user_id,
+      username: share.user!.username,
+      createdAt: new Date(share.created_at)
+    }))
+
+  // Get author username from embedded relation
+  const authorUsername = data.author?.username ?? null
+
   return createProject({
     id: data.id,
     userId: data.user_id,
-    authorUsername: null, // Will be enriched separately
+    authorUsername,
     name: createProjectName(data.name),
     description: data.description,
     visibility: createVisibility(data.visibility),
@@ -126,47 +126,10 @@ function mapToDomain(data: ProjectWithRelations): Project {
     shares,
     tags,
     dependencies,
-    userShares: [], // Loaded separately via getUserShares()
+    userShares,
     createdAt: new Date(data.created_at),
     updatedAt: new Date(data.updated_at)
   })
-}
-
-/**
- * Enrich projects with author usernames
- * Fetches usernames from user_profiles and updates projects
- */
-async function enrichWithAuthorUsernames(
-  supabase: SupabaseClient<Database>,
-  projects: readonly Project[]
-): Promise<readonly Project[]> {
-  if (projects.length === 0) return projects
-
-  // Get unique user IDs
-  const userIds = [...new Set(projects.map((p) => p.userId))]
-
-  // Fetch all usernames in one query
-  const { data: profiles, error } = await supabase
-    .from('user_profiles')
-    .select('id, username')
-    .in('id', userIds)
-
-  if (error) {
-    // If we can't fetch usernames, just return projects without them
-    console.warn('Failed to fetch author usernames:', error)
-    return projects
-  }
-
-  // Create a map of userId -> username
-  const usernameMap = new Map((profiles || []).map((p) => [p.id, p.username]))
-
-  // Update projects with usernames
-  return projects.map((project) =>
-    createProject({
-      ...project,
-      authorUsername: usernameMap.get(project.userId) ?? null
-    })
-  )
 }
 
 /**
@@ -181,8 +144,14 @@ export function createSupabaseProjectsRepository(
     async findAll(userId: string): Promise<readonly Project[]> {
       const projectSelect = `
         *,
+        author:user_profiles!projects_user_id_fkey_user_profiles (username),
         project_files (*),
-        project_shares (*),
+        project_shares (
+          project_id,
+          user_id,
+          created_at,
+          user:user_profiles!project_shares_user_id_fkey_user_profiles (username)
+        ),
         project_tags (
           tags (*)
         ),
@@ -223,17 +192,19 @@ export function createSupabaseProjectsRepository(
           .order('updated_at', { ascending: false })
 
         if (error) throw error
-        sharedProjects = data || []
+        // Cast to ProjectWithRelations[] - the select query returns the correct shape
+        // but TypeScript can't infer it correctly due to complex FK hints
+        sharedProjects = (data || []) as unknown as ProjectWithRelations[]
       }
 
       // Combine and deduplicate (in case user owns a project that's also shared)
-      const allProjects: Array<(typeof ownProjects)[number]> = [
-        ...(ownProjects || [])
+      const allProjects: ProjectWithRelations[] = [
+        ...((ownProjects || []) as unknown as ProjectWithRelations[])
       ]
       const ownIds = new Set(allProjects.map((p) => p.id))
       for (const p of sharedProjects) {
         if (!ownIds.has(p.id)) {
-          allProjects.push(p as (typeof ownProjects)[number])
+          allProjects.push(p)
         }
       }
 
@@ -243,18 +214,20 @@ export function createSupabaseProjectsRepository(
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       )
 
-      const projects = allProjects.map((p) =>
-        mapToDomain(p as unknown as ProjectWithRelations)
-      )
-
-      return enrichWithAuthorUsernames(supabase, projects)
+      return allProjects.map((p) => mapToDomainWithEmbeddedRelations(p))
     },
 
     async findVisible(userId?: string): Promise<readonly Project[]> {
       const projectSelect = `
         *,
+        author:user_profiles!projects_user_id_fkey_user_profiles (username),
         project_files (*),
-        project_shares (*),
+        project_shares (
+          project_id,
+          user_id,
+          created_at,
+          user:user_profiles!project_shares_user_id_fkey_user_profiles (username)
+        ),
         project_tags (
           tags (*)
         ),
@@ -270,6 +243,7 @@ export function createSupabaseProjectsRepository(
       // Simpler select for anonymous users (no user-related joins)
       const anonProjectSelect = `
         *,
+        author:user_profiles!projects_user_id_fkey_user_profiles (username),
         project_files (*),
         project_tags (
           tags (*)
@@ -294,14 +268,12 @@ export function createSupabaseProjectsRepository(
         if (publicError) throw publicError
 
         // Map with empty shares for anonymous users
-        const projects = (publicProjects || []).map((p) =>
-          mapToDomain({
+        return (publicProjects || []).map((p) =>
+          mapToDomainWithEmbeddedRelations({
             ...p,
             project_shares: []
           } as unknown as ProjectWithRelations)
         )
-
-        return enrichWithAuthorUsernames(supabase, projects)
       }
 
       // Get public projects
@@ -341,15 +313,18 @@ export function createSupabaseProjectsRepository(
           .order('updated_at', { ascending: false })
 
         if (error) throw error
-        sharedProjects = data || []
+        // Cast to ProjectWithRelations[] - the select query returns the correct shape
+        // but TypeScript can't infer it correctly due to complex FK hints
+        sharedProjects = (data || []) as unknown as ProjectWithRelations[]
       }
 
       // Combine and deduplicate
-      const allProjects: Array<(typeof publicProjects)[number]> = []
+      const allProjects: ProjectWithRelations[] = []
       const seenIds = new Set<string>()
 
       // Add own projects first
-      for (const p of ownProjects || []) {
+      for (const p of (ownProjects ||
+        []) as unknown as ProjectWithRelations[]) {
         if (!seenIds.has(p.id)) {
           seenIds.add(p.id)
           allProjects.push(p)
@@ -360,12 +335,13 @@ export function createSupabaseProjectsRepository(
       for (const p of sharedProjects) {
         if (!seenIds.has(p.id)) {
           seenIds.add(p.id)
-          allProjects.push(p as (typeof publicProjects)[number])
+          allProjects.push(p)
         }
       }
 
       // Add public projects
-      for (const p of publicProjects || []) {
+      for (const p of (publicProjects ||
+        []) as unknown as ProjectWithRelations[]) {
         if (!seenIds.has(p.id)) {
           seenIds.add(p.id)
           allProjects.push(p)
@@ -378,21 +354,29 @@ export function createSupabaseProjectsRepository(
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       )
 
-      const projects = allProjects.map((p) =>
-        mapToDomain(p as unknown as ProjectWithRelations)
-      )
-
-      return enrichWithAuthorUsernames(supabase, projects)
+      return allProjects.map((p) => mapToDomainWithEmbeddedRelations(p))
     },
 
     async findById(projectId: string): Promise<Project | null> {
+      // Guard against undefined/null projectId
+      if (!projectId) {
+        console.warn('findById called with invalid projectId:', projectId)
+        return null
+      }
+
       const { data, error } = await supabase
         .from('projects')
         .select(
           `
           *,
+          author:user_profiles!projects_user_id_fkey_user_profiles (username),
           project_files (*),
-          project_shares (*),
+          project_shares (
+            project_id,
+            user_id,
+            created_at,
+            user:user_profiles!project_shares_user_id_fkey_user_profiles (username)
+          ),
           project_tags (
             tags (*)
           ),
@@ -413,9 +397,9 @@ export function createSupabaseProjectsRepository(
         throw error
       }
 
-      const project = mapToDomain(data)
-      const enriched = await enrichWithAuthorUsernames(supabase, [project])
-      return enriched[0] ?? null
+      return mapToDomainWithEmbeddedRelations(
+        data as unknown as ProjectWithRelations
+      )
     },
 
     async findByShareCode(shareCode: string): Promise<Project | null> {
@@ -425,8 +409,14 @@ export function createSupabaseProjectsRepository(
           `
           project:projects (
             *,
+            author:user_profiles!projects_user_id_fkey_user_profiles (username),
             project_files (*),
-            project_shares (*),
+            project_shares (
+              project_id,
+              user_id,
+              created_at,
+              user:user_profiles!project_shares_user_id_fkey_user_profiles (username)
+            ),
             project_tags (
               tags (*)
             ),
@@ -448,9 +438,9 @@ export function createSupabaseProjectsRepository(
         throw error
       }
 
-      const project = mapToDomain((data as unknown as ShareWithProject).project)
-      const enriched = await enrichWithAuthorUsernames(supabase, [project])
-      return enriched[0] ?? null
+      return mapToDomainWithEmbeddedRelations(
+        (data as unknown as ShareWithProject).project
+      )
     },
 
     async create(project: Project): Promise<Project> {
@@ -626,45 +616,8 @@ export function createSupabaseProjectsRepository(
       if (error) throw error
     },
 
-    async getShares(projectId: string): Promise<readonly ProjectShare[]> {
-      const { data, error } = await supabase
-        .from('project_shares')
-        .select('*')
-        .eq('project_id', projectId)
-
-      if (error) throw error
-      if (!data) return []
-
-      // Cast to expected shape - DB may have share_code column not in generated types
-      return (data as unknown as ProjectShareDbRow[]).map((share) => ({
-        id: share.id,
-        shareCode: share.share_code,
-        createdAt: new Date(share.created_at)
-      }))
-    },
-
-    async createShare(projectId: string): Promise<ProjectShare> {
-      const shareCode = crypto.randomUUID()
-
-      // Cast insert data - DB may have share_code column not in generated types
-      const { data, error } = await supabase
-        .from('project_shares')
-        .insert({
-          project_id: projectId,
-          share_code: shareCode
-        } as unknown as Tables<'project_shares'>)
-        .select()
-        .single()
-
-      if (error) throw error
-
-      const shareData = data as unknown as ProjectShareDbRow
-      return {
-        id: shareData.id,
-        shareCode: shareData.share_code,
-        createdAt: new Date(shareData.created_at)
-      }
-    },
+    // Note: Link shares (with share_code) are handled by Netlify Blobs, not the database
+    // The project_shares table only stores user shares (project_id, user_id)
 
     async getDependencies(projectId: string): Promise<readonly string[]> {
       const { data, error } = await supabase
@@ -826,7 +779,7 @@ export function createSupabaseProjectsRepository(
           project_id,
           user_id,
           created_at,
-          user_profiles!project_shares_user_id_fkey (
+          user_profiles!project_shares_user_id_fkey_user_profiles (
             username
           )
         `
@@ -862,6 +815,30 @@ export function createSupabaseProjectsRepository(
       }
 
       return data ? { id: data.id, username: data.username } : null
+    },
+
+    async searchUsers(
+      query: string,
+      limit = 10
+    ): Promise<ReadonlyArray<{ id: string; username: string }>> {
+      const trimmedQuery = query.trim().toLowerCase()
+
+      if (!trimmedQuery) {
+        return []
+      }
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id, username')
+        .ilike('username', `${trimmedQuery}%`)
+        .order('username')
+        .limit(limit)
+
+      if (error) {
+        throw error
+      }
+
+      return data || []
     },
 
     async addUserShare(projectId: string, userId: string): Promise<UserShare> {

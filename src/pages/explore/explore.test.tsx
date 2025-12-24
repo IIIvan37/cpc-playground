@@ -33,7 +33,7 @@ describe('ExplorePage', () => {
       loading: false,
       error: null,
       reset: vi.fn(),
-      data: null
+      data: undefined
     })
   })
 

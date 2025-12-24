@@ -1,8 +1,8 @@
 import { getDefaultStore, useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCurrentFile } from '@/hooks/projects/use-current-project'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
 import { currentProgramAtom, currentProgramIdAtom } from '@/store/programs'
-import { currentFileAtom } from '@/store/projects'
 import { CodeEditorView } from './code-editor.view'
 
 const LINE_HEIGHT = 21
@@ -20,7 +20,7 @@ const store = getDefaultStore()
 export function CodeEditor() {
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
   const errorLines = useAtomValue(errorLinesAtom)
-  const currentFile = useAtomValue(currentFileAtom)
+  const currentFile = useCurrentFile()
   const currentProgram = useAtomValue(currentProgramAtom)
   const currentProgramId = useAtomValue(currentProgramIdAtom)
   const globalCode = useAtomValue(codeAtom)

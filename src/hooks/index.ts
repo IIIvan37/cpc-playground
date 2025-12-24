@@ -22,14 +22,21 @@ export {
 
 // Project management
 export {
+  projectKeys,
+  projectsKeys,
+  useActiveProject,
   // Dependencies
   useAddDependency,
   // Tags
   useAddTag,
   // Shares
   useAddUserShare,
+  useAvailableDependencies,
+  useAvailableLibraries,
   // CRUD
   useCreateProject,
+  useCurrentFile,
+  useCurrentProject,
   useDeleteProject,
   useFetchDependencyFiles,
   useFetchProject,
@@ -47,13 +54,22 @@ export {
   useHandleRemoveShare,
   useHandleRemoveTag,
   useHandleSaveProject,
+  useMainFile,
+  useProjectFiles,
+  useProjectFromCache,
   useProjectFromUrl,
-  useRefreshProjects,
   useRemoveDependency,
   useRemoveTag,
   useRemoveUserShare,
-  useUpdateProject
+  useUpdateProject,
+  // New React Query hooks (single source of truth)
+  useUserProjects
 } from './projects'
 
 // Shared/Misc
-export { useSharedCode, useUserProfile } from './shared'
+export {
+  type UserSearchResult,
+  useSearchUsers,
+  useSharedCode,
+  useUserProfile
+} from './shared'

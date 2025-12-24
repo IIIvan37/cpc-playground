@@ -38,9 +38,17 @@ const mockUser: User = {
   }
 }
 
+// Mock data that will be used by the mock hooks
+let mockProjectForHook: Project | null = null
+let mockIsReadOnlyForHook = false
+
 vi.mock('@/hooks', () => ({
   useAuth: () => ({
     user: mockUser
+  }),
+  useActiveProject: () => ({
+    activeProject: mockProjectForHook,
+    isReadOnly: mockIsReadOnlyForHook
   }),
   useCreateFile: () => ({
     createFile: mockCreateFile,
@@ -108,12 +116,17 @@ describe('FileBrowser', () => {
     store.set(codeAtom, '')
     store.set(viewOnlyProjectAtom, null)
 
+    // Set mock hook values
+    mockProjectForHook = mockProject
+    mockIsReadOnlyForHook = false
+
     // Mock confirm dialog
     vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
   })
 
   describe('rendering', () => {
     it('renders nothing when no project', () => {
+      mockProjectForHook = null
       store.set(projectsAtom, [])
       store.set(currentProjectIdAtom, null)
 
@@ -137,6 +150,7 @@ describe('FileBrowser', () => {
     })
 
     it('hides new file button in read-only mode', () => {
+      mockIsReadOnlyForHook = true
       store.set(isReadOnlyModeAtom, true)
       store.set(viewOnlyProjectAtom, mockProject)
       store.set(currentProjectIdAtom, null)
@@ -314,6 +328,7 @@ describe('FileBrowser', () => {
 
   describe('read-only mode', () => {
     beforeEach(() => {
+      mockIsReadOnlyForHook = true
       store.set(isReadOnlyModeAtom, true)
       store.set(viewOnlyProjectAtom, mockProject)
       store.set(currentProjectIdAtom, null)

@@ -6,8 +6,13 @@ import { EmulatorCanvas } from '@/components/emulator'
 import { MarkdownPreview } from '@/components/markdown-preview'
 import { FileBrowser } from '@/components/project/file-browser'
 import { ResizableSidebar } from '@/components/ui/resizable-sidebar'
-import { useAutoSaveFile, useProjectFromUrl, useSharedCode } from '@/hooks'
-import { activeProjectAtom, isMarkdownFileAtom, viewModeAtom } from '@/store'
+import {
+  useActiveProject,
+  useAutoSaveFile,
+  useProjectFromUrl,
+  useSharedCode
+} from '@/hooks'
+import { isMarkdownFileAtom, viewModeAtom } from '@/store'
 import { Toolbar } from '../toolbar/toolbar'
 import { MainLayoutView } from './main-layout.view'
 
@@ -42,7 +47,7 @@ const MemoizedEditor = memo(function MemoizedEditor() {
  */
 export function MainLayout() {
   const viewMode = useAtomValue(viewModeAtom)
-  const activeProject = useAtomValue(activeProjectAtom)
+  const { activeProject } = useActiveProject()
   const isMarkdownFile = useAtomValue(isMarkdownFileAtom)
 
   // Load shared code from URL if present

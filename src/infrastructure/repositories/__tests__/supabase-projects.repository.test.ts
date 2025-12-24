@@ -822,73 +822,7 @@ describe('SupabaseProjectsRepository', () => {
     })
   })
 
-  describe('getShares', () => {
-    it('should return project shares', async () => {
-      const chainMock = createFullChainMock()
-      chainMock.eq = vi.fn(() =>
-        Promise.resolve({
-          data: [
-            {
-              id: 'share-1',
-              project_id: 'project-123',
-              share_code: 'abc123',
-              created_at: '2024-01-01T00:00:00Z'
-            }
-          ],
-          error: null
-        })
-      )
-      mockSupabase.from.mockReturnValue(chainMock)
-
-      const result = await repository.getShares('project-123')
-
-      expect(mockSupabase.from).toHaveBeenCalledWith('project_shares')
-      expect(result).toHaveLength(1)
-      expect(result[0].shareCode).toBe('abc123')
-    })
-
-    it('should return empty array when no data', async () => {
-      const chainMock = createFullChainMock()
-      chainMock.eq = vi.fn(() => Promise.resolve({ data: null, error: null }))
-      mockSupabase.from.mockReturnValue(chainMock)
-
-      const result = await repository.getShares('project-123')
-
-      expect(result).toEqual([])
-    })
-  })
-
-  describe('createShare', () => {
-    it('should create a share', async () => {
-      const chainMock = createFullChainMock({
-        data: {
-          id: 'share-1',
-          project_id: 'project-123',
-          share_code: 'generated-uuid',
-          created_at: '2024-01-01T00:00:00Z'
-        },
-        error: null
-      })
-      mockSupabase.from.mockReturnValue(chainMock)
-
-      const result = await repository.createShare('project-123')
-
-      expect(mockSupabase.from).toHaveBeenCalledWith('project_shares')
-      expect(result.id).toBe('share-1')
-    })
-
-    it('should throw on error', async () => {
-      const chainMock = createFullChainMock({
-        data: null,
-        error: { message: 'Insert failed' }
-      })
-      mockSupabase.from.mockReturnValue(chainMock)
-
-      await expect(repository.createShare('project-123')).rejects.toEqual({
-        message: 'Insert failed'
-      })
-    })
-  })
+  // Note: Link shares (getShares, createShare) are handled by Netlify Blobs, not the repository
 
   describe('getDependencies', () => {
     it('should return dependencies', async () => {

@@ -28,6 +28,7 @@ const mockHandleAddDependency = vi.fn()
 const mockHandleRemoveDependency = vi.fn()
 const mockHandleAddShare = vi.fn()
 const mockHandleRemoveShare = vi.fn()
+const mockSearchUsers = vi.fn()
 
 const mockUser: User = {
   id: 'user-1',
@@ -40,10 +41,23 @@ const mockUser: User = {
   }
 }
 
+// Mock data that will be used by the mock hooks
+let mockCurrentProjectForHook: Project | null = null
+let mockAvailableDepsForHook: Project[] = []
+
 vi.mock('@/hooks', () => ({
   useAuth: () => ({
     user: mockUser
   }),
+  useCurrentProject: () => ({
+    project: mockCurrentProjectForHook,
+    isLoading: false
+  }),
+  useUserProjects: () => ({
+    projects: mockAvailableDepsForHook,
+    isLoading: false
+  }),
+  useAvailableDependencies: () => mockAvailableDepsForHook,
   useHandleSaveProject: () => ({
     handleSave: mockHandleSave,
     loading: false
@@ -75,6 +89,12 @@ vi.mock('@/hooks', () => ({
   useHandleRemoveShare: () => ({
     handleRemoveShare: mockHandleRemoveShare,
     loading: false
+  }),
+  useSearchUsers: () => ({
+    users: [],
+    loading: false,
+    error: null,
+    searchUsers: mockSearchUsers
   })
 }))
 
@@ -125,6 +145,10 @@ describe('ProjectSettingsModal', () => {
     store.set(projectsAtom, [mockProject, mockLibraryProject])
     store.set(currentProjectIdAtom, 'project-1')
 
+    // Set mock hook values
+    mockCurrentProjectForHook = mockProject
+    mockAvailableDepsForHook = [mockLibraryProject]
+
     // Default mock implementations
     mockHandleSave.mockResolvedValue({ success: true })
     mockHandleDelete.mockResolvedValue({ success: true })
@@ -141,6 +165,7 @@ describe('ProjectSettingsModal', () => {
 
   describe('rendering', () => {
     it('renders nothing when no project', () => {
+      mockCurrentProjectForHook = null
       store.set(currentProjectIdAtom, null)
 
       const { container } = renderComponent()

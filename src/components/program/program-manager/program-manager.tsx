@@ -2,6 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ProjectSettingsModal } from '@/components/project'
+import { useCurrentProject } from '@/hooks'
 import {
   codeAtom,
   currentProgramIdAtom,
@@ -13,7 +14,6 @@ import {
 } from '@/store'
 import {
   currentFileIdAtom,
-  currentProjectAtom,
   currentProjectIdAtom,
   isReadOnlyModeAtom,
   viewOnlyProjectAtom
@@ -45,7 +45,7 @@ export function ProgramManager() {
   const [selectKey, setSelectKey] = useState(0)
 
   const currentProgram = savedPrograms.find((p) => p.id === currentProgramId)
-  const currentProject = useAtomValue(currentProjectAtom)
+  const { project: currentProject } = useCurrentProject()
 
   // Load programs from localStorage on mount
   useEffect(() => {

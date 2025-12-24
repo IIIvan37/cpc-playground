@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { createStore, Provider } from 'jotai'
 import type { ReactNode } from 'react'
@@ -78,14 +79,23 @@ const mockPublicProject: Project = createProject({
 
 describe('useProjects hooks', () => {
   let store: ReturnType<typeof createStore>
+  let queryClient: QueryClient
 
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <Provider store={store}>{children}</Provider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>{children}</Provider>
+    </QueryClientProvider>
   )
 
   beforeEach(() => {
     vi.clearAllMocks()
     store = createStore()
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false }
+      }
+    })
     store.set(projectsAtom, [])
     store.set(currentProjectIdAtom, null)
     store.set(currentFileIdAtom, null)
@@ -111,10 +121,13 @@ describe('useProjects hooks', () => {
         name: 'Test Project'
       })
 
-      // Check state was updated
-      expect(store.get(projectsAtom)).toContainEqual(mockProject)
+      // Check UI state was updated (Jotai atoms for current project/file)
       expect(store.get(currentProjectIdAtom)).toBe('project-1')
       expect(store.get(currentFileIdAtom)).toBe('main-file')
+
+      // Note: projectsAtom is no longer updated directly.
+      // The hook now calls queryClient.invalidateQueries() which
+      // triggers a refetch from the server.
     })
 
     it('sets main file as current file', async () => {
@@ -196,7 +209,10 @@ describe('useProjects hooks', () => {
       const { result } = renderHook(() => useDeleteProject(), { wrapper })
 
       await act(async () => {
-        await result.current.deleteProject('project-1', 'user-1')
+        await result.current.deleteProject({
+          projectId: 'project-1',
+          userId: 'user-1'
+        })
       })
 
       expect(mockDeleteProject).toHaveBeenCalledWith({
@@ -255,7 +271,8 @@ describe('useProjects hooks', () => {
           })
         })
 
-        expect(store.get(projectsAtom)).toContainEqual(mockProject)
+        // Note: projectsAtom is no longer updated directly.
+        // The hook now uses React Query cache.
         expect(store.get(isReadOnlyModeAtom)).toBe(false)
         expect(store.get(viewOnlyProjectAtom)).toBeNull()
       })
@@ -290,9 +307,9 @@ describe('useProjects hooks', () => {
           })
         })
 
-        const projects = store.get(projectsAtom)
-        expect(projects).toHaveLength(1)
-        expect(projects[0].name).toBe('Updated')
+        // Note: projectsAtom is no longer updated directly.
+        // The hook now uses queryClient.setQueryData() to update React Query cache.
+        expect(store.get(currentProjectIdAtom)).toBe('project-1')
       })
     })
 

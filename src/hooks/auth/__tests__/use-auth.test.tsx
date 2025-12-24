@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { createStore, Provider } from 'jotai'
 import type { ReactNode } from 'react'
@@ -52,15 +53,24 @@ const mockUser: User = {
 
 describe('useAuth', () => {
   let store: ReturnType<typeof createStore>
+  let queryClient: QueryClient
   let authStateCallback: ((user: User | null) => void) | null = null
 
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <Provider store={store}>{children}</Provider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>{children}</Provider>
+    </QueryClientProvider>
   )
 
   beforeEach(() => {
     vi.clearAllMocks()
     store = createStore()
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false }
+      }
+    })
     authStateCallback = null
 
     // Default mock implementations

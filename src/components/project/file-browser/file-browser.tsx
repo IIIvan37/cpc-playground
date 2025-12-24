@@ -4,18 +4,14 @@ import Button from '@/components/ui/button/button'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import {
+  useActiveProject,
   useAuth,
   useCreateFile,
   useDeleteFile,
   useFetchDependencyFiles,
   useSetMainFile
 } from '@/hooks'
-import {
-  activeProjectAtom,
-  codeAtom,
-  currentFileIdAtom,
-  isReadOnlyModeAtom
-} from '@/store'
+import { codeAtom, currentFileIdAtom } from '@/store'
 import { currentProjectIdAtom, dependencyFilesAtom } from '@/store/projects'
 import styles from './file-browser.module.css'
 import { FileBrowserView } from './file-browser.view'
@@ -34,8 +30,8 @@ type DependencyFile = {
  */
 export function FileBrowser() {
   const { user } = useAuth()
-  const project = useAtomValue(activeProjectAtom)
-  const isReadOnlyMode = useAtomValue(isReadOnlyModeAtom)
+  const { activeProject: project, isReadOnly: isReadOnlyMode } =
+    useActiveProject()
   const currentProjectId = useAtomValue(currentProjectIdAtom)
   const dependencyFiles = useAtomValue(dependencyFilesAtom)
   const setCode = useSetAtom(codeAtom)

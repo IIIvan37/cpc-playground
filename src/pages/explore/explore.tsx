@@ -24,11 +24,14 @@ export function ExplorePage() {
   const [creating, setCreating] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const { create: createProject } = useCreateProject()
 
-  const { projects, loading, error } = useFetchVisibleProjects(user?.id)
+  const { projects, loading, error } = useFetchVisibleProjects(
+    user?.id,
+    !authLoading
+  )
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return

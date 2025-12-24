@@ -1,41 +1,36 @@
 /**
  * React hooks for file use-cases
  *
- * Uses the generic useUseCase hook to reduce boilerplate
- * Hooks automatically refresh the global projects state after mutations
+ * Uses React Query for cache management
+ * Hooks invalidate queries after mutations to keep cache in sync
  */
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
 import { useCallback, useState } from 'react'
-import {
-  addFileIfMatch,
-  removeFileIfMatch,
-  replaceFileIfMatch,
-  setFileAsMain
-} from '@/domain/entities/project.entity'
 import { container } from '@/infrastructure/container'
-import { currentFileIdAtom, projectsAtom } from '@/store/projects'
+import { currentFileIdAtom } from '@/store/projects'
 import { useUseCase } from '../core'
 
 /**
  * Hook for creating a file in a project
- * Automatically updates the global projects state
+ * Invalidates project cache to refresh data
  */
 export function useCreateFile() {
   const { execute, loading, error, reset, data } = useUseCase(
     container.createFile
   )
-  const setProjects = useSetAtom(projectsAtom)
+  const queryClient = useQueryClient()
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
 
   const createFile = useCallback(
     async (params: Parameters<typeof execute>[0]) => {
       const result = await execute(params)
       if (result?.file) {
-        // Update projects state with the new file
-        setProjects((prev) =>
-          prev.map((p) => addFileIfMatch(p, params.projectId, result.file))
-        )
+        // Invalidate project cache to refresh file list
+        queryClient.invalidateQueries({
+          queryKey: ['project', params.projectId]
+        })
         // Set as current file if it's main or if requested
         if (result.file.isMain) {
           setCurrentFileId(result.file.id)
@@ -43,7 +38,7 @@ export function useCreateFile() {
       }
       return result
     },
-    [execute, setProjects, setCurrentFileId]
+    [execute, queryClient, setCurrentFileId]
   )
 
   return { createFile, loading, error, reset, data }
@@ -51,31 +46,26 @@ export function useCreateFile() {
 
 /**
  * Hook for updating a file
- * Automatically updates the global projects state
+ * Invalidates project cache to refresh data
  */
 export function useUpdateFile() {
   const { execute, loading, error, reset, data } = useUseCase(
     container.updateFile
   )
-  const setProjects = useSetAtom(projectsAtom)
+  const queryClient = useQueryClient()
 
   const updateFile = useCallback(
     async (params: Parameters<typeof execute>[0]) => {
       const result = await execute(params)
       if (result?.file) {
-        // Update projects state with the updated file
-        setProjects((prev) =>
-          prev.map((p) => {
-            if (params.isMain) {
-              return setFileAsMain(p, params.projectId, result.file.id)
-            }
-            return replaceFileIfMatch(p, params.projectId, result.file)
-          })
-        )
+        // Invalidate project cache to refresh file data
+        queryClient.invalidateQueries({
+          queryKey: ['project', params.projectId]
+        })
       }
       return result
     },
-    [execute, setProjects]
+    [execute, queryClient]
   )
 
   return { updateFile, loading, error, reset, data }
@@ -83,23 +73,21 @@ export function useUpdateFile() {
 
 /**
  * Hook for deleting a file
- * Automatically updates the global projects state
+ * Invalidates project cache to refresh data
  */
 export function useDeleteFile() {
   const { execute, loading, error, reset, data } = useUseCase(
     container.deleteFile
   )
-  const setProjects = useSetAtom(projectsAtom)
+  const queryClient = useQueryClient()
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
 
   const deleteFile = useCallback(
     async (params: Parameters<typeof execute>[0]) => {
       await execute(params)
-      // Update projects state, removing the file
-      setProjects((prev) =>
-        prev.map((p) => removeFileIfMatch(p, params.projectId, params.fileId))
-      )
-      // Clear current file if it was deleted, select main file instead
+      // Invalidate project cache to refresh file list
+      queryClient.invalidateQueries({ queryKey: ['project', params.projectId] })
+      // Clear current file if it was deleted
       setCurrentFileId((current) => {
         if (current === params.fileId) {
           return null // Will be handled by component to select another file
@@ -107,7 +95,7 @@ export function useDeleteFile() {
         return current
       })
     },
-    [execute, setProjects, setCurrentFileId]
+    [execute, queryClient, setCurrentFileId]
   )
 
   return { deleteFile, loading, error, reset, data }

@@ -9,7 +9,6 @@ import {
   useAddTag,
   useAddUserShare,
   useDeleteProject,
-  useRefreshProjects,
   useRemoveDependency,
   useRemoveTag,
   useRemoveUserShare,
@@ -23,51 +22,6 @@ import {
 type OperationResult = {
   success: boolean
   error?: string
-}
-
-type OperationFn<TArgs extends unknown[]> = (
-  ...args: TArgs
-) => Promise<OperationResult>
-
-// ============================================================================
-// Generic Hook Factory
-// ============================================================================
-
-/**
- * Creates a hook for project operations with loading state, error handling, and refresh
- * Inspired by useUseCase pattern but tailored for operations that need to refresh global state
- *
- * Convention: userId must be the second argument for auto-refresh to work
- */
-function useProjectOperation<TArgs extends unknown[]>(
-  operation: (...args: TArgs) => Promise<unknown>,
-  errorMessage: string
-): { execute: OperationFn<TArgs>; loading: boolean } {
-  const { refreshProjects } = useRefreshProjects()
-  const [loading, setLoading] = useState(false)
-
-  const execute = useCallback(
-    async (...args: TArgs): Promise<OperationResult> => {
-      setLoading(true)
-      try {
-        await operation(...args)
-        const userId = args[1] as string
-        await refreshProjects(userId)
-        return { success: true }
-      } catch (error) {
-        console.error(`${errorMessage}:`, error)
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : errorMessage
-        }
-      } finally {
-        setLoading(false)
-      }
-    },
-    [operation, refreshProjects, errorMessage]
-  )
-
-  return { execute, loading }
 }
 
 // ============================================================================
@@ -89,7 +43,6 @@ type SaveProjectParams = {
  */
 export function useHandleSaveProject() {
   const { update } = useUpdateProject()
-  const { refreshProjects } = useRefreshProjects()
   const [loading, setLoading] = useState(false)
 
   const handleSave = useCallback(
@@ -107,7 +60,6 @@ export function useHandleSaveProject() {
             isLibrary: params.isLibrary
           }
         })
-        await refreshProjects(params.userId)
         return { success: true }
       } catch (error) {
         console.error('Error updating project:', error)
@@ -120,7 +72,7 @@ export function useHandleSaveProject() {
         setLoading(false)
       }
     },
-    [update, refreshProjects]
+    [update]
   )
 
   return { handleSave, loading }
@@ -132,7 +84,6 @@ export function useHandleSaveProject() {
  */
 export function useHandleDeleteProject() {
   const { deleteProject } = useDeleteProject()
-  const { refreshProjects } = useRefreshProjects()
   const [loading, setLoading] = useState(false)
 
   const handleDelete = useCallback(
@@ -148,8 +99,7 @@ export function useHandleDeleteProject() {
 
       setLoading(true)
       try {
-        await deleteProject(projectId, userId)
-        await refreshProjects(userId)
+        await deleteProject({ projectId, userId })
         return { success: true }
       } catch (error) {
         console.error('Error deleting project:', error)
@@ -162,7 +112,7 @@ export function useHandleDeleteProject() {
         setLoading(false)
       }
     },
-    [deleteProject, refreshProjects]
+    [deleteProject]
   )
 
   return { handleDelete, loading }
@@ -172,8 +122,7 @@ export function useHandleDeleteProject() {
  * Hook to handle adding a tag to a project
  */
 export function useHandleAddTag() {
-  const { addTag } = useAddTag()
-  const { execute, loading } = useProjectOperation(addTag, 'Error adding tag')
+  const mutation = useAddTag()
 
   const handleAddTag = useCallback(
     async (
@@ -182,36 +131,60 @@ export function useHandleAddTag() {
       tagName: string
     ): Promise<OperationResult> => {
       if (!tagName.trim()) return { success: false }
-      return execute(projectId, userId, tagName.trim())
+
+      try {
+        await mutation.mutateAsync({
+          projectId,
+          userId,
+          tagName: tagName.trim()
+        })
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Error adding tag'
+        }
+      }
     },
-    [execute]
+    [mutation.mutateAsync]
   )
 
-  return { handleAddTag, loading }
+  return { handleAddTag, loading: mutation.isPending }
 }
 
 /**
  * Hook to handle removing a tag from a project
  */
 export function useHandleRemoveTag() {
-  const { removeTag } = useRemoveTag()
-  const { execute, loading } = useProjectOperation(
-    removeTag,
-    'Error removing tag'
+  const mutation = useRemoveTag()
+
+  const handleRemoveTag = useCallback(
+    async (
+      projectId: string,
+      userId: string,
+      tagIdOrName: string
+    ): Promise<OperationResult> => {
+      try {
+        await mutation.mutateAsync({ projectId, userId, tagIdOrName })
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Error removing tag'
+        }
+      }
+    },
+    [mutation.mutateAsync]
   )
 
-  return { handleRemoveTag: execute, loading }
+  return { handleRemoveTag, loading: mutation.isPending }
 }
 
 /**
  * Hook to handle adding a dependency to a project
  */
 export function useHandleAddDependency() {
-  const { addDependency } = useAddDependency()
-  const { execute, loading } = useProjectOperation(
-    addDependency,
-    'Error adding dependency'
-  )
+  const mutation = useAddDependency()
 
   const handleAddDependency = useCallback(
     async (
@@ -220,36 +193,58 @@ export function useHandleAddDependency() {
       dependencyId: string
     ): Promise<OperationResult> => {
       if (!dependencyId) return { success: false }
-      return execute(projectId, userId, dependencyId)
+
+      try {
+        await mutation.mutateAsync({ projectId, userId, dependencyId })
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          error:
+            error instanceof Error ? error.message : 'Error adding dependency'
+        }
+      }
     },
-    [execute]
+    [mutation.mutateAsync]
   )
 
-  return { handleAddDependency, loading }
+  return { handleAddDependency, loading: mutation.isPending }
 }
 
 /**
  * Hook to handle removing a dependency from a project
  */
 export function useHandleRemoveDependency() {
-  const { removeDependency } = useRemoveDependency()
-  const { execute, loading } = useProjectOperation(
-    removeDependency,
-    'Error removing dependency'
+  const mutation = useRemoveDependency()
+
+  const handleRemoveDependency = useCallback(
+    async (
+      projectId: string,
+      userId: string,
+      dependencyId: string
+    ): Promise<OperationResult> => {
+      try {
+        await mutation.mutateAsync({ projectId, userId, dependencyId })
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          error:
+            error instanceof Error ? error.message : 'Error removing dependency'
+        }
+      }
+    },
+    [mutation.mutateAsync]
   )
 
-  return { handleRemoveDependency: execute, loading }
+  return { handleRemoveDependency, loading: mutation.isPending }
 }
 
 /**
  * Hook to handle adding a user share to a project
  */
 export function useHandleAddShare() {
-  const { addUserShare } = useAddUserShare()
-  const { execute, loading } = useProjectOperation(
-    addUserShare,
-    'Error adding share'
-  )
+  const mutation = useAddUserShare()
 
   const handleAddShare = useCallback(
     async (
@@ -258,23 +253,51 @@ export function useHandleAddShare() {
       username: string
     ): Promise<OperationResult> => {
       if (!username.trim()) return { success: false }
-      return execute(projectId, userId, username.trim())
+
+      try {
+        await mutation.mutateAsync({
+          projectId,
+          userId,
+          username: username.trim()
+        })
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Error adding share'
+        }
+      }
     },
-    [execute]
+    [mutation.mutateAsync]
   )
 
-  return { handleAddShare, loading }
+  return { handleAddShare, loading: mutation.isPending }
 }
 
 /**
  * Hook to handle removing a user share from a project
  */
 export function useHandleRemoveShare() {
-  const { removeUserShare } = useRemoveUserShare()
-  const { execute, loading } = useProjectOperation(
-    removeUserShare,
-    'Error removing share'
+  const mutation = useRemoveUserShare()
+
+  const handleRemoveShare = useCallback(
+    async (
+      projectId: string,
+      userId: string,
+      targetUserId: string
+    ): Promise<OperationResult> => {
+      try {
+        await mutation.mutateAsync({ projectId, userId, targetUserId })
+        return { success: true }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Error removing share'
+        }
+      }
+    },
+    [mutation.mutateAsync]
   )
 
-  return { handleRemoveShare: execute, loading }
+  return { handleRemoveShare, loading: mutation.isPending }
 }

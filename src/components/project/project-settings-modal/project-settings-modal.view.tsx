@@ -1,7 +1,9 @@
 import Button from '@/components/ui/button/button'
 import Checkbox from '@/components/ui/checkbox/checkbox'
+import { Combobox, type ComboboxOption } from '@/components/ui/combobox'
 import { Modal } from '@/components/ui/modal'
 import { Select, SelectItem } from '@/components/ui/select/select'
+import type { UserSearchResult } from '@/hooks'
 import styles from './project-settings-modal.module.css'
 
 type DependencyInfo = Readonly<{
@@ -37,6 +39,8 @@ export type ProjectSettingsModalViewProps = Readonly<{
       name: string
     }>
   >
+  foundUsers: readonly UserSearchResult[]
+  searchingUsers: boolean
 
   // Form handlers
   onNameChange: (value: string) => void
@@ -46,6 +50,7 @@ export type ProjectSettingsModalViewProps = Readonly<{
   onNewTagChange: (value: string) => void
   onSelectedDependencyChange: (value: string) => void
   onShareUsernameChange: (value: string) => void
+  onUserSelect: (username: string) => void
 
   // Actions
   onSave: () => void
@@ -76,6 +81,8 @@ export function ProjectSettingsModalView({
   currentDependencies,
   currentUserShares,
   availableDependencies,
+  foundUsers,
+  searchingUsers,
   onNameChange,
   onDescriptionChange,
   onVisibilityChange,
@@ -83,6 +90,7 @@ export function ProjectSettingsModalView({
   onNewTagChange,
   onSelectedDependencyChange,
   onShareUsernameChange,
+  onUserSelect,
   onSave,
   onClose,
   onDelete,
@@ -259,15 +267,19 @@ export function ProjectSettingsModalView({
                   </div>
                 )}
                 <div className={styles.addShare}>
-                  <input
-                    type='text'
-                    className={`${styles.input} ${styles.usernameInput}`}
+                  <Combobox
                     placeholder='Enter username...'
                     value={shareUsername}
-                    onChange={(e) => onShareUsernameChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') onAddShare()
-                    }}
+                    onValueChange={onShareUsernameChange}
+                    onSelect={(option: ComboboxOption) =>
+                      onUserSelect(option.value)
+                    }
+                    options={(foundUsers || []).map((user) => ({
+                      value: user.username,
+                      label: user.username
+                    }))}
+                    loading={searchingUsers}
+                    emptyMessage='No users found'
                   />
                   <Button
                     type='button'
