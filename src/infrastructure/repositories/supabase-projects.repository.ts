@@ -5,6 +5,10 @@ import type {
   ProjectShare,
   UserShare
 } from '@/domain/entities/project.entity'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('SupabaseProjectsRepository')
+
 import { createProject } from '@/domain/entities/project.entity'
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
@@ -325,7 +329,7 @@ export function createSupabaseProjectsRepository(
     async findById(projectId: string): Promise<Project | null> {
       // Guard against undefined/null projectId
       if (!projectId) {
-        console.warn('findById called with invalid projectId:', projectId)
+        logger.warn('findById called with invalid projectId:', projectId)
         return null
       }
 

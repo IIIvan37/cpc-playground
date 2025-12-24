@@ -6,6 +6,9 @@
 import { atom } from 'jotai'
 import type { Program } from '@/domain/entities/program.entity'
 import { programsContainer } from '@/infrastructure/programs-container'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('ProgramsStore')
 
 // ============================================================================
 // State Atoms
@@ -36,7 +39,7 @@ export const fetchProgramsAtom = atom(null, async (_get, set) => {
     const { programs } = await programsContainer.getPrograms.execute()
     set(savedProgramsAtom, [...programs])
   } catch (error) {
-    console.error('Failed to fetch programs:', error)
+    logger.error('Failed to fetch programs:', error)
     throw error
   }
 })
@@ -74,7 +77,7 @@ export const saveProgramAtom = atom(
 
       return program
     } catch (error) {
-      console.error('Failed to save program:', error)
+      logger.error('Failed to save program:', error)
       throw error
     }
   }
@@ -89,7 +92,7 @@ export const loadProgramAtom = atom(null, async (_get, set, id: string) => {
     set(currentProgramIdAtom, id)
     return program
   } catch (error) {
-    console.error('Failed to load program:', error)
+    logger.error('Failed to load program:', error)
     throw error
   }
 })
@@ -109,7 +112,7 @@ export const deleteProgramAtom = atom(null, async (get, set, id: string) => {
       set(currentProgramIdAtom, null)
     }
   } catch (error) {
-    console.error('Failed to delete program:', error)
+    logger.error('Failed to delete program:', error)
     throw error
   }
 })

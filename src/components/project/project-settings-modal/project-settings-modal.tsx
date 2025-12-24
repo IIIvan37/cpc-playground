@@ -13,7 +13,8 @@ import {
   useHandleRemoveShare,
   useHandleRemoveTag,
   useHandleSaveProject,
-  useSearchUsers
+  useSearchUsers,
+  useToastActions
 } from '@/hooks'
 import { ProjectSettingsModalView } from './project-settings-modal.view'
 
@@ -27,6 +28,7 @@ type ProjectSettingsModalProps = Readonly<{
 function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToastActions()
 
   // Clean Architecture hooks for operations
   const { handleSave, loading: saveLoading } = useHandleSaveProject()
@@ -118,9 +120,10 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
       isLibrary
     })
     if (result.success) {
+      toast.success('Settings saved')
       onClose()
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to save settings', result.error)
     }
   }
 
@@ -131,10 +134,11 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
       currentProject.name.value
     )
     if (result.success) {
+      toast.success('Project deleted')
       onClose()
       navigate('/')
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to delete project', result.error)
     }
   }
 
@@ -143,14 +147,14 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
     if (result.success) {
       setNewTag('')
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to add tag', result.error)
     }
   }
 
   const onRemoveTag = async (tagName: string) => {
     const result = await handleRemoveTag(currentProject.id, user.id, tagName)
     if (result.error) {
-      alert(result.error)
+      toast.error('Failed to remove tag', result.error)
     }
   }
 
@@ -163,7 +167,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
     if (result.success) {
       setSelectedDependency('')
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to add dependency', result.error)
     }
   }
 
@@ -174,7 +178,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
       dependencyId
     )
     if (result.error) {
-      alert(result.error)
+      toast.error('Failed to remove dependency', result.error)
     }
   }
 
@@ -186,11 +190,12 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
     )
     if (result.success) {
       setShareUsername('')
-      // Cache automatically invalidated by useMutation
-      // Note: visibility is independent of shares - a project can be
-      // private/public with or without user shares
+      toast.success(
+        'User added',
+        `${shareUsername} can now access this project`
+      )
     } else if (result.error) {
-      alert(result.error)
+      toast.error('Failed to share project', result.error)
     }
   }
 
@@ -201,7 +206,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
       targetUserId
     )
     if (result.error) {
-      alert(result.error)
+      toast.error('Failed to remove share', result.error)
     }
   }
 

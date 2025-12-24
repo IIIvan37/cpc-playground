@@ -4,6 +4,10 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('Dependencies')
+
 import { useSetAtom } from 'jotai'
 import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
@@ -119,7 +123,7 @@ export function useFetchDependencyFiles() {
       setDependencyFiles(dependencyProjects)
       return dependencyProjects
     } catch (error) {
-      console.error('Failed to fetch dependency files:', error)
+      logger.error('Failed to fetch dependency files:', error)
       setDependencyFiles([])
       return []
     }

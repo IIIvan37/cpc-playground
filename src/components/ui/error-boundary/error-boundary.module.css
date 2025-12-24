@@ -1,0 +1,71 @@
+.errorBoundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 200px;
+  text-align: center;
+}
+
+.fullPage {
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.icon {
+  width: 4rem;
+  height: 4rem;
+  color: var(--color-error, #ef4444);
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+
+.message {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem;
+  max-width: 400px;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.details {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: left;
+}
+
+.detailsTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem;
+}
+
+.errorStack {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  max-height: 200px;
+  overflow: auto;
+}

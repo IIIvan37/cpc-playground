@@ -7,6 +7,7 @@
 export { useAuth, userAtom } from './auth'
 // Core utilities
 export { useUseCase, useUseCaseWithoutInput } from './core'
+export { useToast, useToastActions } from './core/use-toast'
 
 // Emulator & Assembler
 export { useAssembler, useEmulator } from './emulator'

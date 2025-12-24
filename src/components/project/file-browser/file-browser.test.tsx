@@ -65,6 +65,13 @@ vi.mock('@/hooks', () => ({
   useFetchDependencyFiles: () => ({
     fetchDependencyFiles: mockFetchDependencyFiles,
     loading: false
+  }),
+  useToastActions: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    remove: vi.fn()
   })
 }))
 

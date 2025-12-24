@@ -19,16 +19,32 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }))
 
-// Mock hooks
-const mockHandleSave = vi.fn()
-const mockHandleDelete = vi.fn()
-const mockHandleAddTag = vi.fn()
-const mockHandleRemoveTag = vi.fn()
-const mockHandleAddDependency = vi.fn()
-const mockHandleRemoveDependency = vi.fn()
-const mockHandleAddShare = vi.fn()
-const mockHandleRemoveShare = vi.fn()
-const mockSearchUsers = vi.fn()
+// Mock hooks - use vi.hoisted for mocks used inside vi.mock
+const {
+  mockHandleSave,
+  mockHandleDelete,
+  mockHandleAddTag,
+  mockHandleRemoveTag,
+  mockHandleAddDependency,
+  mockHandleRemoveDependency,
+  mockHandleAddShare,
+  mockHandleRemoveShare,
+  mockSearchUsers,
+  mockToastError,
+  mockToastSuccess
+} = vi.hoisted(() => ({
+  mockHandleSave: vi.fn(),
+  mockHandleDelete: vi.fn(),
+  mockHandleAddTag: vi.fn(),
+  mockHandleRemoveTag: vi.fn(),
+  mockHandleAddDependency: vi.fn(),
+  mockHandleRemoveDependency: vi.fn(),
+  mockHandleAddShare: vi.fn(),
+  mockHandleRemoveShare: vi.fn(),
+  mockSearchUsers: vi.fn(),
+  mockToastError: vi.fn(),
+  mockToastSuccess: vi.fn()
+}))
 
 const mockUser: User = {
   id: 'user-1',
@@ -95,6 +111,13 @@ vi.mock('@/hooks', () => ({
     loading: false,
     error: null,
     searchUsers: mockSearchUsers
+  }),
+  useToastActions: () => ({
+    success: mockToastSuccess,
+    error: mockToastError,
+    warning: vi.fn(),
+    info: vi.fn(),
+    remove: vi.fn()
   })
 }))
 
@@ -245,7 +268,10 @@ describe('ProjectSettingsModal', () => {
       await user.click(screen.getByRole('button', { name: /save/i }))
 
       await waitFor(() => {
-        expect(globalThis.alert).toHaveBeenCalledWith('Save failed')
+        expect(mockToastError).toHaveBeenCalledWith(
+          'Failed to save settings',
+          'Save failed'
+        )
       })
     })
   })

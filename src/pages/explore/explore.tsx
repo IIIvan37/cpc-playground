@@ -2,6 +2,10 @@ import { PlusIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/button/button'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('ExplorePage')
+
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
@@ -60,7 +64,7 @@ export function ExplorePage() {
         navigate(`/?project=${result.project.id}`)
       }
     } catch (err) {
-      console.error('Failed to create project:', err)
+      logger.error('Failed to create project:', err)
     } finally {
       setCreating(false)
     }

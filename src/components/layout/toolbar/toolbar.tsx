@@ -7,6 +7,10 @@ import {
   useEmulator,
   useGetProjectWithDependencies
 } from '@/hooks'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('Toolbar')
+
 import {
   codeAtom,
   compilationStatusAtom,
@@ -60,7 +64,7 @@ export function Toolbar() {
             })
           }))
       } catch (error) {
-        console.error('Error fetching dependencies:', error)
+        logger.error('Error fetching dependencies:', error)
         // Fallback to just current project files
         additionalFiles = (currentProject.files ?? [])
           .filter((f) => f.id !== currentFile.id)

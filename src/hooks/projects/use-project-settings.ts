@@ -4,6 +4,10 @@
  */
 
 import { useCallback, useState } from 'react'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('ProjectSettings')
+
 import {
   useAddDependency,
   useAddTag,
@@ -62,7 +66,7 @@ export function useHandleSaveProject() {
         })
         return { success: true }
       } catch (error) {
-        console.error('Error updating project:', error)
+        logger.error('Error updating project:', error)
         return {
           success: false,
           error:
@@ -102,7 +106,7 @@ export function useHandleDeleteProject() {
         await deleteProject({ projectId, userId })
         return { success: true }
       } catch (error) {
-        console.error('Error deleting project:', error)
+        logger.error('Error deleting project:', error)
         return {
           success: false,
           error:

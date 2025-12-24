@@ -9,12 +9,16 @@ import {
   useCreateFile,
   useDeleteFile,
   useFetchDependencyFiles,
-  useSetMainFile
+  useSetMainFile,
+  useToastActions
 } from '@/hooks'
+import { createLogger } from '@/lib/logger'
 import { codeAtom, currentFileIdAtom } from '@/store'
 import { currentProjectIdAtom, dependencyFilesAtom } from '@/store/projects'
 import styles from './file-browser.module.css'
 import { FileBrowserView } from './file-browser.view'
+
+const logger = createLogger('FileBrowser')
 
 type DependencyFile = {
   id: string
@@ -40,6 +44,7 @@ export function FileBrowser() {
   const { deleteFile } = useDeleteFile()
   const { setMainFile } = useSetMainFile()
   const { fetchDependencyFiles } = useFetchDependencyFiles()
+  const toast = useToastActions()
 
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [selectedDependencyFileId, setSelectedDependencyFileId] = useState<
@@ -110,11 +115,12 @@ export function FileBrowser() {
       setShowNewFileDialog(false)
       setNewFileName('')
     } catch (error) {
-      console.error('Failed to create file:', error)
+      logger.error('Failed to create file:', error)
+      toast.error('Failed to create file')
     } finally {
       setLoading(false)
     }
-  }, [currentProjectId, project?.id, newFileName, user, createFile])
+  }, [currentProjectId, project?.id, newFileName, user, createFile, toast])
 
   const handleDeleteFile = useCallback(
     async (fileId: string) => {
@@ -128,10 +134,11 @@ export function FileBrowser() {
           fileId
         })
       } catch (error) {
-        console.error('Failed to delete file:', error)
+        logger.error('Failed to delete file:', error)
+        toast.error('Failed to delete file')
       }
     },
-    [currentProjectId, project?.id, user, deleteFile]
+    [currentProjectId, project?.id, user, deleteFile, toast]
   )
 
   const handleSetMainFile = useCallback(
@@ -146,10 +153,11 @@ export function FileBrowser() {
           fileId
         })
       } catch (error) {
-        console.error('Failed to set main file:', error)
+        logger.error('Failed to set main file:', error)
+        toast.error('Failed to set main file')
       }
     },
-    [currentProjectId, project?.id, user, setMainFile]
+    [currentProjectId, project?.id, user, setMainFile, toast]
   )
 
   const openNewFileDialog = useCallback(() => setShowNewFileDialog(true), [])
