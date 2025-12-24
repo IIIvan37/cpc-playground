@@ -43,51 +43,51 @@ This document tracks the architectural inconsistencies between the defined princ
 
 ### 1. Missing Container Tests
 
-**Problem:** 13 container components have no tests.
+**Problem:** ~~13 container components have no tests.~~ Partially resolved.
 
-| Component | Missing Test |
-|-----------|--------------|
-| `auth-modal` | `auth-modal.test.tsx` |
-| `console-panel` | `console-panel.test.tsx` |
-| `code-editor` | `code-editor.test.tsx` |
-| `emulator-canvas` | `emulator-canvas.test.tsx` |
-| `app-header` | `app-header.test.tsx` |
-| `main-layout` | `main-layout.test.tsx` |
-| `toolbar` | `toolbar.test.tsx` |
-| `root-layout` | `root-layout.test.tsx` |
-| `program-manager` | `program-manager.test.tsx` |
-| `file-browser` | `file-browser.test.tsx` |
-| `project-settings-modal` | `project-settings-modal.test.tsx` |
-| `resizable-sidebar` | `resizable-sidebar.test.tsx` |
-| `user-profile` | `user-profile.test.tsx` |
+| Component | Status |
+|-----------|--------|
+| `auth-modal` | ✅ 14 tests |
+| `user-profile` | ✅ 10 tests |
+| `file-browser` | ✅ 20 tests |
+| `project-settings-modal` | ✅ 15 tests |
+| `console-panel` | ❌ |
+| `code-editor` | ❌ |
+| `emulator-canvas` | ❌ |
+| `app-header` | ❌ |
+| `main-layout` | ❌ |
+| `toolbar` | ❌ |
+| `root-layout` | ❌ |
+| `program-manager` | ❌ |
+| `resizable-sidebar` | ❌ |
 
-**Impact:** Business logic in containers is untested (~98% coverage is misleading - it's concentrated on domain/use-cases).
+**Progress:** 4/13 containers tested
 
 ---
 
 ### 2. Missing Hook Tests
 
-**Problem:** 15 out of 16 hooks have no tests.
+**Problem:** ~~15 out of 16 hooks have no tests.~~ Partially resolved.
 
-| Hook | Purpose |
-|------|---------|
-| `use-assembler` | RASM compilation |
-| `use-auth` | Authentication |
-| `use-auto-save-file` | Auto-save logic |
-| `use-dependencies` | Project dependencies |
-| `use-emulator` | CPCEC emulator |
-| `use-fetch-visible-projects` | Explore page |
-| `use-files` | File CRUD |
-| `use-project-from-url` | URL loading |
-| `use-project-settings` | Project settings |
-| `use-projects` | Project CRUD |
-| `use-refresh-projects` | Project refresh |
-| `use-shared-code` | Share URL handling |
-| `use-shares` | User shares |
-| `use-tags` | Project tags |
-| `use-user-profile` | User profile |
+| Hook | Purpose | Status |
+|------|---------|--------|
+| `use-assembler` | RASM compilation | ❌ |
+| `use-auth` | Authentication | ✅ 16 tests |
+| `use-auto-save-file` | Auto-save logic | ❌ |
+| `use-dependencies` | Project dependencies | ❌ |
+| `use-emulator` | CPCEC emulator | ❌ |
+| `use-fetch-visible-projects` | Explore page | ❌ |
+| `use-files` | File CRUD | ✅ 10 tests |
+| `use-project-from-url` | URL loading | ❌ |
+| `use-project-settings` | Project settings | ❌ |
+| `use-projects` | Project CRUD | ✅ 13 tests |
+| `use-refresh-projects` | Project refresh | ❌ |
+| `use-shared-code` | Share URL handling | ❌ |
+| `use-shares` | User shares | ❌ |
+| `use-tags` | Project tags | ❌ |
+| `use-user-profile` | User profile | ❌ |
 
-**Only tested:** `use-use-case` ✅
+**Tested:** `use-use-case` ✅, `use-auth` ✅, `use-files` ✅, `use-projects` ✅
 
 ---
 
@@ -186,14 +186,23 @@ These hooks combine multiple concerns (state, effects, use-cases) that don't fit
 
 ### Phase 4: Presentation Layer Tests ⏱️ Medium Priority
 
-Priority order:
-1. `auth-modal` (authentication flow)
-2. `file-browser` (file management)
-3. `project-settings-modal` (settings)
-4. `user-profile` (profile management)
-5. Critical hooks (`useAuth`, `useProjects`, `useFiles`)
+**Completed containers:**
+- ✅ `auth-modal` - 14 tests
+- ✅ `user-profile` - 10 tests  
+- ✅ `file-browser` - 20 tests
+- ✅ `project-settings-modal` - 15 tests
 
-**Estimated effort:** 3-5 days
+**Completed hooks:**
+- ✅ `useAuth` - 16 tests
+- ✅ `useFiles` - 10 tests
+- ✅ `useProjects` - 13 tests
+
+**Remaining:**
+- `console-panel`, `code-editor`, `emulator-canvas`, `app-header`
+- `main-layout`, `toolbar`, `root-layout`, `program-manager`, `resizable-sidebar`
+- Hooks: `useEmulator`, `useDependencies`, `useAssembler`, etc.
+
+**Progress:** ~60% complete (Dec 24, 2025)
 
 ---
 
@@ -204,4 +213,4 @@ Priority order:
 | Phase 1 | ✅ Completed | 100% |
 | Phase 2 | ✅ Completed | 100% |
 | Phase 3 | ✅ Completed | 100% |
-| Phase 4 | 🔴 Not started | 0% |
+| Phase 4 | 🟡 In progress | 60% |

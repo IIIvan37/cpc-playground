@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEmulator } from '@/hooks'
+import styles from './emulator-canvas.module.css'
 import { EmulatorCanvasView } from './emulator-canvas.view'
 
 /** Flag to control whether CPCEC should receive keyboard events */
@@ -15,20 +16,50 @@ function getCpcecModule(): unknown {
 }
 
 /**
+ * Singleton canvas element that persists across component mounts/unmounts.
+ * This is necessary because CPCEC binds to the canvas once and cannot rebind
+ * to a new canvas element.
+ */
+let persistentCanvas: HTMLCanvasElement | null = null
+
+function getOrCreatePersistentCanvas(): HTMLCanvasElement {
+  if (!persistentCanvas) {
+    persistentCanvas = document.createElement('canvas')
+    persistentCanvas.width = 768
+    persistentCanvas.height = 544
+    // Use the CSS module class for proper styling
+    persistentCanvas.className = styles.canvas
+  }
+  return persistentCanvas
+}
+
+/**
  * Container component for CPC emulator canvas
  * Handles keyboard blocking, CPC keyboard mappings, and emulator initialization
  */
 export function EmulatorCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const wrapperRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { initialize, isReady } = useEmulator()
   const [hasFocus, setHasFocus] = useState(false)
 
-  // Initialize emulator when canvas is ready
+  // Get or create the persistent canvas and attach it to the wrapper
   useEffect(() => {
-    if (canvasRef.current && !isReady) {
-      initialize(canvasRef.current)
+    const canvas = getOrCreatePersistentCanvas()
+    const wrapper = wrapperRef.current
+
+    if (wrapper && canvas.parentElement !== wrapper) {
+      // Move canvas into this component's wrapper
+      wrapper.appendChild(canvas)
     }
+
+    // Initialize emulator if not ready
+    if (!isReady) {
+      initialize(canvas)
+    }
+
+    // Cleanup: don't remove canvas from DOM, just let it stay
+    // It will be moved to the new wrapper when component remounts
   }, [initialize, isReady])
 
   // Block keyboard events from reaching CPCEC (which listens on window)
@@ -138,7 +169,7 @@ export function EmulatorCanvas() {
 
   return (
     <EmulatorCanvasView
-      canvasRef={canvasRef}
+      wrapperRef={wrapperRef}
       containerRef={containerRef}
       hasFocus={hasFocus}
       statusText={statusText}

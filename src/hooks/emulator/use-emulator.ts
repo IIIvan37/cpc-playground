@@ -24,16 +24,35 @@ export function useEmulator() {
 
   const initialize = useCallback(
     async (canvas: HTMLCanvasElement) => {
-      // Already initialized
+      // Already initialized - update canvas reference for remounted component
       if (cpcecModule) {
+        // Update canvas dimensions
+        canvas.width = 768
+        canvas.height = 576
+
+        // Get new 2D context
+        const ctx = canvas.getContext('2d', {
+          alpha: false,
+          desynchronized: true
+        })
+
+        if (ctx) {
+          // Update Module references to point to new canvas
+          cpcecModule.canvas = canvas
+          cpcecModule.ctx = ctx
+          ;(globalThis as any).Module.canvas = canvas
+          ;(globalThis as any).Module.ctx = ctx
+        }
+
         setEmulatorReady(true)
         return
       }
 
-      // Already loading
+      // Already loading - wait and then update canvas
       if (cpcecLoadPromise) {
         await cpcecLoadPromise
-        setEmulatorReady(true)
+        // Recursively call to update canvas references
+        await initialize(canvas)
         return
       }
 
