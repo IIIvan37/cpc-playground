@@ -2,6 +2,7 @@ import { PlusIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/button/button'
+import { MINIMAL_ASM_TEMPLATE } from '@/lib/constants'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('ExplorePage')
@@ -48,7 +49,7 @@ export function ExplorePage() {
     try {
       const initialFile = {
         name: newProjectIsLibrary ? 'lib.asm' : 'main.asm',
-        content: '',
+        content: newProjectIsLibrary ? '' : MINIMAL_ASM_TEMPLATE,
         isMain: !newProjectIsLibrary
       }
 

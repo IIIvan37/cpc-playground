@@ -17,3 +17,12 @@ export const PASSWORD_MIN_LENGTH = 6
 
 // Regex Patterns
 export const USERNAME_PATTERN = /^[a-z0-9_-]+$/i
+
+// Code Templates
+export const MINIMAL_ASM_TEMPLATE = `; CPC Playground
+; Entry point
+
+    ORG &8000
+
+    RET
+`
