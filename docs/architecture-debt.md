@@ -93,40 +93,38 @@ This document tracks the architectural inconsistencies between the defined princ
 
 ## 🟡 Moderate Issues
 
-### 3. Direct Supabase Call in Component
+### ~~3. Direct Supabase Call in Component~~ ✅ RESOLVED
 
-**Location:** `src/components/user/user-profile/user-profile.tsx:43`
+~~**Location:** `src/components/user/user-profile/user-profile.tsx:43`~~
 
-```typescript
-// ❌ Bad - Direct Supabase call
-import { supabase } from '@/lib/supabase'
-await supabase.auth.signOut({ scope: 'local' })
-```
-
-**Fix:** Use `useAuth` hook which exposes `signOut` via Clean Architecture.
+**Resolution:** Now uses `useAuth().signOut()` instead of direct Supabase call.
 
 ---
 
-### 4. Hooks Not Using useUseCase Pattern
+### ~~4. Hooks Not Using useUseCase Pattern~~ ✅ ANALYZED
 
-| Hook | Current Pattern | Should Use |
-|------|-----------------|------------|
-| `useAuth` | Direct container calls | `useUseCase` |
-| `useUserProfile` | Direct container calls | `useUseCase` |
-| `useSharedCode` | Direct container calls | `useUseCase` |
+**Analysis:** These hooks are intentionally different from `useUseCase` pattern:
+
+| Hook | Pattern | Justification |
+|------|---------|---------------|
+| `useAuth` | State + Listener | Manages auth atom, subscribes to auth changes |
+| `useUserProfile` | State + Auto-fetch | Auto-fetches on user change, manages profile state |
+| `useSharedCode` | Side-effect | URL/sessionStorage parsing, one-time effect |
+
+These hooks combine multiple concerns (state, effects, use-cases) that don't fit the simple `useUseCase` pattern. They correctly use container use-cases internally.
 
 ---
 
 ### 5. Missing Container/View Separation
 
-| Component | Has View File |
-|-----------|---------------|
-| `markdown-preview` | ❌ No |
-| `crt-effect` | ❌ No |
-| `root-layout` | ❌ No |
-| `reset-password` (page) | ❌ No |
-| `read-only-project-banner` | ❌ No |
-| `theme-provider` | ❌ No (exempted - no UI) |
+| Component | Has View File | Status |
+|-----------|---------------|--------|
+| `markdown-preview` | ✅ Yes (inline) | Already separated |
+| `crt-effect` | N/A | Purely presentational |
+| `root-layout` | N/A | Purely presentational |
+| `reset-password` (page) | ✅ Yes | Separated |
+| `read-only-project-banner` | ✅ Yes | Separated |
+| `theme-provider` | N/A | No UI |
 
 **Note:** UI primitives (button, input, checkbox, etc.) are exempted as they are purely presentational by nature.
 
@@ -155,24 +153,34 @@ await supabase.auth.signOut({ scope: 'local' })
 
 ---
 
-### Phase 2: Fix Direct Violations ⏱️ Medium Priority
+### ~~Phase 2: Fix Direct Violations~~ ✅ COMPLETED
 
-1. Fix `user-profile.tsx` Supabase call
-2. Migrate `useAuth`, `useUserProfile`, `useSharedCode` to `useUseCase`
+~~1. Fix `user-profile.tsx` Supabase call~~
+~~2. Migrate `useAuth`, `useUserProfile`, `useSharedCode` to `useUseCase`~~
 
-**Estimated effort:** 1 day
+**Resolution:**
+- Fixed `user-profile.tsx` to use `useAuth().signOut()`
+- Analyzed hooks: `useUseCase` pattern not applicable (documented above)
+
+**Completed:** December 24, 2025
 
 ---
 
-### Phase 3: Apply Container/View Pattern ⏱️ Low Priority
+### ~~Phase 3: Apply Container/View Pattern~~ ✅ COMPLETED
 
-Create `.view.tsx` files for:
-- `markdown-preview`
-- `crt-effect`
-- `root-layout`
-- `reset-password`
+~~Create `.view.tsx` files for:~~
+~~- `markdown-preview`~~ (already has inline separation)
+~~- `crt-effect`~~ (purely presentational, N/A)
+~~- `root-layout`~~ (purely presentational, N/A)
+~~- `reset-password`~~
+~~- `read-only-project-banner`~~
 
-**Estimated effort:** 1 day
+**Resolution:** 
+- `reset-password` and `read-only-project-banner` now have View components
+- `markdown-preview` already had inline View (exported for testing)
+- `crt-effect` and `root-layout` are purely presentational (no logic to separate)
+
+**Completed:** December 24, 2025
 
 ---
 
@@ -194,6 +202,6 @@ Priority order:
 | Phase | Status | Completion |
 |-------|--------|------------|
 | Phase 1 | ✅ Completed | 100% |
-| Phase 2 | 🔴 Not started | 0% |
-| Phase 3 | 🔴 Not started | 0% |
+| Phase 2 | ✅ Completed | 100% |
+| Phase 3 | ✅ Completed | 100% |
 | Phase 4 | 🔴 Not started | 0% |

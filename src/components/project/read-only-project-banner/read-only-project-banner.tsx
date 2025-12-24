@@ -1,10 +1,10 @@
-import { Cross2Icon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { useAtomValue, useSetAtom } from 'jotai'
 import { codeAtom, isReadOnlyModeAtom, viewOnlyProjectAtom } from '@/store'
-import styles from './read-only-project-banner.module.css'
+import { ReadOnlyProjectBannerView } from './read-only-project-banner.view'
 
 /**
- * Banner displayed when viewing a public project in read-only mode
+ * Container component for read-only project banner
+ * Handles state management and delegates rendering to View
  */
 export function ReadOnlyProjectBanner() {
   const viewOnlyProject = useAtomValue(viewOnlyProjectAtom)
@@ -21,25 +21,9 @@ export function ReadOnlyProjectBanner() {
   if (!viewOnlyProject) return null
 
   return (
-    <div className={styles.banner}>
-      <div className={styles.info}>
-        <EyeOpenIcon />
-        <span>
-          Viewing{' '}
-          <span className={styles.projectName}>
-            {viewOnlyProject.name.value}
-          </span>{' '}
-          in read-only mode
-        </span>
-      </div>
-      <button
-        type='button'
-        className={styles.closeButton}
-        onClick={handleClose}
-        title='Close project'
-      >
-        <Cross2Icon />
-      </button>
-    </div>
+    <ReadOnlyProjectBannerView
+      projectName={viewOnlyProject.name.value}
+      onClose={handleClose}
+    />
   )
 }
