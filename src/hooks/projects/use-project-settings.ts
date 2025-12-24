@@ -84,23 +84,14 @@ export function useHandleSaveProject() {
 
 /**
  * Hook to handle deleting a project
- * Special case: requires confirmation dialog
+ * Note: Confirmation should be handled by the calling component
  */
 export function useHandleDeleteProject() {
   const { deleteProject } = useDeleteProject()
   const [loading, setLoading] = useState(false)
 
   const handleDelete = useCallback(
-    async (
-      projectId: string,
-      userId: string,
-      projectName: string
-    ): Promise<OperationResult> => {
-      const confirmed = globalThis.confirm(
-        `Are you sure you want to delete "${projectName}"? This action cannot be undone.`
-      )
-      if (!confirmed) return { success: false }
-
+    async (projectId: string, userId: string): Promise<OperationResult> => {
       setLoading(true)
       try {
         await deleteProject({ projectId, userId })

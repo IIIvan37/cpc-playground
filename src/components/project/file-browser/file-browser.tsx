@@ -1,11 +1,13 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/button/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import {
   useActiveProject,
   useAuth,
+  useConfirmDialog,
   useCreateFile,
   useDeleteFile,
   useFetchDependencyFiles,
@@ -45,6 +47,7 @@ export function FileBrowser() {
   const { setMainFile } = useSetMainFile()
   const { fetchDependencyFiles } = useFetchDependencyFiles()
   const toast = useToastActions()
+  const { confirm, dialogProps } = useConfirmDialog()
 
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [selectedDependencyFileId, setSelectedDependencyFileId] = useState<
@@ -125,7 +128,15 @@ export function FileBrowser() {
   const handleDeleteFile = useCallback(
     async (fileId: string) => {
       const projectId = currentProjectId || project?.id
-      if (!confirm('Delete this file?') || !projectId || !user) return
+      if (!projectId || !user) return
+
+      const confirmed = await confirm({
+        title: 'Delete file',
+        message: 'Are you sure you want to delete this file?',
+        confirmLabel: 'Delete',
+        variant: 'danger'
+      })
+      if (!confirmed) return
 
       try {
         await deleteFile({
@@ -138,7 +149,7 @@ export function FileBrowser() {
         toast.error('Failed to delete file')
       }
     },
-    [currentProjectId, project?.id, user, deleteFile, toast]
+    [currentProjectId, project?.id, user, deleteFile, toast, confirm]
   )
 
   const handleSetMainFile = useCallback(
@@ -219,20 +230,23 @@ export function FileBrowser() {
   ) : null
 
   return (
-    <FileBrowserView
-      project={projectInfo}
-      files={files}
-      selectedFileId={selectedFileId}
-      canEdit={canEdit}
-      isReadOnly={isReadOnlyMode}
-      dependencies={dependencyFiles}
-      selectedDependencyFileId={selectedDependencyFileId}
-      onSelectFile={handleSelectFile}
-      onSelectDependencyFile={handleSelectDependencyFile}
-      onNewFileClick={openNewFileDialog}
-      onSetMainFile={handleSetMainFile}
-      onDeleteFile={handleDeleteFile}
-      newFileDialog={newFileDialog}
-    />
+    <>
+      <FileBrowserView
+        project={projectInfo}
+        files={files}
+        selectedFileId={selectedFileId}
+        canEdit={canEdit}
+        isReadOnly={isReadOnlyMode}
+        dependencies={dependencyFiles}
+        selectedDependencyFileId={selectedDependencyFileId}
+        onSelectFile={handleSelectFile}
+        onSelectDependencyFile={handleSelectDependencyFile}
+        onNewFileClick={openNewFileDialog}
+        onSetMainFile={handleSetMainFile}
+        onDeleteFile={handleDeleteFile}
+        newFileDialog={newFileDialog}
+      />
+      <ConfirmDialog {...dialogProps} />
+    </>
   )
 }

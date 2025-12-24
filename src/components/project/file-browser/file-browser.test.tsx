@@ -26,6 +26,7 @@ const mockCreateFile = vi.fn()
 const mockDeleteFile = vi.fn()
 const mockSetMainFile = vi.fn()
 const mockFetchDependencyFiles = vi.fn()
+const mockConfirm = vi.fn()
 
 const mockUser: User = {
   id: 'user-1',
@@ -49,6 +50,16 @@ vi.mock('@/hooks', () => ({
   useActiveProject: () => ({
     activeProject: mockProjectForHook,
     isReadOnly: mockIsReadOnlyForHook
+  }),
+  useConfirmDialog: () => ({
+    confirm: mockConfirm,
+    dialogProps: {
+      open: false,
+      title: '',
+      message: '',
+      onConfirm: vi.fn(),
+      onCancel: vi.fn()
+    }
   }),
   useCreateFile: () => ({
     createFile: mockCreateFile,
@@ -128,7 +139,7 @@ describe('FileBrowser', () => {
     mockIsReadOnlyForHook = false
 
     // Mock confirm dialog
-    vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
+    mockConfirm.mockResolvedValue(true)
   })
 
   describe('rendering', () => {
@@ -279,7 +290,7 @@ describe('FileBrowser', () => {
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
       await user.click(deleteButtons[0])
 
-      expect(globalThis.confirm).toHaveBeenCalledWith('Delete this file?')
+      expect(mockConfirm).toHaveBeenCalled()
     })
 
     it('deletes file when confirmed', async () => {
@@ -300,7 +311,7 @@ describe('FileBrowser', () => {
     })
 
     it('does not delete when cancelled', async () => {
-      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
+      mockConfirm.mockResolvedValue(false)
       const user = userEvent.setup()
       renderComponent()
 

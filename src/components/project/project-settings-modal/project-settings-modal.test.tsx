@@ -31,7 +31,8 @@ const {
   mockHandleRemoveShare,
   mockSearchUsers,
   mockToastError,
-  mockToastSuccess
+  mockToastSuccess,
+  mockConfirm
 } = vi.hoisted(() => ({
   mockHandleSave: vi.fn(),
   mockHandleDelete: vi.fn(),
@@ -43,7 +44,8 @@ const {
   mockHandleRemoveShare: vi.fn(),
   mockSearchUsers: vi.fn(),
   mockToastError: vi.fn(),
-  mockToastSuccess: vi.fn()
+  mockToastSuccess: vi.fn(),
+  mockConfirm: vi.fn()
 }))
 
 const mockUser: User = {
@@ -64,6 +66,16 @@ let mockAvailableDepsForHook: Project[] = []
 vi.mock('@/hooks', () => ({
   useAuth: () => ({
     user: mockUser
+  }),
+  useConfirmDialog: () => ({
+    confirm: mockConfirm,
+    dialogProps: {
+      open: false,
+      title: '',
+      message: '',
+      onConfirm: vi.fn(),
+      onCancel: vi.fn()
+    }
   }),
   useCurrentProject: () => ({
     project: mockCurrentProjectForHook,
@@ -182,8 +194,8 @@ describe('ProjectSettingsModal', () => {
     mockHandleAddShare.mockResolvedValue({ success: true })
     mockHandleRemoveShare.mockResolvedValue({ success: true })
 
-    // Mock window.alert
-    vi.spyOn(globalThis, 'alert').mockImplementation(() => {})
+    // Mock confirm dialog
+    mockConfirm.mockResolvedValue(true)
   })
 
   describe('rendering', () => {
@@ -284,11 +296,8 @@ describe('ProjectSettingsModal', () => {
       await user.click(screen.getByRole('button', { name: /delete project/i }))
 
       await waitFor(() => {
-        expect(mockHandleDelete).toHaveBeenCalledWith(
-          'project-1',
-          'user-1',
-          'Test Project'
-        )
+        expect(mockConfirm).toHaveBeenCalled()
+        expect(mockHandleDelete).toHaveBeenCalledWith('project-1', 'user-1')
       })
     })
 

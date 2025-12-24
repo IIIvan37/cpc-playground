@@ -1,0 +1,26 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.message {
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.dangerButton {
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.dangerButton:hover {
+  background-color: var(--color-danger-hover, #dc2626);
+}

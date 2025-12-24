@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   useAuth,
   useAvailableDependencies,
+  useConfirmDialog,
   useCurrentProject,
   useHandleAddDependency,
   useHandleAddShare,
@@ -29,6 +31,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const toast = useToastActions()
+  const { confirm, dialogProps } = useConfirmDialog()
 
   // Clean Architecture hooks for operations
   const { handleSave, loading: saveLoading } = useHandleSaveProject()
@@ -128,11 +131,15 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   }
 
   const onDelete = async () => {
-    const result = await handleDelete(
-      currentProject.id,
-      user.id,
-      currentProject.name.value
-    )
+    const confirmed = await confirm({
+      title: 'Delete project',
+      message: `Are you sure you want to delete "${currentProject.name.value}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger'
+    })
+    if (!confirmed) return
+
+    const result = await handleDelete(currentProject.id, user.id)
     if (result.success) {
       toast.success('Project deleted')
       onClose()
@@ -224,39 +231,42 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   const currentDependencies = currentProject.dependencies || []
 
   return (
-    <ProjectSettingsModalView
-      name={name}
-      description={description}
-      visibility={visibility}
-      isLibrary={isLibrary}
-      newTag={newTag}
-      selectedDependency={selectedDependency}
-      shareUsername={shareUsername}
-      loading={loading}
-      currentTags={currentProject.tags || []}
-      currentDependencies={currentDependencies}
-      currentUserShares={currentProject.userShares || []}
-      availableDependencies={filteredDependencies}
-      foundUsers={foundUsers}
-      searchingUsers={searchUsersLoading}
-      onNameChange={setName}
-      onDescriptionChange={setDescription}
-      onVisibilityChange={setVisibility}
-      onIsLibraryChange={setIsLibrary}
-      onNewTagChange={setNewTag}
-      onSelectedDependencyChange={setSelectedDependency}
-      onShareUsernameChange={setShareUsername}
-      onUserSelect={handleUserSelect}
-      onSave={onSave}
-      onClose={onClose}
-      onAddTag={onAddTag}
-      onRemoveTag={onRemoveTag}
-      onAddDependency={onAddDependency}
-      onRemoveDependency={onRemoveDependency}
-      onAddShare={onAddShare}
-      onRemoveShare={onRemoveShare}
-      onDelete={onDelete}
-    />
+    <>
+      <ProjectSettingsModalView
+        name={name}
+        description={description}
+        visibility={visibility}
+        isLibrary={isLibrary}
+        newTag={newTag}
+        selectedDependency={selectedDependency}
+        shareUsername={shareUsername}
+        loading={loading}
+        currentTags={currentProject.tags || []}
+        currentDependencies={currentDependencies}
+        currentUserShares={currentProject.userShares || []}
+        availableDependencies={filteredDependencies}
+        foundUsers={foundUsers}
+        searchingUsers={searchUsersLoading}
+        onNameChange={setName}
+        onDescriptionChange={setDescription}
+        onVisibilityChange={setVisibility}
+        onIsLibraryChange={setIsLibrary}
+        onNewTagChange={setNewTag}
+        onSelectedDependencyChange={setSelectedDependency}
+        onShareUsernameChange={setShareUsername}
+        onUserSelect={handleUserSelect}
+        onSave={onSave}
+        onClose={onClose}
+        onAddTag={onAddTag}
+        onRemoveTag={onRemoveTag}
+        onAddDependency={onAddDependency}
+        onRemoveDependency={onRemoveDependency}
+        onAddShare={onAddShare}
+        onRemoveShare={onRemoveShare}
+        onDelete={onDelete}
+      />
+      <ConfirmDialog {...dialogProps} />
+    </>
   )
 }
 
