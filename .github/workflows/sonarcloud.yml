@@ -34,15 +34,6 @@ jobs:
           VITE_SUPABASE_URL: http://localhost:54321
           VITE_SUPABASE_ANON_KEY: test-anon-key
 
-      - name: Verify SONAR_TOKEN is set
-        run: |
-          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
-            echo "SONAR_TOKEN is not set or empty"
-            exit 1
-          else
-            echo "SONAR_TOKEN is configured"
-          fi
-
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
