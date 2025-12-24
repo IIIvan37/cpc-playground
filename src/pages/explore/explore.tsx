@@ -100,9 +100,29 @@ export function ExplorePage() {
       filesCount: project.files.length,
       sharesCount: project.userShares.length,
       updatedAt: project.updatedAt,
+      createdAt: project.createdAt,
       onClick: () => handleProjectClick(project)
     }
   })
+
+  // Sort projects: pin the documentation project (oldest) at the top, then sort by createdAt descending
+  const sortedProjects =
+    listProjects.length > 0
+      ? (() => {
+          // Find the oldest project (documentation)
+          const oldestProject = listProjects.reduce((oldest, current) =>
+            current.createdAt < oldest.createdAt ? current : oldest
+          )
+
+          // Separate the documentation project from the rest
+          const docProject = listProjects.find((p) => p.id === oldestProject.id)
+          const otherProjects = listProjects
+            .filter((p) => p.id !== oldestProject.id)
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
+          return docProject ? [docProject, ...otherProjects] : otherProjects
+        })()
+      : listProjects
 
   return (
     <div className={styles.container}>
@@ -124,7 +144,7 @@ export function ExplorePage() {
         </div>
 
         <ExploreListView
-          projects={listProjects}
+          projects={sortedProjects}
           loading={loading}
           error={error}
           searchQuery={searchQuery}

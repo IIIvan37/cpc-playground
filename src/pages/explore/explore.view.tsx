@@ -17,6 +17,7 @@ export interface ExploreListViewProps {
     filesCount: number
     sharesCount: number
     updatedAt: Date
+    createdAt: Date
     onClick: () => void
   }>
   readonly loading?: boolean
@@ -89,6 +90,7 @@ export type ProjectListItemProps = {
   readonly filesCount: number
   readonly sharesCount: number
   readonly updatedAt: Date
+  readonly createdAt: Date
   readonly onClick: () => void
 }
 
