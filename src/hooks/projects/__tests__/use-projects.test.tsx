@@ -105,7 +105,10 @@ describe('useProjects hooks', () => {
     store = createStore()
     queryClient = new QueryClient({
       defaultOptions: {
-        queries: { retry: false },
+        queries: {
+          retry: false,
+          staleTime: 1000 * 60 * 5 // 5 minutes (same as app)
+        },
         mutations: { retry: false }
       }
     })
@@ -485,7 +488,8 @@ describe('useProjects hooks', () => {
     })
 
     it('returns false for .asm files', async () => {
-      mockGetProject.mockResolvedValue({ project: mockProject })
+      // Pre-populate cache since useCurrentProject now only reads from cache
+      queryClient.setQueryData(['project', 'project-1'], mockProject)
       store.set(currentProjectIdAtom, 'project-1')
       store.set(currentFileIdAtom, 'main-file')
 
@@ -514,7 +518,8 @@ describe('useProjects hooks', () => {
         isLibrary: false
       })
 
-      mockGetProject.mockResolvedValue({ project: projectWithMd })
+      // Pre-populate cache since useCurrentProject now only reads from cache
+      queryClient.setQueryData(['project', 'project-1'], projectWithMd)
       store.set(currentProjectIdAtom, 'project-1')
       store.set(currentFileIdAtom, 'readme-file')
 
@@ -543,7 +548,8 @@ describe('useProjects hooks', () => {
         isLibrary: false
       })
 
-      mockGetProject.mockResolvedValue({ project: projectWithMd })
+      // Pre-populate cache since useCurrentProject now only reads from cache
+      queryClient.setQueryData(['project', 'project-1'], projectWithMd)
       store.set(currentProjectIdAtom, 'project-1')
       store.set(currentFileIdAtom, 'readme-file')
 

@@ -140,8 +140,8 @@ export function useGetProjects() {
         queryFn: async () => {
           const result = await container.getProjects.execute({ userId })
           return result
-        },
-        staleTime: 1000 * 30 // 30 seconds
+        }
+        // Use default staleTime from QueryClient (5 min) for consistency
       })
       return data
     },
@@ -159,19 +159,16 @@ export function useGetProject() {
 
   const getProject = useCallback(
     async (projectId: string, userId?: string) => {
-      const data = await queryClient.ensureQueryData({
+      const data = await queryClient.fetchQuery({
         queryKey: ['project', projectId],
         queryFn: async () => {
           const result = await container.getProject.execute({
             projectId,
             userId
           })
-          // Store the project directly, not the wrapper object
           return result.project
-        },
-        staleTime: 1000 * 30 // 30 seconds
+        }
       })
-      // Return in the same format as the use case for backward compatibility
       return { project: data }
     },
     [queryClient]

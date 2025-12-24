@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createProject } from '@/domain/entities/project.entity'
+import { createProject, type Project } from '@/domain/entities/project.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
 import { NotFoundError, UnauthorizedError } from '@/domain/errors/domain.error'
 import { AUTH_ERRORS } from '@/domain/errors/error-messages'
@@ -27,14 +27,14 @@ describe('AuthorizationService', () => {
     service = createAuthorizationService(repository)
   })
 
-  async function createTestProject(overrides?: {
+  function createTestProjectEntity(overrides?: {
     id?: string
     userId?: string
     visibility?: 'private' | 'unlisted' | 'public'
     isLibrary?: boolean
-  }) {
+  }): Project {
     const id = overrides?.id ?? projectId
-    const project = createProject({
+    return createProject({
       id,
       userId: overrides?.userId ?? ownerId,
       name: createProjectName('Test Project'),
@@ -57,64 +57,70 @@ describe('AuthorizationService', () => {
       createdAt: new Date(),
       updatedAt: new Date()
     })
+  }
+
+  async function createTestProject(overrides?: {
+    id?: string
+    userId?: string
+    visibility?: 'private' | 'unlisted' | 'public'
+    isLibrary?: boolean
+  }) {
+    const project = createTestProjectEntity(overrides)
     await repository.create(project)
     return project
   }
 
   describe('canReadProject', () => {
-    it('should return false if project not found', async () => {
-      const result = await service.canReadProject('non-existent', otherUserId)
-
-      expect(result).toBe(false)
-    })
-
     it('should return true for owner', async () => {
-      await createTestProject()
+      const project = createTestProjectEntity()
 
-      const result = await service.canReadProject(projectId, ownerId)
+      const result = await service.canReadProject(project, ownerId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for public project', async () => {
-      await createTestProject({ visibility: 'public' })
+      const project = createTestProjectEntity({ visibility: 'public' })
 
-      const result = await service.canReadProject(projectId, otherUserId)
+      const result = await service.canReadProject(project, otherUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for library project', async () => {
-      await createTestProject({ visibility: 'private', isLibrary: true })
+      const project = createTestProjectEntity({
+        visibility: 'private',
+        isLibrary: true
+      })
 
-      const result = await service.canReadProject(projectId, otherUserId)
+      const result = await service.canReadProject(project, otherUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return true for shared project', async () => {
-      await createTestProject({ visibility: 'private' })
+      const project = await createTestProject({ visibility: 'private' })
       // Add the shared user to the in-memory repository
       repository._addUser(sharedUserId, 'shareduser')
       await repository.addUserShare(projectId, sharedUserId)
 
-      const result = await service.canReadProject(projectId, sharedUserId)
+      const result = await service.canReadProject(project, sharedUserId)
 
       expect(result).toBe(true)
     })
 
     it('should return false for private project without share', async () => {
-      await createTestProject({ visibility: 'private' })
+      const project = createTestProjectEntity({ visibility: 'private' })
 
-      const result = await service.canReadProject(projectId, otherUserId)
+      const result = await service.canReadProject(project, otherUserId)
 
       expect(result).toBe(false)
     })
 
     it('should return false for unlisted project without share', async () => {
-      await createTestProject({ visibility: 'unlisted' })
+      const project = createTestProjectEntity({ visibility: 'unlisted' })
 
-      const result = await service.canReadProject(projectId, otherUserId)
+      const result = await service.canReadProject(project, otherUserId)
 
       expect(result).toBe(false)
     })
@@ -154,51 +160,51 @@ describe('AuthorizationService', () => {
   })
 
   describe('canAccessAsDependency', () => {
-    it('should return false if project not found', async () => {
-      const result = await service.canAccessAsDependency(
-        'non-existent',
-        otherUserId
-      )
+    it('should return true for owner', () => {
+      const project = createTestProjectEntity()
+
+      const result = service.canAccessAsDependency(project, ownerId)
+
+      expect(result).toBe(true)
+    })
+
+    it('should return true for public project', () => {
+      const project = createTestProjectEntity({ visibility: 'public' })
+
+      const result = service.canAccessAsDependency(project, otherUserId)
+
+      expect(result).toBe(true)
+    })
+
+    it('should return true for library project', () => {
+      const project = createTestProjectEntity({
+        visibility: 'private',
+        isLibrary: true
+      })
+
+      const result = service.canAccessAsDependency(project, otherUserId)
+
+      expect(result).toBe(true)
+    })
+
+    it('should return false for private non-library project', () => {
+      const project = createTestProjectEntity({
+        visibility: 'private',
+        isLibrary: false
+      })
+
+      const result = service.canAccessAsDependency(project, otherUserId)
 
       expect(result).toBe(false)
     })
 
-    it('should return true for owner', async () => {
-      await createTestProject()
+    it('should return false for unlisted non-library project', () => {
+      const project = createTestProjectEntity({
+        visibility: 'unlisted',
+        isLibrary: false
+      })
 
-      const result = await service.canAccessAsDependency(projectId, ownerId)
-
-      expect(result).toBe(true)
-    })
-
-    it('should return true for public project', async () => {
-      await createTestProject({ visibility: 'public' })
-
-      const result = await service.canAccessAsDependency(projectId, otherUserId)
-
-      expect(result).toBe(true)
-    })
-
-    it('should return true for library project', async () => {
-      await createTestProject({ visibility: 'private', isLibrary: true })
-
-      const result = await service.canAccessAsDependency(projectId, otherUserId)
-
-      expect(result).toBe(true)
-    })
-
-    it('should return false for private non-library project', async () => {
-      await createTestProject({ visibility: 'private', isLibrary: false })
-
-      const result = await service.canAccessAsDependency(projectId, otherUserId)
-
-      expect(result).toBe(false)
-    })
-
-    it('should return false for unlisted non-library project', async () => {
-      await createTestProject({ visibility: 'unlisted', isLibrary: false })
-
-      const result = await service.canAccessAsDependency(projectId, otherUserId)
+      const result = service.canAccessAsDependency(project, otherUserId)
 
       expect(result).toBe(false)
     })

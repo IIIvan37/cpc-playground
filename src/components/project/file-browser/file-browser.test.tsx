@@ -387,7 +387,21 @@ describe('FileBrowser', () => {
       ]
     }
 
+    // Create a project with dependencies declared
+    const mockProjectWithDeps: Project = createProject({
+      id: 'project-1',
+      name: createProjectName('Test Project'),
+      userId: 'user-1',
+      files: [mockMainFile, mockSecondFile],
+      visibility: createVisibility('private'),
+      isLibrary: false,
+      dependencies: [{ id: 'lib-project', name: 'Library Project' }]
+    })
+
     beforeEach(() => {
+      // Set project with dependencies
+      mockProjectForHook = mockProjectWithDeps
+      store.set(projectsAtom, [mockProjectWithDeps])
       store.set(dependencyFilesAtom, [mockDependencyProject])
     })
 

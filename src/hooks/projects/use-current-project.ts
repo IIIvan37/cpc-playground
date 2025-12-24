@@ -1,12 +1,15 @@
 /**
  * Hook to get the current project using React Query
  * Combines currentProjectIdAtom (UI state) with React Query (server state)
+ *
+ * IMPORTANT: This hook NEVER triggers fetches - it only reads from cache.
+ * The cache is populated by useFetchProject via ensureQueryData.
+ * This prevents duplicate requests when multiple components use this hook.
  */
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
-import { useAuth } from '@/hooks/auth/use-auth'
-import { container } from '@/infrastructure/container'
+import type { Project } from '@/domain/entities/project.entity'
 import {
   currentFileIdAtom,
   currentProjectIdAtom,
@@ -23,25 +26,36 @@ export const projectKeys = {
 
 /**
  * Hook to get the current project
- * Uses currentProjectIdAtom to determine which project to fetch
- * Returns null if no project is selected
+ * Uses currentProjectIdAtom to determine which project to read from cache
+ * Returns null if no project is selected or not in cache
+ *
+ * NOTE: This hook does NOT fetch data - it only reads from React Query cache.
+ * Use useFetchProject to load a project into the cache.
  */
 export function useCurrentProject() {
-  const { user } = useAuth()
+  const queryClient = useQueryClient()
   const currentProjectId = useAtomValue(currentProjectIdAtom)
 
+  // Read directly from cache - never trigger a fetch
   const query = useQuery({
     queryKey: projectKeys.detail(currentProjectId ?? ''),
-    queryFn: async () => {
-      if (!currentProjectId) return null
-      const result = await container.getProject.execute({
-        projectId: currentProjectId,
-        userId: user?.id
-      })
-      return result.project
+    // Return cached data or null - never fetch
+    queryFn: () => {
+      // This should never be called because we set staleTime to Infinity
+      // and the data is populated by ensureQueryData in useFetchProject
+      return (
+        queryClient.getQueryData<Project>(
+          projectKeys.detail(currentProjectId ?? '')
+        ) ?? null
+      )
     },
     enabled: !!currentProjectId,
-    staleTime: 1000 * 30 // 30 seconds
+    // Never consider data stale - prevents automatic refetches
+    staleTime: Number.POSITIVE_INFINITY,
+    // Never refetch - data is managed by useFetchProject
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
   })
 
   return {

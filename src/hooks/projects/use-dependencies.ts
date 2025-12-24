@@ -75,59 +75,92 @@ export function useRemoveDependency() {
 }
 
 /**
+ * Pending dependency fetch promises by project ID
+ * Used to deduplicate concurrent fetches for dependencies
+ */
+const pendingDependencyFetches = new Map<string, Promise<DependencyProject[]>>()
+
+/**
  * Hook to fetch dependency files for the current project
  * Groups files by their parent project
+ * Uses manual deduplication to prevent multiple concurrent fetches
  */
 export function useFetchDependencyFiles() {
   const { activeProject } = useActiveProject()
   const setDependencyFiles = useSetAtom(dependencyFilesAtom)
 
+  // Extract stable values from activeProject to avoid reference changes
+  const projectId = activeProject?.id
+  const userId = activeProject?.userId
+  const hasDependencies = (activeProject?.dependencies?.length ?? 0) > 0
+
   const fetchDependencyFiles = useCallback(async (): Promise<
     DependencyProject[]
   > => {
-    if (!activeProject || activeProject.dependencies.length === 0) {
+    if (!projectId || !userId || !hasDependencies) {
       setDependencyFiles([])
       return []
     }
 
-    try {
-      const result = await container.getProjectWithDependencies.execute({
-        projectId: activeProject.id,
-        userId: activeProject.userId
-      })
+    // Check if there's already a pending fetch for this project's dependencies
+    const pendingKey = `${projectId}:${userId ?? ''}`
+    const pendingFetch = pendingDependencyFetches.get(pendingKey)
+    if (pendingFetch) {
+      // Wait for the existing fetch to complete
+      return pendingFetch
+    }
 
-      // Group files by project (excluding the current project's files)
-      const projectsMap = new Map<string, DependencyProject>()
+    // Create a new fetch promise
+    const fetchPromise = (async () => {
+      try {
+        const result = await container.getProjectWithDependencies.execute({
+          projectId,
+          userId
+        })
 
-      for (const file of result.files) {
-        // Skip files from the current project
-        if (file.projectId === activeProject.id) continue
+        // Group files by project (excluding the current project's files)
+        const projectsMap = new Map<string, DependencyProject>()
 
-        if (!projectsMap.has(file.projectId)) {
-          projectsMap.set(file.projectId, {
-            id: file.projectId,
-            name: file.projectName,
-            files: []
+        for (const file of result.files) {
+          // Skip files from the current project
+          if (file.projectId === projectId) continue
+
+          if (!projectsMap.has(file.projectId)) {
+            projectsMap.set(file.projectId, {
+              id: file.projectId,
+              name: file.projectName,
+              files: []
+            })
+          }
+
+          projectsMap.get(file.projectId)!.files.push({
+            id: file.id,
+            name: file.name,
+            content: file.content,
+            projectId: file.projectId
           })
         }
 
-        projectsMap.get(file.projectId)!.files.push({
-          id: file.id,
-          name: file.name,
-          content: file.content,
-          projectId: file.projectId
-        })
+        const dependencyProjects = Array.from(projectsMap.values())
+        setDependencyFiles(dependencyProjects)
+        return dependencyProjects
+      } catch (error) {
+        logger.error('Failed to fetch dependency files:', error)
+        setDependencyFiles([])
+        return []
       }
+    })()
 
-      const dependencyProjects = Array.from(projectsMap.values())
-      setDependencyFiles(dependencyProjects)
-      return dependencyProjects
-    } catch (error) {
-      logger.error('Failed to fetch dependency files:', error)
-      setDependencyFiles([])
-      return []
+    // Store the pending promise
+    pendingDependencyFetches.set(pendingKey, fetchPromise)
+
+    try {
+      return await fetchPromise
+    } finally {
+      // Clean up the pending promise
+      pendingDependencyFetches.delete(pendingKey)
     }
-  }, [activeProject, setDependencyFiles])
+  }, [projectId, userId, hasDependencies, setDependencyFiles])
 
   return { fetchDependencyFiles }
 }

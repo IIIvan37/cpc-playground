@@ -99,8 +99,9 @@ describe('GetProjectUseCase', () => {
         userId: 'user-123'
       })
 
+      // canReadProject now receives the project object instead of projectId
       expect(mockAuthService.canReadProject).toHaveBeenCalledWith(
-        'project-123',
+        testProject,
         'user-123'
       )
       expect(result.project).toBe(testProject)

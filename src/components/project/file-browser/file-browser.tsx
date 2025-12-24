@@ -40,6 +40,7 @@ export function FileBrowser() {
     useActiveProject()
   const currentProjectId = useAtomValue(currentProjectIdAtom)
   const dependencyFiles = useAtomValue(dependencyFilesAtom)
+  const setDependencyFiles = useSetAtom(dependencyFilesAtom)
   const setCode = useSetAtom(codeAtom)
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
   const { createFile } = useCreateFile()
@@ -59,6 +60,8 @@ export function FileBrowser() {
 
   // Track last project ID to only trigger on project change, not on every update
   const lastProjectIdRef = useRef<string | null>(null)
+  // Track dependencies to refetch when they change
+  const lastDependenciesRef = useRef<string | null>(null)
 
   // Auto-select main file on project change and fetch dependencies
   useEffect(() => {
@@ -71,14 +74,32 @@ export function FileBrowser() {
         setCurrentFileId(mainFile.id)
         setCode(mainFile.content?.value ?? '')
         setSelectedDependencyFileId(null) // Reset dependency selection
-
-        // Fetch dependencies when project changes
-        if (project.dependencies && project.dependencies.length > 0) {
-          fetchDependencyFiles()
-        }
       }
     }
-  }, [project, setCurrentFileId, setCode, fetchDependencyFiles])
+  }, [project, setCurrentFileId, setCode])
+
+  // Fetch dependency files when dependencies change
+  useEffect(() => {
+    if (!project) return
+
+    // Create a stable key from dependency IDs
+    const dependencyKey =
+      project.dependencies
+        ?.map((d) => d.id)
+        .sort()
+        .join(',') ?? ''
+
+    if (dependencyKey !== lastDependenciesRef.current) {
+      lastDependenciesRef.current = dependencyKey
+
+      if (project.dependencies && project.dependencies.length > 0) {
+        fetchDependencyFiles()
+      } else {
+        // Clear dependency files when no dependencies
+        setDependencyFiles([])
+      }
+    }
+  }, [project, fetchDependencyFiles, setDependencyFiles])
 
   const handleSelectFile = useCallback(
     (fileId: string) => {
