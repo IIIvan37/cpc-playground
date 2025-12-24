@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { ExploreListView } from './explore.view'
 
@@ -31,8 +32,15 @@ describe('ExploreListView', () => {
   })
 
   it('renders empty state', () => {
-    render(<ExploreListView projects={[]} />)
+    render(
+      <MemoryRouter>
+        <ExploreListView projects={[]} />
+      </MemoryRouter>
+    )
     expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /playground/i })
+    ).toBeInTheDocument()
   })
 
   it('renders a project', () => {

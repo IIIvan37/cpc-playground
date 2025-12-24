@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
+import Button from '@/components/ui/button/button'
 import { Input } from '@/components/ui/input'
 import { TagsList } from '@/components/ui/tag'
 import styles from './explore.module.css'
@@ -65,7 +67,12 @@ export function ExploreListView({
           {searchQuery ? (
             <p>Try a different search term</p>
           ) : (
-            <p>Be the first to share a project!</p>
+            <>
+              <p>Be the first to share a project!</p>
+              <Link to='/' style={{ marginTop: '1rem' }}>
+                <Button>Try the Playground</Button>
+              </Link>
+            </>
           )}
         </div>
       ) : (

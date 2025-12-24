@@ -114,9 +114,15 @@ export function useDeleteProject() {
     onSuccess: ({ userId, projectId }) => {
       // Remove the deleted project from cache (don't refetch it!)
       queryClient.removeQueries({ queryKey: ['project', projectId] })
-      // Invalidate lists to refresh them
-      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      // Invalidate lists and force refetch even if not currently active
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'user', userId],
+        refetchType: 'all'
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'visible'],
+        refetchType: 'all'
+      })
     }
   })
 

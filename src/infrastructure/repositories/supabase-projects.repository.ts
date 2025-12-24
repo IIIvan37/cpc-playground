@@ -493,6 +493,17 @@ export function createSupabaseProjectsRepository(
     },
 
     async delete(projectId: string): Promise<void> {
+      // First, get the project to check for thumbnail
+      const project = await this.findById(projectId)
+
+      // Delete thumbnail from storage if exists
+      if (project?.thumbnailPath) {
+        await supabase.storage
+          .from('thumbnails')
+          .remove([project.thumbnailPath])
+      }
+
+      // Then delete the project (cascade will handle files, shares, tags, dependencies)
       const { error } = await supabase
         .from('projects')
         .delete()
