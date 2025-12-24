@@ -191,6 +191,7 @@ These hooks combine multiple concerns (state, effects, use-cases) that don't fit
 - ✅ `user-profile` - 10 tests  
 - ✅ `file-browser` - 20 tests
 - ✅ `project-settings-modal` - 15 tests
+- ✅ `console-panel` - 12 tests (December 24, 2025)
 
 **Completed hooks:**
 - ✅ `useAuth` - 16 tests
@@ -198,11 +199,13 @@ These hooks combine multiple concerns (state, effects, use-cases) that don't fit
 - ✅ `useProjects` - 13 tests
 
 **Remaining:**
-- `console-panel`, `code-editor`, `emulator-canvas`, `app-header`
+- `code-editor`, `emulator-canvas`, `app-header`
 - `main-layout`, `toolbar`, `root-layout`, `program-manager`, `resizable-sidebar`
 - Hooks: `useEmulator`, `useDependencies`, `useAssembler`, etc.
 
-**Progress:** ~60% complete (Dec 24, 2025)
+**Note:** `toolbar` container has complex dependencies (Router, many hooks). View tests exist and provide adequate coverage.
+
+**Progress:** ~65% complete (Dec 24, 2025)
 
 ---
 
@@ -213,4 +216,4 @@ These hooks combine multiple concerns (state, effects, use-cases) that don't fit
 | Phase 1 | ✅ Completed | 100% |
 | Phase 2 | ✅ Completed | 100% |
 | Phase 3 | ✅ Completed | 100% |
-| Phase 4 | 🟡 In progress | 60% |
+| Phase 4 | 🟡 In progress | 65% |
