@@ -1,11 +1,44 @@
-export { useAssembler } from './use-assembler'
-export { useAuth } from './use-auth'
-export { useAddDependency, useRemoveDependency } from './use-dependencies'
-export { useEmulator } from './use-emulator'
-export { useFetchVisibleProjects } from './use-fetch-visible-projects'
-export { useCreateFile, useDeleteFile, useUpdateFile } from './use-files'
-export { useProjectFromUrl } from './use-project-from-url'
+/**
+ * Hooks barrel export
+ * Re-exports all hooks from their respective modules
+ */
+
+// Authentication
+export { useAuth, userAtom } from './auth'
+// Core utilities
+export { useUseCase, useUseCaseWithoutInput } from './core'
+
+// Emulator & Assembler
+export { useAssembler, useEmulator } from './emulator'
+
+// File management
 export {
+  useAutoSaveFile,
+  useCreateFile,
+  useDeleteFile,
+  useSetMainFile,
+  useUpdateFile
+} from './files'
+
+// Project management
+export {
+  // Dependencies
+  useAddDependency,
+  // Tags
+  useAddTag,
+  // Shares
+  useAddUserShare,
+  // CRUD
+  useCreateProject,
+  useDeleteProject,
+  useFetchDependencyFiles,
+  useFetchProject,
+  // Utilities
+  useFetchVisibleProjects,
+  useGetProject,
+  useGetProjects,
+  useGetProjectWithDependencies,
+  // Settings handlers
   useHandleAddDependency,
   useHandleAddShare,
   useHandleAddTag,
@@ -13,19 +46,14 @@ export {
   useHandleRemoveDependency,
   useHandleRemoveShare,
   useHandleRemoveTag,
-  useHandleSaveProject
-} from './use-project-settings'
-// Clean Architecture hooks
-export {
-  useCreateProject,
-  useDeleteProject,
-  useGetProject,
-  useGetProjects,
-  useGetProjectWithDependencies,
+  useHandleSaveProject,
+  useProjectFromUrl,
+  useRefreshProjects,
+  useRemoveDependency,
+  useRemoveTag,
+  useRemoveUserShare,
   useUpdateProject
-} from './use-projects'
-export { useRefreshProjects } from './use-refresh-projects'
-export { useAddUserShare, useRemoveUserShare } from './use-shares'
-export { useAddTag, useRemoveTag } from './use-tags'
-export { useUseCase, useUseCaseWithoutInput } from './use-use-case'
-export { useUserProfile } from './use-user-profile'
+} from './projects'
+
+// Shared/Misc
+export { useSharedCode, useUserProfile } from './shared'

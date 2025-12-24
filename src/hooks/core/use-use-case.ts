@@ -74,6 +74,39 @@ export function useUseCase<TInput, TOutput>(
 }
 
 /**
+ * Factory to create simple hooks that just rename the execute function
+ * Reduces boilerplate for hooks that don't need state sync
+ *
+ * @example
+ * ```tsx
+ * export const useAddTag = createSimpleHook(
+ *   container.addTag,
+ *   'addTag'
+ * )
+ * // Returns: { addTag, loading, error, reset, data }
+ * ```
+ */
+export function createSimpleHook<TInput, TOutput, TMethodName extends string>(
+  useCase: UseCase<TInput, TOutput>,
+  methodName: TMethodName
+): () => UseCaseState<TOutput> & {
+  [K in TMethodName]: (input: TInput) => Promise<TOutput>
+} & { reset: () => void } {
+  return () => {
+    const { execute, loading, error, reset, data } = useUseCase(useCase)
+    return {
+      [methodName]: execute,
+      loading,
+      error,
+      reset,
+      data
+    } as UseCaseState<TOutput> & {
+      [K in TMethodName]: (input: TInput) => Promise<TOutput>
+    } & { reset: () => void }
+  }
+}
+
+/**
  * Creates a hook for use-cases that don't require input (like getAll operations)
  */
 export function useUseCaseWithoutInput<TOutput>(useCase: {

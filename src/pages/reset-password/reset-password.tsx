@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import Button from '@/components/ui/button/button'
-import { Input } from '@/components/ui/input'
-import { useAuth } from '@/hooks/use-auth'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/hooks'
 import { supabase } from '@/lib/supabase'
-import styles from './reset-password.module.css'
+import {
+  ResetPasswordFormView,
+  ResetPasswordLoadingView,
+  ResetPasswordSuccessView
+} from './reset-password.view'
 
 /**
- * Reset Password Page
- * This page handles the password reset callback from Supabase.
+ * Reset Password Page Container
+ * Handles the password reset callback from Supabase.
  * When users click the reset link in their email, they are redirected here
  * with a token in the URL hash that Supabase uses to authenticate the session.
  */
@@ -77,78 +79,22 @@ export function ResetPasswordPage() {
   }
 
   if (!sessionReady) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.card}>
-          <div className={styles.loading}>
-            <p>Loading...</p>
-            <p>If this takes too long, the link may have expired.</p>
-            <Link to='/' className={styles.homeLink}>
-              Return to CPC Playground
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    return <ResetPasswordLoadingView />
   }
 
   if (success) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.card}>
-          <h1 className={styles.title}>Password Updated!</h1>
-          <p className={styles.success}>
-            Your password has been successfully updated. Redirecting...
-          </p>
-          <Link to='/' className={styles.homeLink}>
-            Return to CPC Playground
-          </Link>
-        </div>
-      </div>
-    )
+    return <ResetPasswordSuccessView />
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Reset Password</h1>
-        <p className={styles.subtitle}>Enter your new password below</p>
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          {error && <div className={styles.error}>{error}</div>}
-
-          <Input
-            label='New Password'
-            id='password'
-            type='password'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            disabled={loading}
-            autoFocus
-          />
-
-          <Input
-            label='Confirm Password'
-            id='confirmPassword'
-            type='password'
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={6}
-            disabled={loading}
-          />
-
-          <Button type='submit' disabled={loading} fullWidth>
-            {loading ? 'Updating...' : 'Update Password'}
-          </Button>
-        </form>
-
-        <Link to='/' className={styles.homeLink}>
-          Return to CPC Playground
-        </Link>
-      </div>
-    </div>
+    <ResetPasswordFormView
+      password={password}
+      confirmPassword={confirmPassword}
+      error={error}
+      loading={loading}
+      onPasswordChange={setPassword}
+      onConfirmPasswordChange={setConfirmPassword}
+      onSubmit={handleSubmit}
+    />
   )
 }

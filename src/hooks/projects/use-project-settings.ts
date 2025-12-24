@@ -14,7 +14,7 @@ import {
   useRemoveTag,
   useRemoveUserShare,
   useUpdateProject
-} from '@/hooks'
+} from '.'
 
 // ============================================================================
 // Types

@@ -33,6 +33,8 @@ pnpm dev
 | Document | Description |
 |----------|-------------|
 | [Architecture](docs/architecture.md) | Clean Architecture, domain model, patterns |
+| [Architecture Debt](docs/architecture-debt.md) | Technical debt tracking, remediation plan |
+| [Component Style Guide](docs/component-style-guide.md) | Container/View pattern, props guidelines |
 | [Setup Guide](docs/setup.md) | Installation, Supabase, environments |
 | [Features](docs/features.md) | Projects, sharing, tags, dependencies, includes |
 | [Development](docs/development.md) | CLI commands, migrations, testing |

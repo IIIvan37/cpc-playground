@@ -6,15 +6,16 @@ import { EmulatorCanvas } from '@/components/emulator'
 import { MarkdownPreview } from '@/components/markdown-preview'
 import { FileBrowser } from '@/components/project/file-browser'
 import { ResizableSidebar } from '@/components/ui/resizable-sidebar'
-import { useProjectFromUrl } from '@/hooks'
-import { useAutoSaveFile } from '@/hooks/use-auto-save-file'
-import { useSharedCode } from '@/hooks/use-shared-code'
+import { useAutoSaveFile, useProjectFromUrl, useSharedCode } from '@/hooks'
 import { activeProjectAtom, isMarkdownFileAtom, viewModeAtom } from '@/store'
 import { Toolbar } from '../toolbar/toolbar'
 import { MainLayoutView } from './main-layout.view'
 
-// Keep both components mounted to avoid unmounting EmulatorCanvas
-// which causes input issues with the editor
+/**
+ * Right panel showing emulator or markdown preview.
+ * EmulatorCanvas uses a persistent canvas element that survives component
+ * unmounts, so CPCEC binding is preserved during navigation.
+ */
 const RightPanel = memo(function RightPanel({
   isMarkdownFile
 }: {

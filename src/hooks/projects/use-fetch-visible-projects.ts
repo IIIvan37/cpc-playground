@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { container } from '@/infrastructure/container'
-import { useUseCase } from './use-use-case'
+import { useUseCase } from '../core'
 
 export function useFetchVisibleProjects(userId?: string) {
   const { execute, loading, error, data } = useUseCase(

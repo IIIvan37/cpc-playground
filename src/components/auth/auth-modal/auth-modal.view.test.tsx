@@ -1,10 +1,10 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { AuthModalView, type AuthMode } from './auth-modal.view'
 
 describe('AuthModalView', () => {
-  const defaultProps = {
+  const createDefaultProps = () => ({
     mode: 'signin' as AuthMode,
     email: '',
     password: '',
@@ -17,7 +17,10 @@ describe('AuthModalView', () => {
     onSubmit: vi.fn(),
     onGithubAuth: vi.fn(),
     onModeChange: vi.fn()
-  }
+  })
+
+  // Keep for backwards compatibility in simple render tests
+  const defaultProps = createDefaultProps()
 
   describe('rendering', () => {
     it('renders modal with Sign In title', () => {
@@ -128,29 +131,24 @@ describe('AuthModalView', () => {
   describe('interactions', () => {
     it('calls onEmailChange when email is typed', async () => {
       const user = userEvent.setup()
-      const handleEmailChange = vi.fn()
-      render(
-        <AuthModalView {...defaultProps} onEmailChange={handleEmailChange} />
-      )
+      const props = createDefaultProps()
+      render(<AuthModalView {...props} />)
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com')
 
-      expect(handleEmailChange).toHaveBeenCalled()
+      expect(props.onEmailChange).toHaveBeenCalled()
     })
 
     it('calls onPasswordChange when password is typed', async () => {
-      const user = userEvent.setup()
-      const handlePasswordChange = vi.fn()
-      render(
-        <AuthModalView
-          {...defaultProps}
-          onPasswordChange={handlePasswordChange}
-        />
-      )
+      const props = createDefaultProps()
+      render(<AuthModalView {...props} />)
 
-      await user.type(screen.getByLabelText('Password'), 'password')
+      // Use fireEvent for controlled input that doesn't update state
+      fireEvent.change(screen.getByLabelText('Password'), {
+        target: { value: 'password' }
+      })
 
-      expect(handlePasswordChange).toHaveBeenCalled()
+      expect(props.onPasswordChange).toHaveBeenCalledWith('password')
     })
 
     it('calls onSubmit when form is submitted', async () => {

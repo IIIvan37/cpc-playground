@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
-import { useUseCase } from './use-use-case'
+import { useUseCase } from '../core'
 
 /**
  * Hook to add a user share to a project

@@ -1,3 +1,7 @@
+// IMPORTANT: This must be the FIRST import to patch addEventListener
+// before CPCEC can register its keyboard listeners
+import '@/lib/cpcec-keyboard-patch'
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'

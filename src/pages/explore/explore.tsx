@@ -1,5 +1,4 @@
 import { PlusIcon } from '@radix-ui/react-icons'
-import { useSetAtom } from 'jotai'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/button/button'
@@ -8,9 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import type { Project } from '@/domain/entities/project.entity'
 import { filterProjects } from '@/domain/services'
-import { useAuth } from '@/hooks/use-auth'
-import { useFetchVisibleProjects } from '@/hooks/use-fetch-visible-projects'
-import { createProjectAtom } from '@/store/projects'
+import { useAuth, useCreateProject, useFetchVisibleProjects } from '@/hooks'
 import styles from './explore.module.css'
 import { ExploreListView } from './explore.view'
 
@@ -29,7 +26,7 @@ export function ExplorePage() {
 
   const { user } = useAuth()
   const navigate = useNavigate()
-  const createProject = useSetAtom(createProjectAtom)
+  const { create: createProject } = useCreateProject()
 
   const { projects, loading, error } = useFetchVisibleProjects(user?.id)
 
@@ -43,7 +40,7 @@ export function ExplorePage() {
         isMain: !newProjectIsLibrary
       }
 
-      const project = await createProject({
+      const result = await createProject({
         userId: user.id,
         name: newProjectName.trim(),
         visibility: 'private',
@@ -56,8 +53,8 @@ export function ExplorePage() {
       setNewProjectIsLibrary(false)
 
       // Navigate to the new project
-      if (project) {
-        navigate(`/?project=${project.id}`)
+      if (result?.project) {
+        navigate(`/?project=${result.project.id}`)
       }
     } catch (err) {
       console.error('Failed to create project:', err)

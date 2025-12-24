@@ -6,7 +6,7 @@ import { EmulatorCanvasView } from './emulator-canvas.view'
 
 describe('EmulatorCanvasView', () => {
   const defaultProps = {
-    canvasRef: createRef<HTMLCanvasElement>(),
+    wrapperRef: createRef<HTMLButtonElement>(),
     containerRef: createRef<HTMLDivElement>(),
     hasFocus: false,
     statusText: '○ Click to type',
@@ -25,18 +25,9 @@ describe('EmulatorCanvasView', () => {
       expect(screen.getByText('○ Loading...')).toBeInTheDocument()
     })
 
-    it('renders canvas element', () => {
+    it('renders button wrapper for canvas', () => {
       render(<EmulatorCanvasView {...defaultProps} />)
-      expect(
-        screen.getByRole('button').querySelector('canvas')
-      ).toBeInTheDocument()
-    })
-
-    it('renders canvas with correct dimensions', () => {
-      render(<EmulatorCanvasView {...defaultProps} />)
-      const canvas = screen.getByRole('button').querySelector('canvas')
-      expect(canvas).toHaveAttribute('width', '768')
-      expect(canvas).toHaveAttribute('height', '544')
+      expect(screen.getByRole('button')).toBeInTheDocument()
     })
   })
 
@@ -72,11 +63,11 @@ describe('EmulatorCanvasView', () => {
   })
 
   describe('refs', () => {
-    it('attaches canvasRef to canvas element', () => {
-      const canvasRef = createRef<HTMLCanvasElement>()
-      render(<EmulatorCanvasView {...defaultProps} canvasRef={canvasRef} />)
+    it('attaches wrapperRef to button element', () => {
+      const wrapperRef = createRef<HTMLButtonElement>()
+      render(<EmulatorCanvasView {...defaultProps} wrapperRef={wrapperRef} />)
 
-      expect(canvasRef.current).toBeInstanceOf(HTMLCanvasElement)
+      expect(wrapperRef.current).toBeInstanceOf(HTMLButtonElement)
     })
 
     it('attaches containerRef to container element', () => {

@@ -1,8 +1,6 @@
 import { useAtomValue } from 'jotai'
 import { useState } from 'react'
-import { userAtom } from '@/hooks/use-auth'
-import { useUserProfile } from '@/hooks/use-user-profile'
-import { supabase } from '@/lib/supabase'
+import { useAuth, userAtom, useUserProfile } from '@/hooks'
 import { UserProfileView } from './user-profile.view'
 
 /**
@@ -11,6 +9,7 @@ import { UserProfileView } from './user-profile.view'
  */
 export function UserProfile() {
   const user = useAtomValue(userAtom)
+  const { signOut } = useAuth()
   const { profile, loading, updateUsername } = useUserProfile()
   const [showModal, setShowModal] = useState(false)
   const [newUsername, setNewUsername] = useState('')
@@ -39,12 +38,7 @@ export function UserProfile() {
 
   const handleSignOut = async () => {
     if (confirm('Are you sure you want to sign out?')) {
-      try {
-        await supabase.auth.signOut({ scope: 'local' })
-      } catch (e) {
-        // Ignore errors, session will be cleared locally
-        console.warn('SignOut error (ignored):', e)
-      }
+      await signOut()
     }
   }
 

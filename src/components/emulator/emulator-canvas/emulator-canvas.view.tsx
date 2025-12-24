@@ -2,7 +2,7 @@ import type { RefObject } from 'react'
 import styles from './emulator-canvas.module.css'
 
 type EmulatorCanvasViewProps = Readonly<{
-  canvasRef: RefObject<HTMLCanvasElement | null>
+  wrapperRef: RefObject<HTMLButtonElement | null>
   containerRef: RefObject<HTMLDivElement | null>
   hasFocus: boolean
   statusText: string
@@ -11,7 +11,7 @@ type EmulatorCanvasViewProps = Readonly<{
 }>
 
 export function EmulatorCanvasView({
-  canvasRef,
+  wrapperRef,
   containerRef,
   hasFocus,
   statusText,
@@ -24,19 +24,14 @@ export function EmulatorCanvasView({
         <span className={styles.title}>CPC Emulator</span>
         <span className={styles.status}>{statusText}</span>
       </div>
+      {/* Canvas is appended here programmatically to persist across mounts */}
       <button
+        ref={wrapperRef}
         type='button'
         className={`${styles.canvasWrapper} ${hasFocus ? styles.focused : ''}`}
         onFocus={onFocus}
         onBlur={onBlur}
-      >
-        <canvas
-          ref={canvasRef}
-          className={styles.canvas}
-          width={768}
-          height={544}
-        />
-      </button>
+      />
     </div>
   )
 }

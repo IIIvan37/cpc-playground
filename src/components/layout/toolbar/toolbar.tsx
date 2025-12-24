@@ -1,6 +1,10 @@
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import { ProgramManager } from '@/components/program/program-manager'
-import { useAssembler, useEmulator } from '@/hooks'
+import {
+  useAssembler,
+  useEmulator,
+  useGetProjectWithDependencies
+} from '@/hooks'
 import {
   codeAtom,
   compilationStatusAtom,
@@ -10,11 +14,7 @@ import {
   type ViewMode,
   viewModeAtom
 } from '@/store'
-import {
-  currentFileAtom,
-  currentProjectAtom,
-  fetchProjectWithDependenciesAtom
-} from '@/store/projects'
+import { currentFileAtom, currentProjectAtom } from '@/store/projects'
 import { ToolbarView } from './toolbar.view'
 
 /**
@@ -29,9 +29,7 @@ export function Toolbar() {
   const currentProject = useAtomValue(currentProjectAtom)
   const currentFile = useAtomValue(currentFileAtom)
   const isMarkdownFile = useAtomValue(isMarkdownFileAtom)
-  const fetchProjectWithDependencies = useSetAtom(
-    fetchProjectWithDependenciesAtom
-  )
+  const { getProjectWithDependencies } = useGetProjectWithDependencies()
   const { compile } = useAssembler()
   const { isReady, loadSna, loadDsk, reset } = useEmulator()
 
@@ -44,13 +42,13 @@ export function Toolbar() {
     if (currentProject && currentFile) {
       try {
         // Get all files including dependencies
-        const allFiles = await fetchProjectWithDependencies({
+        const result = await getProjectWithDependencies({
           projectId: currentProject.id,
           userId: currentProject.userId
         })
 
         // Separate current project files from dependency files
-        additionalFiles = allFiles
+        additionalFiles = result.files
           .filter((f) => f.id !== currentFile.id)
           .map((f) => ({
             name: f.name,
