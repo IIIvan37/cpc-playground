@@ -106,6 +106,7 @@ export function ProjectListItem({
   filesCount,
   sharesCount,
   updatedAt,
+  createdAt: _createdAt,
   onClick
 }: ProjectListItemProps) {
   return (

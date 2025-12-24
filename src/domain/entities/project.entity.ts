@@ -166,3 +166,76 @@ export function removeTag(project: Project, tag: string): Project {
     updatedAt: new Date()
   })
 }
+
+/**
+ * Helper to update a project by adding a file if it matches the target project ID
+ */
+export function addFileIfMatch(
+  project: Project,
+  targetProjectId: string,
+  file: ProjectFile
+): Project {
+  if (project.id === targetProjectId) {
+    return addFile(project, file)
+  }
+  return project
+}
+
+/**
+ * Helper to update all files in a project to set one as main
+ */
+export function setFileAsMain(
+  project: Project,
+  targetProjectId: string,
+  targetFileId: string
+): Project {
+  if (project.id !== targetProjectId) {
+    return project
+  }
+  return Object.freeze({
+    ...project,
+    files: Object.freeze(
+      project.files.map((f) =>
+        Object.freeze({
+          ...f,
+          isMain: f.id === targetFileId
+        })
+      )
+    ),
+    updatedAt: new Date()
+  })
+}
+
+/**
+ * Helper to replace a file in a project if it matches the target project ID
+ */
+export function replaceFileIfMatch(
+  project: Project,
+  targetProjectId: string,
+  updatedFile: ProjectFile
+): Project {
+  if (project.id !== targetProjectId) {
+    return project
+  }
+  return Object.freeze({
+    ...project,
+    files: Object.freeze(
+      project.files.map((f) => (f.id === updatedFile.id ? updatedFile : f))
+    ),
+    updatedAt: new Date()
+  })
+}
+
+/**
+ * Helper to remove a file from a project if it matches the target project ID
+ */
+export function removeFileIfMatch(
+  project: Project,
+  targetProjectId: string,
+  fileId: string
+): Project {
+  if (project.id !== targetProjectId) {
+    return project
+  }
+  return removeFile(project, fileId)
+}

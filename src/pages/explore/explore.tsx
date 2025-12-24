@@ -110,8 +110,10 @@ export function ExplorePage() {
     listProjects.length > 0
       ? (() => {
           // Find the oldest project (documentation)
-          const oldestProject = listProjects.reduce((oldest, current) =>
-            current.createdAt < oldest.createdAt ? current : oldest
+          const oldestProject = listProjects.reduce(
+            (oldest, current) =>
+              current.createdAt < oldest.createdAt ? current : oldest,
+            listProjects[0]
           )
 
           // Separate the documentation project from the rest

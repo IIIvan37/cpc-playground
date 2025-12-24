@@ -7,6 +7,12 @@
 
 import { useSetAtom } from 'jotai'
 import { useCallback, useState } from 'react'
+import {
+  addFileIfMatch,
+  removeFileIfMatch,
+  replaceFileIfMatch,
+  setFileAsMain
+} from '@/domain/entities/project.entity'
 import { container } from '@/infrastructure/container'
 import { currentFileIdAtom, projectsAtom } from '@/store/projects'
 import { useUseCase } from '../core'
@@ -28,12 +34,7 @@ export function useCreateFile() {
       if (result?.file) {
         // Update projects state with the new file
         setProjects((prev) =>
-          prev.map((p) => {
-            if (p.id === params.projectId) {
-              return { ...p, files: [...p.files, result.file] }
-            }
-            return p
-          })
+          prev.map((p) => addFileIfMatch(p, params.projectId, result.file))
         )
         // Set as current file if it's main or if requested
         if (result.file.isMain) {
@@ -65,25 +66,10 @@ export function useUpdateFile() {
         // Update projects state with the updated file
         setProjects((prev) =>
           prev.map((p) => {
-            if (p.id === params.projectId) {
-              // If setting as main, update all files' isMain flag
-              if (params.isMain) {
-                return {
-                  ...p,
-                  files: p.files.map((f) => ({
-                    ...f,
-                    isMain: f.id === result.file.id
-                  }))
-                }
-              }
-              return {
-                ...p,
-                files: p.files.map((f) =>
-                  f.id === result.file.id ? result.file : f
-                )
-              }
+            if (params.isMain) {
+              return setFileAsMain(p, params.projectId, result.file.id)
             }
-            return p
+            return replaceFileIfMatch(p, params.projectId, result.file)
           })
         )
       }
@@ -111,13 +97,7 @@ export function useDeleteFile() {
       await execute(params)
       // Update projects state, removing the file
       setProjects((prev) =>
-        prev.map((p) => {
-          if (p.id === params.projectId) {
-            const remainingFiles = p.files.filter((f) => f.id !== params.fileId)
-            return { ...p, files: remainingFiles }
-          }
-          return p
-        })
+        prev.map((p) => removeFileIfMatch(p, params.projectId, params.fileId))
       )
       // Clear current file if it was deleted, select main file instead
       setCurrentFileId((current) => {
