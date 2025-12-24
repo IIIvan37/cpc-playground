@@ -86,7 +86,7 @@ export function FileBrowser() {
     const dependencyKey =
       project.dependencies
         ?.map((d) => d.id)
-        .sort()
+        .sort((a, b) => a.localeCompare(b))
         .join(',') ?? ''
 
     if (dependencyKey !== lastDependenciesRef.current) {
