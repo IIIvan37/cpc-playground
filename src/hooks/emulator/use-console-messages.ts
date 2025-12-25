@@ -5,7 +5,7 @@
  */
 
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { useCallback, useRef } from 'react'
+import { useCallback } from 'react'
 import { getAssemblerRegistry } from '@/infrastructure/assemblers'
 import {
   type ConsoleMessage,
@@ -16,6 +16,9 @@ import {
   selectedAssemblerAtom
 } from '@/store'
 
+// Global counter to ensure unique message IDs across hook instances
+let globalMessageCounter = 0
+
 export function useConsoleMessages() {
   const assemblerType = useAtomValue(selectedAssemblerAtom)
   const [messages, setMessages] = useAtom(consoleMessagesAtom)
@@ -23,12 +26,9 @@ export function useConsoleMessages() {
   const clearConsole = useSetAtom(clearConsoleAtom)
   const clearErrorLines = useSetAtom(clearErrorLinesAtom)
 
-  // Use ref for counter to avoid re-renders
-  const messageCounterRef = useRef(0)
-
   const addMessage = useCallback(
     (message: Omit<ConsoleMessage, 'timestamp' | 'id' | 'line'>) => {
-      messageCounterRef.current += 1
+      globalMessageCounter += 1
 
       // Get the error parser for the selected assembler
       const registry = getAssemblerRegistry()
@@ -49,7 +49,7 @@ export function useConsoleMessages() {
         ...currentMessages,
         {
           ...message,
-          id: `msg-${messageCounterRef.current}`,
+          id: `msg-${globalMessageCounter}`,
           timestamp: new Date(),
           line
         }
