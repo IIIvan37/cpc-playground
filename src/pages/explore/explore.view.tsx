@@ -62,7 +62,7 @@ export function ExploreListView({
   const hasProjects = libraryProjects.length > 0 || regularProjects.length > 0
 
   return (
-    <>
+    <div className={styles.exploreContent}>
       <div className={styles.searchContainer}>
         {onSearchChange && (
           <Input
@@ -96,7 +96,7 @@ export function ExploreListView({
           )}
         </div>
       ) : (
-        <>
+        <div className={styles.sectionsContainer}>
           {libraryProjects.length > 0 && (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>Libraries</h2>
@@ -119,9 +119,9 @@ export function ExploreListView({
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
-    </>
+    </div>
   )
 }
 
