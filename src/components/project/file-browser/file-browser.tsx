@@ -1,9 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Button from '@/components/ui/button/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { Input } from '@/components/ui/input'
-import { Modal } from '@/components/ui/modal'
 import {
   useActiveProject,
   useAuth,
@@ -12,13 +9,14 @@ import {
   useDeleteFile,
   useFetchDependencyFiles,
   useSetMainFile,
-  useToastActions
+  useToastActions,
+  useUpdateFile
 } from '@/hooks'
 import { createLogger } from '@/lib/logger'
 import { codeAtom, currentFileIdAtom } from '@/store'
 import { currentProjectIdAtom, dependencyFilesAtom } from '@/store/projects'
-import styles from './file-browser.module.css'
 import { FileBrowserView } from './file-browser.view'
+import { FileDialog } from './file-dialog'
 
 const logger = createLogger('FileBrowser')
 
@@ -46,6 +44,7 @@ export function FileBrowser() {
   const { createFile } = useCreateFile()
   const { deleteFile } = useDeleteFile()
   const { setMainFile } = useSetMainFile()
+  const { updateFile } = useUpdateFile()
   const { fetchDependencyFiles } = useFetchDependencyFiles()
   const toast = useToastActions()
   const { confirm, dialogProps } = useConfirmDialog()
@@ -56,6 +55,9 @@ export function FileBrowser() {
   >(null)
   const [showNewFileDialog, setShowNewFileDialog] = useState(false)
   const [newFileName, setNewFileName] = useState('')
+  const [showRenameDialog, setShowRenameDialog] = useState(false)
+  const [renameFileId, setRenameFileId] = useState<string | null>(null)
+  const [renameFileName, setRenameFileName] = useState('')
   const [loading, setLoading] = useState(false)
 
   // Track last project ID to only trigger on project change, not on every update
@@ -200,6 +202,62 @@ export function FileBrowser() {
     [currentProjectId, project?.id, user, setMainFile, toast]
   )
 
+  const openRenameDialog = useCallback(
+    (fileId: string) => {
+      const file = project?.files?.find((f) => f.id === fileId)
+      if (file) {
+        setRenameFileId(fileId)
+        setRenameFileName(file.name?.value ?? '')
+        setShowRenameDialog(true)
+      }
+    },
+    [project?.files]
+  )
+
+  const closeRenameDialog = useCallback(() => {
+    setShowRenameDialog(false)
+    setRenameFileId(null)
+    setRenameFileName('')
+  }, [])
+
+  const handleRenameFile = useCallback(async () => {
+    const projectId = currentProjectId || project?.id
+    if (
+      !projectId ||
+      !renameFileId ||
+      !renameFileName.trim() ||
+      !user ||
+      loading
+    )
+      return
+
+    setLoading(true)
+    try {
+      await updateFile({
+        projectId,
+        userId: user.id,
+        fileId: renameFileId,
+        name: renameFileName.trim()
+      })
+      closeRenameDialog()
+    } catch (error) {
+      logger.error('Failed to rename file:', error)
+      toast.error('Failed to rename file')
+    } finally {
+      setLoading(false)
+    }
+  }, [
+    currentProjectId,
+    project?.id,
+    renameFileId,
+    renameFileName,
+    user,
+    updateFile,
+    toast,
+    loading,
+    closeRenameDialog
+  ])
+
   const openNewFileDialog = useCallback(() => setShowNewFileDialog(true), [])
   const closeNewFileDialog = useCallback(() => {
     setShowNewFileDialog(false)
@@ -229,34 +287,32 @@ export function FileBrowser() {
   }
 
   // Render the new file dialog (composition pattern)
-  const newFileDialog = showNewFileDialog ? (
-    <Modal
+  const newFileDialog = (
+    <FileDialog
       open={showNewFileDialog}
       title='New File'
+      value={newFileName}
+      submitLabel='Create'
+      loading={loading}
       onClose={closeNewFileDialog}
-    >
-      <div className={styles.modalContent}>
-        <Input
-          placeholder='filename.asm'
-          value={newFileName}
-          onChange={(e) => setNewFileName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleCreateFile()}
-          autoFocus
-        />
-        <div className={styles.modalActions}>
-          <Button variant='outline' onClick={closeNewFileDialog}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreateFile}
-            disabled={!newFileName.trim() || loading}
-          >
-            Create
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  ) : null
+      onChange={setNewFileName}
+      onSubmit={handleCreateFile}
+    />
+  )
+
+  // Render the rename file dialog
+  const renameFileDialog = (
+    <FileDialog
+      open={showRenameDialog}
+      title='Rename File'
+      value={renameFileName}
+      submitLabel='Rename'
+      loading={loading}
+      onClose={closeRenameDialog}
+      onChange={setRenameFileName}
+      onSubmit={handleRenameFile}
+    />
+  )
 
   return (
     <>
@@ -272,8 +328,10 @@ export function FileBrowser() {
         onSelectDependencyFile={handleSelectDependencyFile}
         onNewFileClick={openNewFileDialog}
         onSetMainFile={handleSetMainFile}
+        onRenameFile={openRenameDialog}
         onDeleteFile={handleDeleteFile}
         newFileDialog={newFileDialog}
+        renameFileDialog={renameFileDialog}
       />
       <ConfirmDialog {...dialogProps} />
     </>

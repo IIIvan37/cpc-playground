@@ -3,6 +3,7 @@ import {
   CubeIcon,
   FileIcon,
   FilePlusIcon,
+  Pencil2Icon,
   StarFilledIcon,
   StarIcon,
   TrashIcon
@@ -67,6 +68,7 @@ type FileListViewProps = Readonly<{
   isLibrary: boolean
   onSelectFile: (fileId: string) => void
   onSetMainFile: (fileId: string) => void
+  onRenameFile: (fileId: string) => void
   onDeleteFile: (fileId: string) => void
 }>
 
@@ -78,6 +80,7 @@ type FileItemViewProps = Readonly<{
   canDelete: boolean
   onSelect: () => void
   onSetMain: () => void
+  onRename: () => void
   onDelete: () => void
 }>
 
@@ -119,9 +122,12 @@ export type FileBrowserViewProps = Readonly<{
   onSelectDependencyFile?: (file: DependencyFileItem) => void
   onNewFileClick: () => void
   onSetMainFile: (fileId: string) => void
+  onRenameFile: (fileId: string) => void
   onDeleteFile: (fileId: string) => void
   /** Slot for the new file dialog - container handles state */
   newFileDialog?: ReactNode
+  /** Slot for the rename file dialog - container handles state */
+  renameFileDialog?: ReactNode
 }>
 
 // ============================================================================
@@ -169,11 +175,17 @@ function FileItemView({
   canDelete,
   onSelect,
   onSetMain,
+  onRename,
   onDelete
 }: FileItemViewProps) {
   const handleSetMain = (e: React.MouseEvent) => {
     e.stopPropagation()
     onSetMain()
+  }
+
+  const handleRename = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onRename()
   }
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -202,6 +214,16 @@ function FileItemView({
             <StarIcon />
           </button>
         )}
+        {canEdit && (
+          <button
+            type='button'
+            className={styles.actionButton}
+            onClick={handleRename}
+            title='Rename file'
+          >
+            <Pencil2Icon />
+          </button>
+        )}
         {canEdit && canDelete && (
           <button
             type='button'
@@ -224,6 +246,7 @@ function FileListView({
   isLibrary,
   onSelectFile,
   onSetMainFile,
+  onRenameFile,
   onDeleteFile
 }: FileListViewProps) {
   const canDeleteFiles = files.length > 1
@@ -240,6 +263,7 @@ function FileListView({
           canDelete={canDeleteFiles}
           onSelect={() => onSelectFile(file.id)}
           onSetMain={() => onSetMainFile(file.id)}
+          onRename={() => onRenameFile(file.id)}
           onDelete={() => onDeleteFile(file.id)}
         />
       ))}
@@ -366,8 +390,10 @@ export function FileBrowserView({
   onSelectDependencyFile,
   onNewFileClick,
   onSetMainFile,
+  onRenameFile,
   onDeleteFile,
-  newFileDialog
+  newFileDialog,
+  renameFileDialog
 }: FileBrowserViewProps) {
   return (
     <div className={styles.container}>
@@ -391,6 +417,7 @@ export function FileBrowserView({
         isLibrary={project.isLibrary}
         onSelectFile={onSelectFile}
         onSetMainFile={onSetMainFile}
+        onRenameFile={onRenameFile}
         onDeleteFile={onDeleteFile}
       />
 
@@ -405,6 +432,7 @@ export function FileBrowserView({
       )}
 
       {newFileDialog}
+      {renameFileDialog}
     </div>
   )
 }
