@@ -1,40 +1,51 @@
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import Button from '@/components/ui/button/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { TagsList } from '@/components/ui/tag'
 import styles from './explore.module.css'
 
+type ProjectItem = {
+  id: string
+  name: string
+  authorName: string
+  description?: string | null
+  tags: string[]
+  isOwner: boolean
+  isShared: boolean
+  visibility: string
+  isLibrary: boolean
+  filesCount: number
+  sharesCount: number
+  updatedAt: Date
+  createdAt: Date
+  thumbnailUrl?: string | null
+  onClick: () => void
+  onFork?: () => void
+  canFork?: boolean
+}
+
 export interface ExploreListViewProps {
-  readonly projects: ReadonlyArray<{
-    id: string
-    name: string
-    authorName: string
-    description?: string | null
-    tags: string[]
-    isOwner: boolean
-    isShared: boolean
-    visibility: string
-    isLibrary: boolean
-    filesCount: number
-    sharesCount: number
-    updatedAt: Date
-    createdAt: Date
-    thumbnailUrl?: string | null
-    onClick: () => void
-  }>
+  readonly libraryProjects: ReadonlyArray<ProjectItem>
+  readonly regularProjects: ReadonlyArray<ProjectItem>
   readonly loading?: boolean
   readonly error?: string | null
   readonly searchQuery?: string
   readonly onSearchChange?: (query: string) => void
+  readonly showLibrariesOnly?: boolean
+  readonly onShowLibrariesOnlyChange?: (value: boolean) => void
 }
 
 export function ExploreListView({
-  projects,
+  libraryProjects,
+  regularProjects,
   loading,
   error,
   searchQuery = '',
-  onSearchChange
+  onSearchChange,
+  showLibrariesOnly = false,
+  onShowLibrariesOnlyChange
 }: ExploreListViewProps) {
   if (loading) {
     return (
@@ -48,10 +59,12 @@ export function ExploreListView({
     return <div className={styles.error}>{error}</div>
   }
 
+  const hasProjects = libraryProjects.length > 0 || regularProjects.length > 0
+
   return (
     <>
-      {onSearchChange && (
-        <div className={styles.searchContainer}>
+      <div className={styles.searchContainer}>
+        {onSearchChange && (
           <Input
             type='text'
             placeholder='Search by name, author, or tag...'
@@ -59,13 +72,20 @@ export function ExploreListView({
             onChange={(e) => onSearchChange(e.target.value)}
             data-testid='search-input'
           />
-        </div>
-      )}
-      {projects.length === 0 ? (
+        )}
+        {onShowLibrariesOnlyChange && (
+          <Checkbox
+            label='Show libraries only'
+            checked={showLibrariesOnly}
+            onChange={(e) => onShowLibrariesOnlyChange(e.target.checked)}
+          />
+        )}
+      </div>
+      {!hasProjects ? (
         <div className={styles.empty}>
           <p>No projects found</p>
-          {searchQuery ? (
-            <p>Try a different search term</p>
+          {searchQuery || showLibrariesOnly ? (
+            <p>Try a different search term or filter</p>
           ) : (
             <>
               <p>Be the first to share a project!</p>
@@ -76,11 +96,30 @@ export function ExploreListView({
           )}
         </div>
       ) : (
-        <div className={styles.list}>
-          {projects.map((project) => (
-            <ProjectListItem key={project.id} {...project} />
-          ))}
-        </div>
+        <>
+          {libraryProjects.length > 0 && (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Libraries</h2>
+              <div className={styles.list}>
+                {libraryProjects.map((project) => (
+                  <ProjectListItem key={project.id} {...project} />
+                ))}
+              </div>
+            </div>
+          )}
+          {!showLibrariesOnly && regularProjects.length > 0 && (
+            <div className={styles.section}>
+              {libraryProjects.length > 0 && (
+                <h2 className={styles.sectionTitle}>Projects</h2>
+              )}
+              <div className={styles.list}>
+                {regularProjects.map((project) => (
+                  <ProjectListItem key={project.id} {...project} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </>
   )

@@ -6,6 +6,7 @@ import type { Project } from '../entities/project.entity'
 export type ProjectFilterCriteria = Readonly<{
   query: string
   userId?: string
+  librariesOnly?: boolean
 }>
 
 /**
@@ -26,11 +27,18 @@ export function filterProjects(
 ): readonly SearchableProject[] {
   const query = criteria.query.trim().toLowerCase()
 
-  if (!query) {
-    return projects
+  let filtered = projects
+
+  // Filter by library status first
+  if (criteria.librariesOnly) {
+    filtered = filtered.filter((item) => item.project.isLibrary)
   }
 
-  return projects.filter((item) => {
+  if (!query) {
+    return filtered
+  }
+
+  return filtered.filter((item) => {
     const { project, authorName } = item
 
     // Search in project name

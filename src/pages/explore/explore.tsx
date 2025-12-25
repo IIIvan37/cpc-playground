@@ -28,6 +28,7 @@ export function ExplorePage() {
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showLibrariesOnly, setShowLibrariesOnly] = useState(false)
 
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
@@ -79,7 +80,8 @@ export function ExplorePage() {
   // Filter projects using domain service
   const filteredProjects = filterProjects(searchableProjects, {
     query: searchQuery,
-    userId: user?.id
+    userId: user?.id,
+    librariesOnly: showLibrariesOnly
   })
 
   // Map to view props
@@ -108,26 +110,29 @@ export function ExplorePage() {
     }
   })
 
-  // Sort projects: pin the documentation project (oldest) at the top, then sort by createdAt descending
-  const sortedProjects =
-    listProjects.length > 0
-      ? (() => {
-          // Find the oldest project (documentation)
-          const oldestProject = listProjects.reduce(
-            (oldest, current) =>
-              current.createdAt < oldest.createdAt ? current : oldest,
-            listProjects[0]
-          )
+  // Separate libraries from regular projects
+  const libraryProjects = listProjects
+    .filter((p) => p.isLibrary)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
-          // Separate the documentation project from the rest
-          const docProject = listProjects.find((p) => p.id === oldestProject.id)
-          const otherProjects = listProjects
-            .filter((p) => p.id !== oldestProject.id)
-            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  const regularProjects = listProjects
+    .filter((p) => !p.isLibrary)
+    .sort((a, b) => {
+      // Find the oldest project (documentation) to pin at top
+      const oldestId = listProjects
+        .filter((p) => !p.isLibrary)
+        .reduce(
+          (oldest, current) =>
+            current.createdAt < oldest.createdAt ? current : oldest,
+          listProjects.filter((p) => !p.isLibrary)[0]
+        )?.id
 
-          return docProject ? [docProject, ...otherProjects] : otherProjects
-        })()
-      : listProjects
+      // Pin documentation at top
+      if (a.id === oldestId) return -1
+      if (b.id === oldestId) return 1
+
+      return b.createdAt.getTime() - a.createdAt.getTime()
+    })
 
   return (
     <div className={styles.container}>
@@ -149,11 +154,14 @@ export function ExplorePage() {
         </div>
 
         <ExploreListView
-          projects={sortedProjects}
+          libraryProjects={libraryProjects}
+          regularProjects={regularProjects}
           loading={loading}
           error={error}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          showLibrariesOnly={showLibrariesOnly}
+          onShowLibrariesOnlyChange={setShowLibrariesOnly}
         />
       </div>
 
