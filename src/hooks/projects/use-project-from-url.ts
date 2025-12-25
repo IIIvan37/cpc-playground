@@ -53,6 +53,11 @@ export function useProjectFromUrl() {
     ) {
       return
     }
+
+    // Clear code immediately when switching to a new project
+    // This prevents the old project's code from flashing briefly
+    setCode('')
+
     loadedProjectState = { projectId, userId: user?.id }
 
     fetchProjectRef
