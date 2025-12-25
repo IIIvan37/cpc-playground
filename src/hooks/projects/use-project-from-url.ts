@@ -1,5 +1,6 @@
 import { useSetAtom } from 'jotai'
 import { useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { codeAtom } from '@/store'
 import { isReadOnlyModeAtom, viewOnlyProjectAtom } from '@/store/projects'
 import { useAuth } from '../auth'
@@ -24,6 +25,10 @@ export function useProjectFromUrl() {
   const setViewOnlyProject = useSetAtom(viewOnlyProjectAtom)
   const setIsReadOnlyMode = useSetAtom(isReadOnlyModeAtom)
   const setCode = useSetAtom(codeAtom)
+  const [searchParams] = useSearchParams()
+
+  // Get project ID from URL search params (reactive)
+  const projectId = searchParams.get('project')
 
   // Store fetchProject in a ref to avoid it triggering effect re-runs
   const fetchProjectRef = useRef(fetchProject)
@@ -32,9 +37,6 @@ export function useProjectFromUrl() {
   useEffect(() => {
     // Wait for auth to be ready
     if (authLoading) return
-
-    const params = new URLSearchParams(globalThis.location.search)
-    const projectId = params.get('project')
 
     if (!projectId) {
       // No project in URL - clear read-only state
@@ -75,5 +77,12 @@ export function useProjectFromUrl() {
         loadedProjectState = null
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProject is accessed via ref to avoid triggering effect
-  }, [authLoading, user?.id, setCode, setViewOnlyProject, setIsReadOnlyMode])
+  }, [
+    authLoading,
+    user?.id,
+    projectId,
+    setCode,
+    setViewOnlyProject,
+    setIsReadOnlyMode
+  ])
 }
