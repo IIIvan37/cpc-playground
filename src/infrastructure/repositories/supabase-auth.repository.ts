@@ -273,6 +273,29 @@ export function createSupabaseAuthRepository(
               : new Error('Failed to update password')
         }
       }
+    },
+
+    async hasSession(): Promise<boolean> {
+      try {
+        const {
+          data: { session }
+        } = await supabase.auth.getSession()
+        return session !== null
+      } catch {
+        return false
+      }
+    },
+
+    onPasswordRecovery(callback: () => void): Unsubscribe {
+      const {
+        data: { subscription }
+      } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          callback()
+        }
+      })
+
+      return () => subscription.unsubscribe()
     }
   }
 }

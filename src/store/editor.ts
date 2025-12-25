@@ -1,6 +1,5 @@
 import { atom } from 'jotai'
 import type { AssemblerType } from '@/domain/services/assembler.interface'
-import { getAssemblerRegistry } from '@/infrastructure/assemblers'
 
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly
@@ -58,37 +57,7 @@ export interface ConsoleMessage {
 }
 export const consoleMessagesAtom = atom<ConsoleMessage[]>([])
 
-let messageCounter = 0
-
-// Actions
-export const addConsoleMessageAtom = atom(
-  null,
-  (get, set, message: Omit<ConsoleMessage, 'timestamp' | 'id' | 'line'>) => {
-    const messages = get(consoleMessagesAtom)
-    messageCounter += 1
-
-    // Get the error parser for the selected assembler
-    const assemblerType = get(selectedAssemblerAtom)
-    const registry = getAssemblerRegistry()
-    const assembler = registry.get(assemblerType) ?? registry.getDefault()
-    const line = assembler.config.errorParser.extractLineNumber(message.text)
-
-    // If we extracted a line number, it's an error line - add to highlights
-    // (RASM outputs errors to stdout, so we can't rely on message type)
-    if (line !== undefined) {
-      const currentErrors = get(errorLinesAtom)
-      if (!currentErrors.includes(line)) {
-        set(errorLinesAtom, [...currentErrors, line])
-      }
-    }
-
-    set(consoleMessagesAtom, [
-      ...messages,
-      { ...message, id: `msg-${messageCounter}`, timestamp: new Date(), line }
-    ])
-  }
-)
-
+// Simple action atoms - logic moved to useConsoleMessages hook
 export const clearConsoleAtom = atom(null, (_get, set) => {
   set(consoleMessagesAtom, [])
   set(errorLinesAtom, []) // Clear error highlights too

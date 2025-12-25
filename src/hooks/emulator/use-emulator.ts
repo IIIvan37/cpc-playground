@@ -1,10 +1,7 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useCallback } from 'react'
-import {
-  addConsoleMessageAtom,
-  emulatorReadyAtom,
-  emulatorRunningAtom
-} from '@/store'
+import { emulatorReadyAtom, emulatorRunningAtom } from '@/store'
+import { useConsoleMessages } from './use-console-messages'
 
 const CPCEC_BASE_URL = import.meta.env.DEV
   ? 'https://cpcec-web.iiivan.org'
@@ -20,7 +17,7 @@ export function useEmulator() {
   const isRunning = useAtomValue(emulatorRunningAtom)
   const setEmulatorReady = useSetAtom(emulatorReadyAtom)
   const setEmulatorRunning = useSetAtom(emulatorRunningAtom)
-  const addConsoleMessage = useSetAtom(addConsoleMessageAtom)
+  const { addMessage: addConsoleMessage } = useConsoleMessages()
 
   const initialize = useCallback(
     async (canvas: HTMLCanvasElement) => {

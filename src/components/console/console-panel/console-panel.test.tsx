@@ -3,12 +3,23 @@ import userEvent from '@testing-library/user-event'
 import { createStore, Provider } from 'jotai'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
-import {
-  addConsoleMessageAtom,
-  consoleMessagesAtom,
-  goToLineAtom
-} from '@/store'
+import { consoleMessagesAtom, goToLineAtom } from '@/store'
+import type { ConsoleMessage } from '@/store/editor'
 import { ConsolePanel } from './console-panel'
+
+// Helper to create a message
+let messageCounter = 0
+const createMessage = (
+  type: ConsoleMessage['type'],
+  text: string,
+  line?: number
+): ConsoleMessage => ({
+  id: `msg-${++messageCounter}`,
+  type,
+  text,
+  timestamp: new Date(),
+  line
+})
 
 describe('ConsolePanel', () => {
   let store: ReturnType<typeof createStore>
@@ -23,6 +34,7 @@ describe('ConsolePanel', () => {
 
   beforeEach(() => {
     store = createStore()
+    messageCounter = 0
   })
 
   describe('rendering', () => {
@@ -48,7 +60,7 @@ describe('ConsolePanel', () => {
 
   describe('messages display', () => {
     it('displays info messages', async () => {
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Info message' })
+      store.set(consoleMessagesAtom, [createMessage('info', 'Info message')])
 
       renderConsole()
 
@@ -56,10 +68,9 @@ describe('ConsolePanel', () => {
     })
 
     it('displays success messages', async () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'success',
-        text: 'Success message'
-      })
+      store.set(consoleMessagesAtom, [
+        createMessage('success', 'Success message')
+      ])
 
       renderConsole()
 
@@ -67,10 +78,7 @@ describe('ConsolePanel', () => {
     })
 
     it('displays error messages', async () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error message'
-      })
+      store.set(consoleMessagesAtom, [createMessage('error', 'Error message')])
 
       renderConsole()
 
@@ -78,10 +86,9 @@ describe('ConsolePanel', () => {
     })
 
     it('displays warning messages', async () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'warning',
-        text: 'Warning message'
-      })
+      store.set(consoleMessagesAtom, [
+        createMessage('warning', 'Warning message')
+      ])
 
       renderConsole()
 
@@ -89,9 +96,11 @@ describe('ConsolePanel', () => {
     })
 
     it('displays multiple messages in order', async () => {
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'First' })
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Second' })
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Third' })
+      store.set(consoleMessagesAtom, [
+        createMessage('info', 'First'),
+        createMessage('info', 'Second'),
+        createMessage('info', 'Third')
+      ])
 
       renderConsole()
 
@@ -103,16 +112,14 @@ describe('ConsolePanel', () => {
     })
 
     it('displays error messages with line numbers', async () => {
-      // Use error text format that RASM parser will extract line number from
-      // Pattern: [/input.asm:LINE] - line offset of 2 subtracted
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:12] Syntax error'
-      })
+      // Message with line number already extracted
+      store.set(consoleMessagesAtom, [
+        createMessage('error', 'Error [/input.asm:12] Syntax error', 10)
+      ])
 
       renderConsole()
 
-      // Line hint shows extracted line (12 - 2 offset = 10)
+      // Line hint shows the line number
       expect(screen.getByText('(line 10)')).toBeInTheDocument()
     })
   })
@@ -121,8 +128,10 @@ describe('ConsolePanel', () => {
     it('clears all messages when clear button clicked', async () => {
       const user = userEvent.setup()
 
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Message 1' })
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Message 2' })
+      store.set(consoleMessagesAtom, [
+        createMessage('info', 'Message 1'),
+        createMessage('info', 'Message 2')
+      ])
 
       renderConsole()
 
@@ -139,12 +148,10 @@ describe('ConsolePanel', () => {
     it('sets goToLine when clicking on message with line number', async () => {
       const user = userEvent.setup()
 
-      // Use error text format that RASM parser will extract line number from
-      // Pattern: [/input.asm:LINE] - line offset of 2 subtracted, so 17 -> 15
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:17] at line 15'
-      })
+      // Message with line number 15
+      store.set(consoleMessagesAtom, [
+        createMessage('error', 'Error [/input.asm:17] at line 15', 15)
+      ])
 
       renderConsole()
 
@@ -161,17 +168,19 @@ describe('ConsolePanel', () => {
   describe('auto-scroll behavior', () => {
     it('auto-scrolls to bottom on new messages', async () => {
       // Add many messages
+      const messages = []
       for (let i = 0; i < 10; i++) {
-        store.set(addConsoleMessageAtom, {
-          type: 'info',
-          text: `Message ${i}`
-        })
+        messages.push(createMessage('info', `Message ${i}`))
       }
+      store.set(consoleMessagesAtom, messages)
 
       const { rerender } = renderConsole()
 
       // Add another message
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'New message' })
+      store.set(consoleMessagesAtom, [
+        ...messages,
+        createMessage('info', 'New message')
+      ])
 
       rerender(
         <Provider store={store}>

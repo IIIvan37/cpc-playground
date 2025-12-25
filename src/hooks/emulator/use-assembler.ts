@@ -10,21 +10,20 @@ import type { OutputFormat } from '@/domain/services/assembler.interface'
 import type { CompilationFile } from '@/domain/services/assembler-adapter.interface'
 import { getAssemblerAdapter } from '@/infrastructure/assemblers/adapter-registry'
 import {
-  addConsoleMessageAtom,
-  clearErrorLinesAtom,
   compilationErrorAtom,
   compilationOutputAtom,
   compilationStatusAtom,
   selectedAssemblerAtom
 } from '@/store'
+import { useConsoleMessages } from './use-console-messages'
 
 export function useAssembler() {
   const assemblerType = useAtomValue(selectedAssemblerAtom)
   const setCompilationStatus = useSetAtom(compilationStatusAtom)
   const setCompilationError = useSetAtom(compilationErrorAtom)
   const setCompilationOutput = useSetAtom(compilationOutputAtom)
-  const addConsoleMessage = useSetAtom(addConsoleMessageAtom)
-  const clearErrorLines = useSetAtom(clearErrorLinesAtom)
+  const { addMessage: addConsoleMessage, clearErrorLines } =
+    useConsoleMessages()
 
   // Track initialization status
   const isInitializedRef = useRef(false)

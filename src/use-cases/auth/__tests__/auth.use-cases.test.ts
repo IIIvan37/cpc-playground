@@ -23,7 +23,9 @@ function createMockAuthRepository(): IAuthRepository {
     getUserProfile: vi.fn(),
     updateUserProfile: vi.fn(),
     resetPasswordForEmail: vi.fn(),
-    updatePassword: vi.fn()
+    updatePassword: vi.fn(),
+    hasSession: vi.fn(),
+    onPasswordRecovery: vi.fn(() => vi.fn())
   }
 }
 

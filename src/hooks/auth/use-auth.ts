@@ -109,6 +109,17 @@ export function useAuth() {
     [updatePasswordUseCase]
   )
 
+  const hasSession = useCallback(async () => {
+    return authRepository.hasSession()
+  }, [authRepository])
+
+  const onPasswordRecovery = useCallback(
+    (callback: () => void) => {
+      return authRepository.onPasswordRecovery(callback)
+    },
+    [authRepository]
+  )
+
   return {
     user,
     loading: isLoading,
@@ -117,6 +128,8 @@ export function useAuth() {
     signOut,
     signInWithGithub,
     requestPasswordReset,
-    updatePassword
+    updatePassword,
+    hasSession,
+    onPasswordRecovery
   }
 }
