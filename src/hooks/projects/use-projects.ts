@@ -13,6 +13,12 @@ import type { Project } from '@/domain/entities/project.entity'
 import { PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import { container } from '@/infrastructure/container'
 import {
+  clearConsoleAtom,
+  compilationErrorAtom,
+  compilationStatusAtom
+} from '@/store/editor'
+import { triggerEmulatorResetAtom } from '@/store/emulator'
+import {
   currentFileIdAtom,
   currentProjectIdAtom,
   isReadOnlyModeAtom,
@@ -241,6 +247,10 @@ export function useFetchProject() {
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
   const setIsReadOnlyMode = useSetAtom(isReadOnlyModeAtom)
   const setViewOnlyProject = useSetAtom(viewOnlyProjectAtom)
+  const clearConsole = useSetAtom(clearConsoleAtom)
+  const setCompilationStatus = useSetAtom(compilationStatusAtom)
+  const setCompilationError = useSetAtom(compilationErrorAtom)
+  const triggerEmulatorReset = useSetAtom(triggerEmulatorResetAtom)
 
   const fetchProject = useCallback(
     async (params: {
@@ -252,6 +262,12 @@ export function useFetchProject() {
       if (!result?.project) {
         throw new Error(PROJECT_ERRORS.NOT_FOUND(params.projectId))
       }
+
+      // Clear compilation state and reset emulator when switching projects
+      clearConsole()
+      setCompilationStatus('idle')
+      setCompilationError(null)
+      triggerEmulatorReset()
 
       const isOwner = params.userId && result.project.userId === params.userId
 
@@ -290,7 +306,11 @@ export function useFetchProject() {
       setCurrentProjectId,
       setCurrentFileId,
       setIsReadOnlyMode,
-      setViewOnlyProject
+      setViewOnlyProject,
+      clearConsole,
+      setCompilationStatus,
+      setCompilationError,
+      triggerEmulatorReset
     ]
   )
 

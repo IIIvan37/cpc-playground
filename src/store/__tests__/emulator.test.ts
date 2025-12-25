@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   emulatorInstanceAtom,
   emulatorReadyAtom,
+  emulatorResetTriggerAtom,
   emulatorRunningAtom,
   setEmulatorReadyAtom,
   setEmulatorRunningAtom,
+  triggerEmulatorResetAtom,
   viewModeAtom
 } from '../emulator'
 
@@ -124,6 +126,32 @@ describe('Emulator Store', () => {
       store.set(emulatorRunningAtom, true)
       store.set(setEmulatorRunningAtom, false)
       expect(store.get(emulatorRunningAtom)).toBe(false)
+    })
+  })
+
+  describe('emulatorResetTriggerAtom', () => {
+    it('should default to 0', () => {
+      expect(store.get(emulatorResetTriggerAtom)).toBe(0)
+    })
+
+    it('should allow direct incrementing', () => {
+      store.set(emulatorResetTriggerAtom, 1)
+      expect(store.get(emulatorResetTriggerAtom)).toBe(1)
+    })
+  })
+
+  describe('triggerEmulatorResetAtom', () => {
+    it('should increment the reset trigger', () => {
+      expect(store.get(emulatorResetTriggerAtom)).toBe(0)
+      store.set(triggerEmulatorResetAtom)
+      expect(store.get(emulatorResetTriggerAtom)).toBe(1)
+    })
+
+    it('should increment multiple times', () => {
+      store.set(triggerEmulatorResetAtom)
+      store.set(triggerEmulatorResetAtom)
+      store.set(triggerEmulatorResetAtom)
+      expect(store.get(emulatorResetTriggerAtom)).toBe(3)
     })
   })
 })
