@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { ExploreListView } from './explore.view'
+import { ExploreListView } from './explore-list.view'
 
 describe('ExploreListView', () => {
   const baseProject = {

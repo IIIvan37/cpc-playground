@@ -6,29 +6,29 @@ import { Input } from '@/components/ui/input'
 import { TagsList } from '@/components/ui/tag'
 import styles from './explore.module.css'
 
-type ProjectItem = {
-  id: string
-  name: string
-  authorName: string
-  description?: string | null
-  tags: string[]
-  isOwner: boolean
-  isShared: boolean
-  visibility: string
-  isLibrary: boolean
-  filesCount: number
-  sharesCount: number
-  updatedAt: Date
-  createdAt: Date
-  thumbnailUrl?: string | null
-  onClick: () => void
-  onFork?: () => void
-  canFork?: boolean
+export interface ProjectItemProps {
+  readonly id: string
+  readonly name: string
+  readonly authorName: string
+  readonly description?: string | null
+  readonly tags: string[]
+  readonly isOwner: boolean
+  readonly isShared: boolean
+  readonly visibility: string
+  readonly isLibrary: boolean
+  readonly filesCount: number
+  readonly sharesCount: number
+  readonly updatedAt: Date
+  readonly createdAt: Date
+  readonly thumbnailUrl?: string | null
+  readonly onClick: () => void
+  readonly onFork?: () => void
+  readonly canFork?: boolean
 }
 
 export interface ExploreListViewProps {
-  readonly libraryProjects: ReadonlyArray<ProjectItem>
-  readonly regularProjects: ReadonlyArray<ProjectItem>
+  readonly libraryProjects: ReadonlyArray<ProjectItemProps>
+  readonly regularProjects: ReadonlyArray<ProjectItemProps>
   readonly loading?: boolean
   readonly error?: string | null
   readonly searchQuery?: string
@@ -81,21 +81,7 @@ export function ExploreListView({
           />
         )}
       </div>
-      {!hasProjects ? (
-        <div className={styles.empty}>
-          <p>No projects found</p>
-          {searchQuery || showLibrariesOnly ? (
-            <p>Try a different search term or filter</p>
-          ) : (
-            <>
-              <p>Be the first to share a project!</p>
-              <Link to='/' style={{ marginTop: '1rem' }}>
-                <Button>Try the Playground</Button>
-              </Link>
-            </>
-          )}
-        </div>
-      ) : (
+      {hasProjects ? (
         <div className={styles.sectionsContainer}>
           {libraryProjects.length > 0 && (
             <div className={styles.section}>
@@ -120,31 +106,27 @@ export function ExploreListView({
             </div>
           )}
         </div>
+      ) : (
+        <div className={styles.empty}>
+          <p>No projects found</p>
+          {searchQuery || showLibrariesOnly ? (
+            <p>Try a different search term or filter</p>
+          ) : (
+            <>
+              <p>Be the first to share a project!</p>
+              <Link to='/' style={{ marginTop: '1rem' }}>
+                <Button>Try the Playground</Button>
+              </Link>
+            </>
+          )}
+        </div>
       )}
     </div>
   )
 }
 
-export type ProjectListItemProps = {
-  readonly name: string
-  readonly authorName: string
-  readonly description?: string | null
-  readonly tags: string[]
-  readonly isOwner: boolean
-  readonly isShared: boolean
-  readonly visibility: string
-  readonly isLibrary: boolean
-  readonly filesCount: number
-  readonly sharesCount: number
-  readonly updatedAt: Date
-  readonly createdAt: Date
-  readonly thumbnailUrl?: string | null
-  readonly onClick: () => void
-  readonly onFork?: () => void
-  readonly canFork?: boolean
-}
-
-export function ProjectListItem({
+function ProjectListItem({
+  id: _id,
   name,
   authorName,
   description,
@@ -161,7 +143,7 @@ export function ProjectListItem({
   onClick,
   onFork,
   canFork
-}: ProjectListItemProps) {
+}: ProjectItemProps) {
   const handleFork = (e: React.MouseEvent) => {
     e.stopPropagation()
     onFork?.()
