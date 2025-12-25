@@ -3,7 +3,7 @@ import { ExploreHeaderView } from './explore-header.view'
 import { ExploreListView, type ProjectItemProps } from './explore-list.view'
 import { NewProjectModalView } from './new-project-modal.view'
 
-export interface ExplorePageViewProps {
+export type ExplorePageViewProps = {
   // Header
   readonly isAuthenticated: boolean
   readonly onNewProject: () => void

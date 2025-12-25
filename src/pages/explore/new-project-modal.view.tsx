@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
 import styles from './explore.module.css'
 
-export interface NewProjectModalViewProps {
+export type NewProjectModalViewProps = {
   readonly open: boolean
   readonly name: string
   readonly isLibrary: boolean

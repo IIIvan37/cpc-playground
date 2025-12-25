@@ -2,7 +2,7 @@ import { PlusIcon } from '@radix-ui/react-icons'
 import Button from '@/components/ui/button/button'
 import styles from './explore.module.css'
 
-export interface ExploreHeaderViewProps {
+export type ExploreHeaderViewProps = {
   readonly title: string
   readonly subtitle: string
   readonly showNewProjectButton: boolean

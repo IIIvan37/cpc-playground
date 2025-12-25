@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input'
 import { TagsList } from '@/components/ui/tag'
 import styles from './explore.module.css'
 
-export interface ProjectItemProps {
+export type ProjectItemProps = {
   readonly id: string
   readonly name: string
   readonly authorName: string
   readonly description?: string | null
-  readonly tags: string[]
+  readonly tags: readonly string[]
   readonly isOwner: boolean
   readonly isShared: boolean
   readonly visibility: string
@@ -26,7 +26,7 @@ export interface ProjectItemProps {
   readonly canFork?: boolean
 }
 
-export interface ExploreListViewProps {
+export type ExploreListViewProps = {
   readonly libraryProjects: ReadonlyArray<ProjectItemProps>
   readonly regularProjects: ReadonlyArray<ProjectItemProps>
   readonly loading?: boolean
