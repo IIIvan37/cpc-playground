@@ -104,7 +104,7 @@ export function ExplorePage() {
       thumbnailUrl: getThumbnailUrl(project.thumbnailPath),
       onClick: () => handleProjectClick(project),
       onFork: () => handleForkProject(project.id),
-      canFork: !!user && !isOwner
+      canFork: !!user
     }
   })
 

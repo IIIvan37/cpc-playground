@@ -64,8 +64,9 @@ export function createForkProjectUseCase(
       }
 
       // Create a unique name for the fork
+      // Use "- copy" suffix instead of "(copy)" to comply with project name validation
       const baseName = input.newName || sourceProject.name.value
-      const forkName = isOwner ? `${baseName} (copy)` : baseName
+      const forkName = isOwner ? `${baseName} - copy` : baseName
 
       // Copy files from the source project
       const files: ProjectFile[] = sourceProject.files.map((file, index) =>
