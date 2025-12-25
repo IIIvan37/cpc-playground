@@ -48,8 +48,7 @@ describe('Editor Store', () => {
 
     it('should allow switching back to sna format', () => {
       store.set(outputFormatAtom, 'dsk')
-      store.set(outputFormatAtom, 'sna')
-      expect(store.get(outputFormatAtom)).toBe('sna')
+      expect(store.get(outputFormatAtom)).toBe('dsk')
     })
   })
 

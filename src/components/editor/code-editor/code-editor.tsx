@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCurrentFile } from '@/hooks/projects/use-current-project'
 import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
 import { currentProgramAtom, currentProgramIdAtom } from '@/store/programs'
+import { isDependencyFileAtom, isReadOnlyModeAtom } from '@/store/projects'
 import { CodeEditorView } from './code-editor.view'
 
 const LINE_HEIGHT = 21
@@ -24,6 +25,8 @@ export function CodeEditor() {
   const currentProgram = useAtomValue(currentProgramAtom)
   const currentProgramId = useAtomValue(currentProgramIdAtom)
   const globalCode = useAtomValue(codeAtom)
+  const isDependencyFile = useAtomValue(isDependencyFileAtom)
+  const isReadOnlyMode = useAtomValue(isReadOnlyModeAtom)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
@@ -157,8 +160,20 @@ export function CodeEditor() {
   // Determine file name and type for header
   const fileName =
     currentFile?.name.value ?? currentProgram?.name.value ?? undefined
-  const getFileType = (): 'project' | 'saved' | 'modified' | 'scratch' => {
-    if (currentFile) return 'project'
+  const getFileType = ():
+    | 'project-saved'
+    | 'project-modified'
+    | 'saved'
+    | 'modified'
+    | 'scratch'
+    | 'dependency' => {
+    if (isDependencyFile) return 'dependency'
+    if (currentFile) {
+      // Check if project file has been modified from saved version
+      return localCode === currentFile.content.value
+        ? 'project-saved'
+        : 'project-modified'
+    }
     if (currentProgram) {
       // Check if code has been modified from saved version
       return localCode === currentProgram.code ? 'saved' : 'modified'
@@ -172,6 +187,9 @@ export function CodeEditor() {
   // - Program/Scratch mode: use globalCode directly (not localCode which updates async via useEffect)
   const initialCode = currentFile?.content.value ?? globalCode
 
+  // Dependency files are always read-only
+  const isReadOnly = isDependencyFile || isReadOnlyMode
+
   return (
     <CodeEditorView
       fileName={fileName}
@@ -181,6 +199,7 @@ export function CodeEditor() {
       lines={lines}
       errorLines={errorLines}
       scrollTop={scrollTop}
+      readOnly={isReadOnly}
       textareaRef={textareaRef}
       lineNumbersRef={lineNumbersRef}
       onInput={handleInput}

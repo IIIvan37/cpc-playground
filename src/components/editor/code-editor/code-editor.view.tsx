@@ -69,6 +69,7 @@ export function ErrorHighlightsView({
 type EditorTextareaViewProps = Readonly<{
   code: string
   fileId: string | undefined
+  readOnly?: boolean
   textareaRef: RefObject<HTMLTextAreaElement | null>
   onInput: (value: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
@@ -78,6 +79,7 @@ type EditorTextareaViewProps = Readonly<{
 export function EditorTextareaView({
   code,
   fileId,
+  readOnly = false,
   textareaRef,
   onInput,
   onKeyDown,
@@ -91,6 +93,7 @@ export function EditorTextareaView({
       ref={textareaRef}
       className={styles.editor}
       defaultValue={code}
+      readOnly={readOnly}
       onInput={(e) => onInput(e.currentTarget.value)}
       onKeyDown={onKeyDown}
       onScroll={onScroll}
@@ -105,7 +108,13 @@ export function EditorTextareaView({
 // --- EditorHeaderView ---
 type EditorHeaderViewProps = Readonly<{
   fileName: string | undefined
-  fileType: 'project' | 'saved' | 'modified' | 'scratch'
+  fileType:
+    | 'project-saved'
+    | 'project-modified'
+    | 'saved'
+    | 'modified'
+    | 'scratch'
+    | 'dependency'
 }>
 
 export function EditorHeaderView({
@@ -114,14 +123,18 @@ export function EditorHeaderView({
 }: EditorHeaderViewProps) {
   const getHintText = () => {
     switch (fileType) {
-      case 'project':
-        return 'Project File'
+      case 'project-saved':
+        return 'Project File • Saved'
+      case 'project-modified':
+        return 'Project File • Modified'
       case 'saved':
         return 'Saved • RASM Syntax'
       case 'modified':
         return 'Modified • RASM Syntax'
       case 'scratch':
         return 'Unsaved • RASM Syntax'
+      case 'dependency':
+        return 'Dependency • Read-only'
     }
   }
 
@@ -137,7 +150,13 @@ export function EditorHeaderView({
 export type CodeEditorViewProps = Readonly<{
   // Header props
   fileName: string | undefined
-  fileType: 'project' | 'saved' | 'modified' | 'scratch'
+  fileType:
+    | 'project-saved'
+    | 'project-modified'
+    | 'saved'
+    | 'modified'
+    | 'scratch'
+    | 'dependency'
   fileId: string | undefined
 
   // Editor state
@@ -145,6 +164,7 @@ export type CodeEditorViewProps = Readonly<{
   lines: readonly string[]
   errorLines: readonly number[]
   scrollTop: number
+  readOnly?: boolean
 
   // Refs
   textareaRef: RefObject<HTMLTextAreaElement | null>
@@ -164,6 +184,7 @@ export function CodeEditorView({
   lines,
   errorLines,
   scrollTop,
+  readOnly = false,
   textareaRef,
   lineNumbersRef,
   onInput,
@@ -185,6 +206,7 @@ export function CodeEditorView({
           <EditorTextareaView
             code={code}
             fileId={fileId}
+            readOnly={readOnly}
             textareaRef={textareaRef}
             onInput={onInput}
             onKeyDown={onKeyDown}

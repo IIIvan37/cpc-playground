@@ -91,3 +91,17 @@ export type DependencyProject = {
  * Atom to store dependency files grouped by project
  */
 export const dependencyFilesAtom = atom<DependencyProject[]>([])
+
+/**
+ * Derived atom to check if the current file is a dependency file
+ * Dependency files are always read-only
+ */
+export const isDependencyFileAtom = atom((get) => {
+  const currentFileId = get(currentFileIdAtom)
+  if (!currentFileId) return false
+
+  const dependencyProjects = get(dependencyFilesAtom)
+  return dependencyProjects.some((project) =>
+    project.files.some((file) => file.id === currentFileId)
+  )
+})
