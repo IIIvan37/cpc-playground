@@ -58,6 +58,9 @@ export function AuthModalView({
   onGithubAuth,
   onModeChange
 }: AuthModalViewProps) {
+  // Disable form when loading or after successful signup (waiting for email confirmation)
+  const isFormDisabled = loading || (mode === 'signup' && !!successMessage)
+
   return (
     <Modal open={true} onClose={onClose} title={getModalTitle(mode)}>
       <form onSubmit={onSubmit} className={styles.form}>
@@ -73,7 +76,7 @@ export function AuthModalView({
           value={email}
           onChange={(e) => onEmailChange(e.target.value)}
           required
-          disabled={loading}
+          disabled={isFormDisabled}
         />
 
         {mode !== 'forgot-password' && (
@@ -85,11 +88,11 @@ export function AuthModalView({
             onChange={(e) => onPasswordChange(e.target.value)}
             required
             minLength={6}
-            disabled={loading}
+            disabled={isFormDisabled}
           />
         )}
 
-        <Button type='submit' disabled={loading} fullWidth>
+        <Button type='submit' disabled={isFormDisabled} fullWidth>
           {loading && 'Loading...'}
           {!loading && mode === 'signin' && 'Sign In'}
           {!loading && mode === 'signup' && 'Sign Up'}
@@ -106,7 +109,7 @@ export function AuthModalView({
               type='button'
               variant='outline'
               onClick={onGithubAuth}
-              disabled={loading}
+              disabled={isFormDisabled}
               fullWidth
             >
               <GitHubLogoIcon />
@@ -122,7 +125,7 @@ export function AuthModalView({
                 type='button'
                 variant='link'
                 onClick={() => onModeChange('forgot-password')}
-                disabled={loading}
+                disabled={isFormDisabled}
               >
                 Forgot password?
               </Button>
@@ -132,7 +135,7 @@ export function AuthModalView({
                 type='button'
                 variant='link'
                 onClick={() => onModeChange('signup')}
-                disabled={loading}
+                disabled={isFormDisabled}
               >
                 Sign up
               </Button>
@@ -145,7 +148,7 @@ export function AuthModalView({
                 type='button'
                 variant='link'
                 onClick={() => onModeChange('signin')}
-                disabled={loading}
+                disabled={isFormDisabled}
               >
                 Sign in
               </Button>
@@ -158,7 +161,7 @@ export function AuthModalView({
                 type='button'
                 variant='link'
                 onClick={() => onModeChange('signin')}
-                disabled={loading}
+                disabled={isFormDisabled}
               >
                 Sign in
               </Button>
