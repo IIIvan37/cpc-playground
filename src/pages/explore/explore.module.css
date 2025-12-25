@@ -1,19 +1,27 @@
 .container {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   background: var(--color-background);
   color: var(--color-foreground);
   padding: 2rem;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
   text-align: left;
+  overflow: hidden;
 }
 
 .pageHeader {
-  margin-bottom: 2rem;
+  flex-shrink: 0;
+  margin-bottom: 1.5rem;
   text-align: left;
 }
 
@@ -44,8 +52,39 @@
   text-align: left;
 }
 
+.exploreContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .searchContainer {
-  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionsContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .list {

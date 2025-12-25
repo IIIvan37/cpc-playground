@@ -1,10 +1,5 @@
-import { PlusIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Button from '@/components/ui/button/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Modal } from '@/components/ui/modal'
 import type { Project } from '@/domain/entities/project.entity'
 import { filterProjects } from '@/domain/services'
 import {
@@ -14,8 +9,7 @@ import {
   useHandleCreateProject,
   useHandleForkProject
 } from '@/hooks'
-import styles from './explore.module.css'
-import { ExploreListView } from './explore.view'
+import { ExplorePageView } from './explore-page.view'
 
 /**
  * Explore Page
@@ -28,6 +22,7 @@ export function ExplorePage() {
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showLibrariesOnly, setShowLibrariesOnly] = useState(false)
 
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
@@ -57,14 +52,18 @@ export function ExplorePage() {
   }
 
   const handleProjectClick = (project: Project) => {
-    // Navigate to project (using a query param or similar approach)
-    // For now, we'll use the project ID in the URL
     navigate(`/?project=${project.id}`)
   }
 
   const handleForkProject = async (projectId: string) => {
     if (!user) return
     await forkProject({ projectId, userId: user.id })
+  }
+
+  const handleCloseNewProjectDialog = () => {
+    setShowNewProjectDialog(false)
+    setNewProjectName('')
+    setNewProjectIsLibrary(false)
   }
 
   // Prepare searchable projects for domain filter
@@ -79,7 +78,8 @@ export function ExplorePage() {
   // Filter projects using domain service
   const filteredProjects = filterProjects(searchableProjects, {
     query: searchQuery,
-    userId: user?.id
+    userId: user?.id,
+    librariesOnly: showLibrariesOnly
   })
 
   // Map to view props
@@ -104,103 +104,56 @@ export function ExplorePage() {
       thumbnailUrl: getThumbnailUrl(project.thumbnailPath),
       onClick: () => handleProjectClick(project),
       onFork: () => handleForkProject(project.id),
-      canFork: !!user && !isOwner
+      canFork: !!user
     }
   })
 
-  // Sort projects: pin the documentation project (oldest) at the top, then sort by createdAt descending
-  const sortedProjects =
-    listProjects.length > 0
-      ? (() => {
-          // Find the oldest project (documentation)
-          const oldestProject = listProjects.reduce(
-            (oldest, current) =>
-              current.createdAt < oldest.createdAt ? current : oldest,
-            listProjects[0]
-          )
+  // Separate libraries from regular projects
+  const libraryProjects = listProjects
+    .filter((p) => p.isLibrary)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
-          // Separate the documentation project from the rest
-          const docProject = listProjects.find((p) => p.id === oldestProject.id)
-          const otherProjects = listProjects
-            .filter((p) => p.id !== oldestProject.id)
-            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  const regularProjects = listProjects
+    .filter((p) => !p.isLibrary)
+    .sort((a, b) => {
+      // Find the oldest project (documentation) to pin at top
+      const nonLibraryProjects = listProjects.filter((p) => !p.isLibrary)
+      const oldestProject = nonLibraryProjects.reduce<
+        (typeof nonLibraryProjects)[number] | undefined
+      >(
+        (oldest, current) =>
+          !oldest || current.createdAt < oldest.createdAt ? current : oldest,
+        undefined
+      )
+      const oldestId = oldestProject?.id
 
-          return docProject ? [docProject, ...otherProjects] : otherProjects
-        })()
-      : listProjects
+      // Pin documentation at top
+      if (a.id === oldestId) return -1
+      if (b.id === oldestId) return 1
+
+      return b.createdAt.getTime() - a.createdAt.getTime()
+    })
 
   return (
-    <div className={styles.container}>
-      <div className={styles.wrapper}>
-        <div className={styles.pageHeader}>
-          <div className={styles.headerRow}>
-            <div className={styles.headerContent}>
-              <h1 className={styles.title}>Explore Projects</h1>
-              <p className={styles.subtitle}>
-                Discover public projects and libraries from the community
-              </p>
-            </div>
-            {user && (
-              <Button onClick={() => setShowNewProjectDialog(true)}>
-                <PlusIcon /> New Project
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <ExploreListView
-          projects={sortedProjects}
-          loading={loading}
-          error={error}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
-      </div>
-
-      {showNewProjectDialog && (
-        <Modal
-          open={showNewProjectDialog}
-          title='Create New Project'
-          onClose={() => {
-            setShowNewProjectDialog(false)
-            setNewProjectName('')
-            setNewProjectIsLibrary(false)
-          }}
-        >
-          <div className={styles.modalContent}>
-            <Input
-              label='Project Name'
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              placeholder='My Awesome Project'
-              autoFocus
-            />
-            <Checkbox
-              label='Library Project'
-              checked={newProjectIsLibrary}
-              onChange={(e) => setNewProjectIsLibrary(e.target.checked)}
-            />
-            <div className={styles.modalActions}>
-              <Button
-                variant='ghost'
-                onClick={() => {
-                  setShowNewProjectDialog(false)
-                  setNewProjectName('')
-                  setNewProjectIsLibrary(false)
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateProject}
-                disabled={!newProjectName.trim() || creating}
-              >
-                {creating ? 'Creating...' : 'Create'}
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
+    <ExplorePageView
+      isAuthenticated={!!user}
+      onNewProject={() => setShowNewProjectDialog(true)}
+      libraryProjects={libraryProjects}
+      regularProjects={regularProjects}
+      loading={loading}
+      error={error}
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      showLibrariesOnly={showLibrariesOnly}
+      onShowLibrariesOnlyChange={setShowLibrariesOnly}
+      showNewProjectDialog={showNewProjectDialog}
+      newProjectName={newProjectName}
+      newProjectIsLibrary={newProjectIsLibrary}
+      creating={creating}
+      onNewProjectNameChange={setNewProjectName}
+      onNewProjectIsLibraryChange={setNewProjectIsLibrary}
+      onCreateProject={handleCreateProject}
+      onCloseNewProjectDialog={handleCloseNewProjectDialog}
+    />
   )
 }

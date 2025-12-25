@@ -139,11 +139,21 @@ describe('EditorTextareaView', () => {
     render(<EditorTextareaView {...defaultProps} textareaRef={ref} />)
     expect(ref.current).toBeInstanceOf(HTMLTextAreaElement)
   })
+
+  it('is editable by default', () => {
+    render(<EditorTextareaView {...defaultProps} />)
+    expect(screen.getByRole('textbox')).not.toHaveAttribute('readonly')
+  })
+
+  it('is read-only when readOnly prop is true', () => {
+    render(<EditorTextareaView {...defaultProps} readOnly={true} />)
+    expect(screen.getByRole('textbox')).toHaveAttribute('readonly')
+  })
 })
 
 describe('EditorHeaderView', () => {
   it('renders file name when provided', () => {
-    render(<EditorHeaderView fileName='main.asm' fileType='project' />)
+    render(<EditorHeaderView fileName='main.asm' fileType='project-saved' />)
     expect(screen.getByText('main.asm')).toBeInTheDocument()
   })
 
@@ -152,9 +162,14 @@ describe('EditorHeaderView', () => {
     expect(screen.getByText('Scratch')).toBeInTheDocument()
   })
 
-  it('shows Project File hint for project type', () => {
-    render(<EditorHeaderView fileName='main.asm' fileType='project' />)
-    expect(screen.getByText('Project File')).toBeInTheDocument()
+  it('shows Project File Saved hint for project-saved type', () => {
+    render(<EditorHeaderView fileName='main.asm' fileType='project-saved' />)
+    expect(screen.getByText('Project File • Saved')).toBeInTheDocument()
+  })
+
+  it('shows Project File Modified hint for project-modified type', () => {
+    render(<EditorHeaderView fileName='main.asm' fileType='project-modified' />)
+    expect(screen.getByText('Project File • Modified')).toBeInTheDocument()
   })
 
   it('shows Saved hint for saved type', () => {
@@ -171,12 +186,17 @@ describe('EditorHeaderView', () => {
     render(<EditorHeaderView fileName={undefined} fileType='scratch' />)
     expect(screen.getByText('Unsaved • RASM Syntax')).toBeInTheDocument()
   })
+
+  it('shows Dependency hint for dependency type', () => {
+    render(<EditorHeaderView fileName='lib.asm' fileType='dependency' />)
+    expect(screen.getByText('Dependency • Read-only')).toBeInTheDocument()
+  })
 })
 
 describe('CodeEditorView', () => {
   const defaultProps = {
     fileName: 'test.asm',
-    fileType: 'project' as const,
+    fileType: 'project-saved' as const,
     fileId: 'test-file-id',
     code: 'LD A, 0\nLD B, 1',
     lines: ['LD A, 0', 'LD B, 1'],

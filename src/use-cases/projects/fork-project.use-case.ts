@@ -64,8 +64,9 @@ export function createForkProjectUseCase(
       }
 
       // Create a unique name for the fork
+      // Use "- copy" suffix instead of "(copy)" to comply with project name validation
       const baseName = input.newName || sourceProject.name.value
-      const forkName = isOwner ? `${baseName} (copy)` : baseName
+      const forkName = isOwner ? `${baseName} - copy` : baseName
 
       // Copy files from the source project
       const files: ProjectFile[] = sourceProject.files.map((file, index) =>
@@ -78,20 +79,44 @@ export function createForkProjectUseCase(
         })
       )
 
-      // Create the new project (always private, never a library)
+      // Copy tags from the source project
+      const tags = [...(sourceProject.tags ?? [])]
+
+      // Copy dependency IDs from the source project
+      const dependencyIds = (sourceProject.dependencies ?? []).map(
+        (dep) => dep.id
+      )
+
+      // Create the new project (always private, inherit library type)
       const forkedProject = createProject({
         userId: input.userId,
         name: createProjectName(forkName),
         description: sourceProject.description,
         visibility: Visibility.PRIVATE,
-        isLibrary: false,
-        files
+        isLibrary: sourceProject.isLibrary,
+        files,
+        tags
       })
 
       // Persist via repository
       const createdProject = await projectsRepository.create(forkedProject)
 
-      return { project: createdProject }
+      // Add dependencies to the forked project
+      if (dependencyIds.length > 0) {
+        for (const dependencyId of dependencyIds) {
+          await projectsRepository.addDependency(
+            createdProject.id,
+            dependencyId
+          )
+        }
+      }
+
+      // Fetch the complete project with dependencies
+      const completeProject = await projectsRepository.findById(
+        createdProject.id
+      )
+
+      return { project: completeProject ?? createdProject }
     }
   }
 }

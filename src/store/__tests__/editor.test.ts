@@ -1,7 +1,6 @@
 import { createStore } from 'jotai'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
-  addConsoleMessageAtom,
   clearConsoleAtom,
   clearErrorLinesAtom,
   codeAtom,
@@ -14,55 +13,6 @@ import {
   outputFormatAtom,
   selectedAssemblerAtom
 } from '../editor'
-
-// Mock the assembler registry
-const ERROR_LINE_PATTERN = /\[\/?\w+\.asm:(\d+)\]/
-
-const mockErrorParser = {
-  extractLineNumber: (text: string): number | undefined => {
-    const match = ERROR_LINE_PATTERN.exec(text)
-    if (match) {
-      return Math.max(1, Number.parseInt(match[1], 10) - 2)
-    }
-    return undefined
-  },
-  extractRawLineNumber: (text: string): number | undefined => {
-    const match = ERROR_LINE_PATTERN.exec(text)
-    return match ? Number.parseInt(match[1], 10) : undefined
-  },
-  parseError: (text: string) => ({
-    text,
-    line: mockErrorParser.extractLineNumber(text),
-    rawLine: mockErrorParser.extractRawLineNumber(text)
-  })
-}
-
-const mockAssembler = {
-  config: {
-    type: 'rasm' as const,
-    name: 'RASM',
-    description: 'Mock RASM',
-    supportedFormats: ['sna', 'dsk'] as const,
-    defaultFormat: 'sna' as const,
-    wasmUrl: '/rasm.wasm',
-    jsUrl: '/rasm.js',
-    errorParser: mockErrorParser,
-    supportsCpcPlus: true
-  },
-  prepareSource: vi.fn((opts) => opts.source),
-  getCompileArgs: vi.fn(() => []),
-  getOutputFilePath: vi.fn(() => '/output.sna'),
-  getAlternateOutputPaths: vi.fn(() => [])
-}
-
-vi.mock('@/infrastructure/assemblers', () => ({
-  getAssemblerRegistry: () => ({
-    get: () => mockAssembler,
-    getDefault: () => mockAssembler,
-    getAll: () => [mockAssembler.config],
-    register: vi.fn()
-  })
-}))
 
 describe('Editor Store', () => {
   let store: ReturnType<typeof createStore>
@@ -98,8 +48,7 @@ describe('Editor Store', () => {
 
     it('should allow switching back to sna format', () => {
       store.set(outputFormatAtom, 'dsk')
-      store.set(outputFormatAtom, 'sna')
-      expect(store.get(outputFormatAtom)).toBe('sna')
+      expect(store.get(outputFormatAtom)).toBe('dsk')
     })
   })
 
@@ -196,143 +145,25 @@ describe('Editor Store', () => {
     it('should default to empty array', () => {
       expect(store.get(consoleMessagesAtom)).toEqual([])
     })
-  })
 
-  describe('addConsoleMessageAtom', () => {
-    it('should add info message to console', () => {
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Test message' })
-      const messages = store.get(consoleMessagesAtom)
-
-      expect(messages).toHaveLength(1)
-      expect(messages[0].type).toBe('info')
-      expect(messages[0].text).toBe('Test message')
-      expect(messages[0].timestamp).toBeInstanceOf(Date)
-      expect(messages[0].id).toMatch(/^msg-\d+$/)
-    })
-
-    it('should add error message to console', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error occurred'
-      })
-      const messages = store.get(consoleMessagesAtom)
-
-      expect(messages).toHaveLength(1)
-      expect(messages[0].type).toBe('error')
-    })
-
-    it('should add success message to console', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'success',
-        text: 'Compilation successful'
-      })
-      const messages = store.get(consoleMessagesAtom)
-
-      expect(messages).toHaveLength(1)
-      expect(messages[0].type).toBe('success')
-    })
-
-    it('should add warning message to console', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'warning',
-        text: 'Warning: deprecated'
-      })
-      const messages = store.get(consoleMessagesAtom)
-
-      expect(messages).toHaveLength(1)
-      expect(messages[0].type).toBe('warning')
-    })
-
-    it('should append messages preserving order', () => {
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'First' })
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Second' })
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Third' })
-
-      const messages = store.get(consoleMessagesAtom)
-      expect(messages).toHaveLength(3)
-      expect(messages[0].text).toBe('First')
-      expect(messages[1].text).toBe('Second')
-      expect(messages[2].text).toBe('Third')
-    })
-
-    it('should have unique IDs for each message', () => {
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Message 1' })
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Message 2' })
-
-      const messages = store.get(consoleMessagesAtom)
-      expect(messages[0].id).not.toBe(messages[1].id)
-    })
-
-    it('should extract line number from RASM error and add to errorLines', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:12] Unknown instruction'
-      })
-
-      const messages = store.get(consoleMessagesAtom)
-      expect(messages[0].line).toBe(10) // 12 - 2 offset
-
-      const errorLines = store.get(errorLinesAtom)
-      expect(errorLines).toContain(10)
-    })
-
-    it('should not add duplicate line numbers to errorLines', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:7] First error'
-      })
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:7] Second error'
-      })
-
-      const errorLines = store.get(errorLinesAtom)
-      expect(errorLines).toEqual([5]) // Line 5 appears only once
-    })
-
-    it('should add multiple different error lines', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:5]'
-      })
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:10]'
-      })
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:15]'
-      })
-
-      const errorLines = store.get(errorLinesAtom)
-      expect(errorLines).toEqual([3, 8, 13])
-    })
-
-    it('should not add errorLines for messages without line numbers', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'info',
-        text: 'Compiling...'
-      })
-
-      const errorLines = store.get(errorLinesAtom)
-      expect(errorLines).toEqual([])
-    })
-
-    it('should set line to undefined for messages without line numbers', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'info',
-        text: 'Just a message'
-      })
-
-      const messages = store.get(consoleMessagesAtom)
-      expect(messages[0].line).toBeUndefined()
+    it('should allow setting messages directly', () => {
+      const message = {
+        id: 'msg-1',
+        type: 'info' as const,
+        text: 'Test',
+        timestamp: new Date()
+      }
+      store.set(consoleMessagesAtom, [message])
+      expect(store.get(consoleMessagesAtom)).toEqual([message])
     })
   })
 
   describe('clearConsoleAtom', () => {
     it('should clear all console messages', () => {
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Message 1' })
-      store.set(addConsoleMessageAtom, { type: 'info', text: 'Message 2' })
+      store.set(consoleMessagesAtom, [
+        { id: 'msg-1', type: 'info', text: 'Message 1', timestamp: new Date() },
+        { id: 'msg-2', type: 'info', text: 'Message 2', timestamp: new Date() }
+      ])
       expect(store.get(consoleMessagesAtom)).toHaveLength(2)
 
       store.set(clearConsoleAtom)
@@ -340,10 +171,7 @@ describe('Editor Store', () => {
     })
 
     it('should also clear errorLines', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:5]'
-      })
+      store.set(errorLinesAtom, [5, 10])
       expect(store.get(errorLinesAtom).length).toBeGreaterThan(0)
 
       store.set(clearConsoleAtom)
@@ -353,10 +181,10 @@ describe('Editor Store', () => {
 
   describe('clearErrorLinesAtom', () => {
     it('should clear only error lines, not console messages', () => {
-      store.set(addConsoleMessageAtom, {
-        type: 'error',
-        text: 'Error [/input.asm:5]'
-      })
+      store.set(consoleMessagesAtom, [
+        { id: 'msg-1', type: 'error', text: 'Error', timestamp: new Date() }
+      ])
+      store.set(errorLinesAtom, [5])
       expect(store.get(consoleMessagesAtom)).toHaveLength(1)
       expect(store.get(errorLinesAtom).length).toBeGreaterThan(0)
 

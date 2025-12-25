@@ -100,4 +100,15 @@ export interface IAuthRepository {
    * Update user's password (for authenticated user after reset link)
    */
   updatePassword(newPassword: string): Promise<{ error: Error | null }>
+
+  /**
+   * Check if there is an active session
+   */
+  hasSession(): Promise<boolean>
+
+  /**
+   * Subscribe to password recovery event
+   * Called when user clicks the reset link in email
+   */
+  onPasswordRecovery(callback: () => void): Unsubscribe
 }

@@ -1,10 +1,11 @@
 import { useAtomValue, useSetAtom } from 'jotai'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import {
-  addConsoleMessageAtom,
   emulatorReadyAtom,
+  emulatorResetTriggerAtom,
   emulatorRunningAtom
 } from '@/store'
+import { useConsoleMessages } from './use-console-messages'
 
 const CPCEC_BASE_URL = import.meta.env.DEV
   ? 'https://cpcec-web.iiivan.org'
@@ -15,12 +16,30 @@ let cpcecModule: any = null
 let cpcecLoadPromise: Promise<any> | null = null
 let cpcecScriptLoaded = false
 
+// Track the last processed reset trigger to avoid processing it multiple times
+let lastProcessedResetTrigger = 0
+
 export function useEmulator() {
   const isReady = useAtomValue(emulatorReadyAtom)
   const isRunning = useAtomValue(emulatorRunningAtom)
+  const resetTrigger = useAtomValue(emulatorResetTriggerAtom)
   const setEmulatorReady = useSetAtom(emulatorReadyAtom)
   const setEmulatorRunning = useSetAtom(emulatorRunningAtom)
-  const addConsoleMessage = useSetAtom(addConsoleMessageAtom)
+  const { addMessage: addConsoleMessage } = useConsoleMessages()
+
+  // Listen for external reset triggers (e.g., when switching projects)
+  useEffect(() => {
+    // Only process if the trigger has actually changed
+    if (resetTrigger === lastProcessedResetTrigger) {
+      return
+    }
+    lastProcessedResetTrigger = resetTrigger
+
+    if (cpcecModule?._em_reset) {
+      cpcecModule._em_reset()
+      setEmulatorRunning(false)
+    }
+  }, [resetTrigger, setEmulatorRunning])
 
   const initialize = useCallback(
     async (canvas: HTMLCanvasElement) => {

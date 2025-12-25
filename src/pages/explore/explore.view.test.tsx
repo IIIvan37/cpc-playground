@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { ExploreListView } from './explore.view'
+import { ExploreListView } from './explore-list.view'
 
 describe('ExploreListView', () => {
   const baseProject = {
@@ -22,19 +22,32 @@ describe('ExploreListView', () => {
   }
 
   it('renders loading state', () => {
-    render(<ExploreListView projects={[]} loading error={null} />)
+    render(
+      <ExploreListView
+        libraryProjects={[]}
+        regularProjects={[]}
+        loading
+        error={null}
+      />
+    )
     expect(screen.getByText(/loading projects/i)).toBeInTheDocument()
   })
 
   it('renders error state', () => {
-    render(<ExploreListView projects={[]} error='Oops!' />)
+    render(
+      <ExploreListView
+        libraryProjects={[]}
+        regularProjects={[]}
+        error='Oops!'
+      />
+    )
     expect(screen.getByText('Oops!')).toBeInTheDocument()
   })
 
   it('renders empty state', () => {
     render(
       <MemoryRouter>
-        <ExploreListView projects={[]} />
+        <ExploreListView libraryProjects={[]} regularProjects={[]} />
       </MemoryRouter>
     )
     expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
@@ -44,7 +57,9 @@ describe('ExploreListView', () => {
   })
 
   it('renders a project', () => {
-    render(<ExploreListView projects={[baseProject]} />)
+    render(
+      <ExploreListView libraryProjects={[]} regularProjects={[baseProject]} />
+    )
     expect(screen.getByText('Test Project')).toBeInTheDocument()
     expect(screen.getByText('A test project')).toBeInTheDocument()
     expect(screen.getByText('asm')).toBeInTheDocument()
@@ -56,7 +71,12 @@ describe('ExploreListView', () => {
 
   it('calls onClick when project is clicked', () => {
     const onClick = vi.fn()
-    render(<ExploreListView projects={[{ ...baseProject, onClick }]} />)
+    render(
+      <ExploreListView
+        libraryProjects={[]}
+        regularProjects={[{ ...baseProject, onClick }]}
+      />
+    )
     fireEvent.click(screen.getByTestId('project-item'))
     expect(onClick).toHaveBeenCalled()
   })
@@ -64,9 +84,17 @@ describe('ExploreListView', () => {
   it('shows badges for owner/shared/public/library', () => {
     render(
       <ExploreListView
-        projects={[
-          { ...baseProject, isOwner: true, isShared: false, isLibrary: true },
-          { ...baseProject, isOwner: false, isShared: true, isLibrary: false }
+        libraryProjects={[
+          { ...baseProject, isOwner: true, isShared: false, isLibrary: true }
+        ]}
+        regularProjects={[
+          {
+            ...baseProject,
+            id: '2',
+            isOwner: false,
+            isShared: true,
+            isLibrary: false
+          }
         ]}
       />
     )
@@ -80,7 +108,8 @@ describe('ExploreListView', () => {
     const onSearchChange = vi.fn()
     render(
       <ExploreListView
-        projects={[baseProject]}
+        libraryProjects={[]}
+        regularProjects={[baseProject]}
         searchQuery=''
         onSearchChange={onSearchChange}
       />
@@ -94,7 +123,9 @@ describe('ExploreListView', () => {
   })
 
   it('does not render search input when onSearchChange is not provided', () => {
-    render(<ExploreListView projects={[baseProject]} />)
+    render(
+      <ExploreListView libraryProjects={[]} regularProjects={[baseProject]} />
+    )
     expect(screen.queryByTestId('search-input')).not.toBeInTheDocument()
   })
 
@@ -102,7 +133,8 @@ describe('ExploreListView', () => {
     const onSearchChange = vi.fn()
     render(
       <ExploreListView
-        projects={[baseProject]}
+        libraryProjects={[]}
+        regularProjects={[baseProject]}
         searchQuery=''
         onSearchChange={onSearchChange}
       />
@@ -116,13 +148,66 @@ describe('ExploreListView', () => {
     const onSearchChange = vi.fn()
     render(
       <ExploreListView
-        projects={[]}
+        libraryProjects={[]}
+        regularProjects={[]}
         searchQuery='nonexistent'
         onSearchChange={onSearchChange}
       />
     )
     expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
-    expect(screen.getByText(/try a different search term/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/try a different search term or filter/i)
+    ).toBeInTheDocument()
     expect(screen.queryByText(/be the first to share/i)).not.toBeInTheDocument()
+  })
+
+  it('renders libraries and projects in separate sections', () => {
+    const libraryProject = {
+      ...baseProject,
+      id: 'lib-1',
+      name: 'My Library',
+      isLibrary: true
+    }
+    const regularProject = {
+      ...baseProject,
+      id: 'proj-1',
+      name: 'My Project',
+      isLibrary: false
+    }
+    render(
+      <ExploreListView
+        libraryProjects={[libraryProject]}
+        regularProjects={[regularProject]}
+      />
+    )
+    expect(screen.getByText('Libraries')).toBeInTheDocument()
+    expect(screen.getByText('Projects')).toBeInTheDocument()
+    expect(screen.getByText('My Library')).toBeInTheDocument()
+    expect(screen.getByText('My Project')).toBeInTheDocument()
+  })
+
+  it('hides regular projects when showLibrariesOnly is true', () => {
+    const libraryProject = {
+      ...baseProject,
+      id: 'lib-1',
+      name: 'My Library',
+      isLibrary: true
+    }
+    const regularProject = {
+      ...baseProject,
+      id: 'proj-1',
+      name: 'My Project',
+      isLibrary: false
+    }
+    render(
+      <ExploreListView
+        libraryProjects={[libraryProject]}
+        regularProjects={[regularProject]}
+        showLibrariesOnly
+        onShowLibrariesOnlyChange={vi.fn()}
+      />
+    )
+    expect(screen.getByText('My Library')).toBeInTheDocument()
+    expect(screen.queryByText('My Project')).not.toBeInTheDocument()
   })
 })

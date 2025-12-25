@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks'
-import { supabase } from '@/lib/supabase'
 import {
   ResetPasswordFormView,
   ResetPasswordLoadingView,
@@ -22,28 +21,24 @@ export function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [sessionReady, setSessionReady] = useState(false)
 
-  const { updatePassword } = useAuth()
+  const { updatePassword, hasSession, onPasswordRecovery } = useAuth()
   const navigate = useNavigate()
 
-  // Listen for the PASSWORD_RECOVERY event from Supabase
+  // Listen for the PASSWORD_RECOVERY event
   useEffect(() => {
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setSessionReady(true)
-      }
+    const unsubscribe = onPasswordRecovery(() => {
+      setSessionReady(true)
     })
 
     // Check if we already have a session (user might have refreshed the page)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    hasSession().then((hasActiveSession) => {
+      if (hasActiveSession) {
         setSessionReady(true)
       }
     })
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return unsubscribe
+  }, [onPasswordRecovery, hasSession])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

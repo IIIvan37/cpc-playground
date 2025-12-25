@@ -5,6 +5,7 @@ export {
   activeProjectAtom,
   currentFileIdAtom,
   dependencyFilesAtom,
+  isDependencyFileAtom,
   isReadOnlyModeAtom,
   viewOnlyProjectAtom
 } from './projects'

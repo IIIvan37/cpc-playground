@@ -26,6 +26,7 @@ describe('FileBrowserView', () => {
     onSelectFile: vi.fn(),
     onNewFileClick: vi.fn(),
     onSetMainFile: vi.fn(),
+    onRenameFile: vi.fn(),
     onDeleteFile: vi.fn()
   }
 
@@ -230,6 +231,35 @@ describe('FileBrowserView', () => {
 
       expect(handleDeleteFile).toHaveBeenCalledWith('file-1')
     })
+
+    it('shows rename button when canEdit is true', () => {
+      render(<FileBrowserView {...defaultProps} canEdit={true} />)
+      expect(
+        screen.getAllByRole('button', { name: 'Rename file' })
+      ).toHaveLength(2)
+    })
+
+    it('hides rename buttons when canEdit is false', () => {
+      render(<FileBrowserView {...defaultProps} canEdit={false} />)
+      expect(
+        screen.queryByRole('button', { name: 'Rename file' })
+      ).not.toBeInTheDocument()
+    })
+
+    it('calls onRenameFile when rename button is clicked', async () => {
+      const user = userEvent.setup()
+      const handleRenameFile = vi.fn()
+      render(
+        <FileBrowserView {...defaultProps} onRenameFile={handleRenameFile} />
+      )
+
+      const renameButtons = screen.getAllByRole('button', {
+        name: 'Rename file'
+      })
+      await user.click(renameButtons[0])
+
+      expect(handleRenameFile).toHaveBeenCalledWith('file-1')
+    })
   })
 
   describe('tags', () => {
@@ -269,6 +299,23 @@ describe('FileBrowserView', () => {
         />
       )
       expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+  })
+
+  describe('renameFileDialog slot', () => {
+    it('does not render rename dialog when undefined', () => {
+      render(<FileBrowserView {...defaultProps} />)
+      expect(screen.queryByText('Rename File Dialog')).not.toBeInTheDocument()
+    })
+
+    it('renders renameFileDialog when provided', () => {
+      render(
+        <FileBrowserView
+          {...defaultProps}
+          renameFileDialog={<div>Rename File Dialog</div>}
+        />
+      )
+      expect(screen.getByText('Rename File Dialog')).toBeInTheDocument()
     })
   })
 })

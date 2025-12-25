@@ -25,6 +25,7 @@ import { FileBrowser } from './file-browser'
 const mockCreateFile = vi.fn()
 const mockDeleteFile = vi.fn()
 const mockSetMainFile = vi.fn()
+const mockUpdateFile = vi.fn()
 const mockFetchDependencyFiles = vi.fn()
 const mockConfirm = vi.fn()
 
@@ -71,6 +72,10 @@ vi.mock('@/hooks', () => ({
   }),
   useSetMainFile: () => ({
     setMainFile: mockSetMainFile,
+    loading: false
+  }),
+  useUpdateFile: () => ({
+    updateFile: mockUpdateFile,
     loading: false
   }),
   useFetchDependencyFiles: () => ({
@@ -140,6 +145,9 @@ describe('FileBrowser', () => {
 
     // Mock confirm dialog
     mockConfirm.mockResolvedValue(true)
+
+    // Mock update file (for rename functionality)
+    mockUpdateFile.mockResolvedValue({})
   })
 
   describe('rendering', () => {
@@ -339,6 +347,109 @@ describe('FileBrowser', () => {
           projectId: 'project-1',
           userId: 'user-1',
           fileId: expect.any(String)
+        })
+      })
+    })
+  })
+
+  describe('rename file', () => {
+    it('opens rename dialog when rename button is clicked', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const renameButtons = screen.getAllByRole('button', { name: /rename/i })
+      await user.click(renameButtons[0])
+
+      expect(screen.getByText('Rename File')).toBeInTheDocument()
+    })
+
+    it('shows current filename in rename input', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const renameButtons = screen.getAllByRole('button', { name: /rename/i })
+      await user.click(renameButtons[0])
+
+      const input = screen.getByDisplayValue('main.asm')
+      expect(input).toBeInTheDocument()
+    })
+
+    it('renames file with new name', async () => {
+      const user = userEvent.setup()
+      mockUpdateFile.mockResolvedValue({})
+      renderComponent()
+
+      const renameButtons = screen.getAllByRole('button', { name: /rename/i })
+      await user.click(renameButtons[0])
+
+      const input = screen.getByDisplayValue('main.asm')
+      await user.clear(input)
+      await user.type(input, 'renamed.asm')
+
+      await user.click(screen.getByRole('button', { name: /^rename$/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateFile).toHaveBeenCalledWith({
+          projectId: 'project-1',
+          userId: 'user-1',
+          fileId: 'main-file',
+          name: 'renamed.asm'
+        })
+      })
+    })
+
+    it('closes dialog after renaming', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const renameButtons = screen.getAllByRole('button', { name: /rename/i })
+      await user.click(renameButtons[0])
+
+      const input = screen.getByDisplayValue('main.asm')
+      fireEvent.change(input, { target: { value: 'renamed.asm' } })
+
+      await user.click(screen.getByRole('button', { name: /^rename$/i }))
+
+      // First wait for the update to be called
+      await waitFor(() => {
+        expect(mockUpdateFile).toHaveBeenCalled()
+      })
+
+      // Then check that the dialog is closed
+      await waitFor(() => {
+        expect(screen.queryByText('Rename File')).not.toBeInTheDocument()
+      })
+    })
+
+    it('cancels rename dialog', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const renameButtons = screen.getAllByRole('button', { name: /rename/i })
+      await user.click(renameButtons[0])
+
+      await user.click(screen.getByRole('button', { name: /cancel/i }))
+
+      expect(screen.queryByText('Rename File')).not.toBeInTheDocument()
+    })
+
+    it('renames file on Enter key', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const renameButtons = screen.getAllByRole('button', { name: /rename/i })
+      await user.click(renameButtons[0])
+
+      const input = screen.getByDisplayValue('main.asm')
+      fireEvent.change(input, { target: { value: 'enter.asm' } })
+      fireEvent.keyDown(input, { key: 'Enter' })
+
+      await waitFor(() => {
+        expect(mockUpdateFile).toHaveBeenCalledWith({
+          projectId: 'project-1',
+          userId: 'user-1',
+          fileId: 'main-file',
+          name: 'enter.asm'
         })
       })
     })

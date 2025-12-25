@@ -21,6 +21,8 @@ interface RasmModule {
     ) => Uint8Array | string
     unlink: (path: string) => void
     readdir: (path: string) => string[]
+    mkdir: (path: string) => void
+    stat: (path: string) => { mode: number }
   }
   HEAPU8: Uint8Array
 }
@@ -145,12 +147,36 @@ function createErrorResult(error: string): CompileResult {
   return { success: false, error, stdout: stdoutLines, stderr: stderrLines }
 }
 
+function ensureDirectoryExists(FS: RasmModule['FS'], dirPath: string): void {
+  try {
+    FS.stat(dirPath)
+  } catch {
+    // Directory doesn't exist, create it
+    FS.mkdir(dirPath)
+    console.log('[RASM Worker] Created directory:', dirPath)
+  }
+}
+
 function writeAdditionalFiles(
   FS: RasmModule['FS'],
   additionalFiles?: ProjectFile[]
 ): void {
   if (!additionalFiles || additionalFiles.length === 0) return
 
+  // Collect all unique directories that need to be created
+  const directories = new Set<string>()
+  for (const file of additionalFiles) {
+    if (file.projectName) {
+      directories.add(`/${file.projectName}`)
+    }
+  }
+
+  // Create all required directories first
+  for (const dir of directories) {
+    ensureDirectoryExists(FS, dir)
+  }
+
+  // Now write all files
   for (const file of additionalFiles) {
     const filePath = file.projectName
       ? `/${file.projectName}/${file.name}`

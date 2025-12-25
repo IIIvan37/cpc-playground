@@ -56,7 +56,9 @@ export function useCurrentProject() {
     // Never refetch automatically - data is managed by useFetchProject
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false
+    refetchOnReconnect: false,
+    // Only re-render when data actually changes (not on every parent render)
+    notifyOnChangeProps: ['data']
   })
 
   return {

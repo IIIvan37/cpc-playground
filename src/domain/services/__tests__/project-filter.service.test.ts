@@ -181,4 +181,62 @@ describe('filterProjects', () => {
 
     expect(result).toHaveLength(0)
   })
+
+  it('filters by librariesOnly when true', () => {
+    const projects = [
+      createSearchableProject(
+        createMockProject({
+          id: '1',
+          name: createProjectName('My Library'),
+          isLibrary: true
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '2',
+          name: createProjectName('My Project'),
+          isLibrary: false
+        })
+      )
+    ]
+
+    const result = filterProjects(projects, { query: '', librariesOnly: true })
+
+    expect(result).toHaveLength(1)
+    expect(result[0].project.id).toBe('1')
+  })
+
+  it('combines librariesOnly filter with search query', () => {
+    const projects = [
+      createSearchableProject(
+        createMockProject({
+          id: '1',
+          name: createProjectName('Utils Library'),
+          isLibrary: true
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '2',
+          name: createProjectName('Utils App'),
+          isLibrary: false
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '3',
+          name: createProjectName('Game Library'),
+          isLibrary: true
+        })
+      )
+    ]
+
+    const result = filterProjects(projects, {
+      query: 'utils',
+      librariesOnly: true
+    })
+
+    expect(result).toHaveLength(1)
+    expect(result[0].project.id).toBe('1')
+  })
 })

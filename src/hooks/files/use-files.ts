@@ -9,8 +9,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
 import { useCallback, useState } from 'react'
 import { container } from '@/infrastructure/container'
+import { createLogger } from '@/lib/logger'
 import { currentFileIdAtom } from '@/store/projects'
 import { useUseCase } from '../core'
+
+const logger = createLogger('useFiles')
 
 /**
  * Hook for creating a file in a project
@@ -25,6 +28,10 @@ export function useCreateFile() {
 
   const createFile = useCallback(
     async (params: Parameters<typeof execute>[0]) => {
+      logger.debug('Creating file', {
+        projectId: params.projectId,
+        name: params.name
+      })
       const result = await execute(params)
       if (result?.file) {
         // Fetch fresh project from API and update cache directly
@@ -34,6 +41,11 @@ export function useCreateFile() {
         })
         if (res.project) {
           queryClient.setQueryData(['project', params.projectId], res.project)
+          logger.debug('Cache updated after file creation', {
+            projectId: params.projectId,
+            fileId: result.file.id,
+            totalFiles: res.project.files?.length
+          })
         }
         // Set as current file if it's main or if requested
         if (result.file.isMain) {
@@ -60,6 +72,10 @@ export function useUpdateFile() {
 
   const updateFile = useCallback(
     async (params: Parameters<typeof execute>[0]) => {
+      logger.debug('Updating file', {
+        projectId: params.projectId,
+        fileId: params.fileId
+      })
       const result = await execute(params)
       if (result?.file) {
         // Fetch fresh project from API and update cache directly
@@ -69,6 +85,10 @@ export function useUpdateFile() {
         })
         if (res.project) {
           queryClient.setQueryData(['project', params.projectId], res.project)
+          logger.debug('Cache updated after file update', {
+            projectId: params.projectId,
+            fileId: result.file.id
+          })
         }
       }
       return result
@@ -81,7 +101,7 @@ export function useUpdateFile() {
 
 /**
  * Hook for deleting a file
- * Invalidates project cache to refresh data
+ * Updates cache directly to refresh file list
  */
 export function useDeleteFile() {
   const { execute, loading, error, reset, data } = useUseCase(
@@ -91,10 +111,24 @@ export function useDeleteFile() {
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
 
   const deleteFile = useCallback(
-    async (params: Parameters<typeof execute>[0]) => {
+    async (params: Parameters<typeof execute>[0] & { userId: string }) => {
+      logger.debug('Deleting file', {
+        fileId: params.fileId,
+        projectId: params.projectId
+      })
       await execute(params)
-      // Invalidate project cache to refresh file list
-      queryClient.invalidateQueries({ queryKey: ['project', params.projectId] })
+      // Fetch fresh project from API and update cache directly
+      const res = await container.getProject.execute({
+        projectId: params.projectId,
+        userId: params.userId
+      })
+      if (res.project) {
+        queryClient.setQueryData(['project', params.projectId], res.project)
+        logger.debug('Cache updated after file deletion', {
+          projectId: params.projectId,
+          remainingFiles: res.project.files?.length
+        })
+      }
       // Clear current file if it was deleted
       setCurrentFileId((current) => {
         if (current === params.fileId) {
@@ -119,6 +153,10 @@ export function useSetMainFile() {
 
   const setMainFile = useCallback(
     async (params: { projectId: string; userId: string; fileId: string }) => {
+      logger.debug('Setting main file', {
+        projectId: params.projectId,
+        fileId: params.fileId
+      })
       setUpdating(true)
       try {
         await updateFile({
@@ -127,6 +165,7 @@ export function useSetMainFile() {
           fileId: params.fileId,
           isMain: true
         })
+        logger.debug('Main file set successfully', { fileId: params.fileId })
       } finally {
         setUpdating(false)
       }

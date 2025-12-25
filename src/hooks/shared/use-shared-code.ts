@@ -1,13 +1,14 @@
 import { useAtom, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
+import { useConsoleMessages } from '@/hooks/emulator/use-console-messages'
 import { container } from '@/infrastructure/container'
-import { addConsoleMessageAtom, codeAtom } from '@/store/editor'
+import { codeAtom } from '@/store/editor'
 import { currentProgramIdAtom } from '@/store/programs'
 import { currentFileIdAtom } from '@/store/projects'
 
 export function useSharedCode() {
   const [, setCode] = useAtom(codeAtom)
-  const [, addMessage] = useAtom(addConsoleMessageAtom)
+  const { addMessage } = useConsoleMessages()
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
   const setCurrentProgramId = useSetAtom(currentProgramIdAtom)
   const [isLoading, setIsLoading] = useState(false)

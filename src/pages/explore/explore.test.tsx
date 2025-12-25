@@ -33,7 +33,9 @@ describe('ExplorePage', () => {
       signOut: vi.fn(),
       signInWithGithub: vi.fn(),
       requestPasswordReset: vi.fn(),
-      updatePassword: vi.fn()
+      updatePassword: vi.fn(),
+      hasSession: vi.fn(),
+      onPasswordRecovery: vi.fn()
     })
     vi.mocked(hooks.useHandleCreateProject).mockReturnValue({
       handleCreate: mockHandleCreate,

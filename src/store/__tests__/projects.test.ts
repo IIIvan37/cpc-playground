@@ -18,6 +18,7 @@ import {
   currentProjectAtom,
   currentProjectIdAtom,
   dependencyFilesAtom,
+  isDependencyFileAtom,
   isReadOnlyModeAtom,
   mainFileAtom,
   projectsAtom,
@@ -264,6 +265,84 @@ describe('Projects Store', () => {
 
         const main = store.get(mainFileAtom)
         expect(main).toBeNull()
+      })
+    })
+
+    describe('isDependencyFileAtom', () => {
+      it('should return false when no current file id', () => {
+        expect(store.get(isDependencyFileAtom)).toBe(false)
+      })
+
+      it('should return false when current file is not a dependency file', () => {
+        store.set(currentFileIdAtom, 'file-1')
+        store.set(dependencyFilesAtom, [
+          {
+            id: 'dep-project-1',
+            name: 'Dependency Project',
+            files: [
+              {
+                id: 'dep-file-1',
+                name: 'dep.asm',
+                content: 'ORG &8000',
+                projectId: 'dep-project-1'
+              }
+            ]
+          }
+        ])
+
+        expect(store.get(isDependencyFileAtom)).toBe(false)
+      })
+
+      it('should return true when current file is a dependency file', () => {
+        store.set(currentFileIdAtom, 'dep-file-1')
+        store.set(dependencyFilesAtom, [
+          {
+            id: 'dep-project-1',
+            name: 'Dependency Project',
+            files: [
+              {
+                id: 'dep-file-1',
+                name: 'dep.asm',
+                content: 'ORG &8000',
+                projectId: 'dep-project-1'
+              }
+            ]
+          }
+        ])
+
+        expect(store.get(isDependencyFileAtom)).toBe(true)
+      })
+
+      it('should return true when current file is in nested dependency project', () => {
+        store.set(currentFileIdAtom, 'dep-file-2')
+        store.set(dependencyFilesAtom, [
+          {
+            id: 'dep-project-1',
+            name: 'First Dependency',
+            files: [
+              {
+                id: 'dep-file-1',
+                name: 'dep1.asm',
+                content: 'ORG &8000',
+                projectId: 'dep-project-1'
+              }
+            ]
+          },
+          {
+            id: 'dep-project-2',
+            name: 'Second Dependency',
+            files: [
+              {
+                id: 'dep-file-2',
+                name: 'dep2.asm',
+                content: 'ORG &9000',
+                projectId: 'dep-project-2'
+              }
+            ]
+          }
+        ])
+
+        expect(store.get(isDependencyFileAtom)).toBe(true)
       })
     })
   })
