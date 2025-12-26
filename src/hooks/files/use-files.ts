@@ -12,6 +12,7 @@ import { container } from '@/infrastructure/container'
 import { createLogger } from '@/lib/logger'
 import { currentFileIdAtom } from '@/store/projects'
 import { useUseCase } from '../core'
+import { invalidateProjectCaches } from '../projects/invalidate-project-caches'
 
 const logger = createLogger('useFiles')
 
@@ -84,11 +85,10 @@ export function useUpdateFile() {
           userId: params.userId
         })
         if (res.project) {
-          queryClient.setQueryData(['project', params.projectId], res.project)
-          // Invalidate projects lists to reflect updated_at changes
-          queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
-          queryClient.invalidateQueries({
-            queryKey: ['projects', 'user', params.userId]
+          invalidateProjectCaches(queryClient, {
+            projectId: params.projectId,
+            userId: params.userId,
+            project: res.project
           })
           logger.debug('Cache updated after file update', {
             projectId: params.projectId,

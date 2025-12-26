@@ -13,6 +13,7 @@ import { useSetAtom } from 'jotai'
 import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
 import { type DependencyProject, dependencyFilesAtom } from '@/store/projects'
+import { invalidateProjectCaches } from './invalidate-project-caches'
 import { useActiveProject } from './use-current-project'
 
 /**
@@ -98,8 +99,7 @@ export function useRemoveDependency() {
           }
         }
       )
-      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      invalidateProjectCaches(queryClient, { userId })
     }
   })
 }

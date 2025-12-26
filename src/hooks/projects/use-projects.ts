@@ -25,6 +25,7 @@ import {
   viewOnlyProjectAtom
 } from '@/store/projects'
 import { useUseCase } from '../core'
+import { invalidateProjectCaches } from './invalidate-project-caches'
 
 /**
  * Hook to create a new project
@@ -54,10 +55,7 @@ export function useCreateProject() {
         }
       }
       // Invalidate projects cache to include new project
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'user', variables.userId]
-      })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      invalidateProjectCaches(queryClient, { userId: variables.userId })
     }
   })
 
@@ -85,15 +83,10 @@ export function useUpdateProject() {
     },
     onSuccess: ({ result, userId, projectId }) => {
       // Update cache directly with the updated project
-      queryClient.setQueryData(['project', projectId], result.project)
-      // Invalidate projects lists to reflect changes in Explore page
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'user', userId]
-      })
-      // Use refetchType: 'all' to force refetch even if stale
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'visible'],
-        refetchType: 'all'
+      invalidateProjectCaches(queryClient, {
+        projectId,
+        userId,
+        project: result.project
       })
     }
   })
@@ -131,14 +124,7 @@ export function useDeleteProject() {
       // Remove the deleted project from cache (don't refetch it!)
       queryClient.removeQueries({ queryKey: ['project', projectId] })
       // Invalidate lists and force refetch even if not currently active
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'user', userId],
-        refetchType: 'all'
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'visible'],
-        refetchType: 'all'
-      })
+      invalidateProjectCaches(queryClient, { userId })
     }
   })
 
@@ -179,10 +165,7 @@ export function useForkProject() {
         }
       }
       // Invalidate projects cache to include new project
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'user', variables.userId]
-      })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      invalidateProjectCaches(queryClient, { userId: variables.userId })
     }
   })
 

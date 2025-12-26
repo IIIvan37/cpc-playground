@@ -6,6 +6,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Project } from '@/domain/entities/project.entity'
 import { container } from '@/infrastructure/container'
+import { invalidateProjectCaches } from './invalidate-project-caches'
 
 /**
  * Hook to add a tag to a project
@@ -42,8 +43,7 @@ export function useAddTag() {
           }
         }
       )
-      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      invalidateProjectCaches(queryClient, { userId })
     }
   })
 }
@@ -83,8 +83,7 @@ export function useRemoveTag() {
           }
         }
       )
-      queryClient.invalidateQueries({ queryKey: ['projects', 'user', userId] })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      invalidateProjectCaches(queryClient, { userId })
     }
   })
 }

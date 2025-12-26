@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { getEmulatorCanvas } from '@/components/emulator'
 import { useAuth, useCurrentProject, useToastActions } from '@/hooks'
+import { invalidateProjectCaches } from '@/hooks/projects/invalidate-project-caches'
 import { container } from '@/infrastructure/container'
 import { createLogger } from '@/lib/logger'
 import { supabase } from '@/lib/supabase'
@@ -104,15 +105,11 @@ export function useSaveThumbnail() {
         imageBlob: blob
       })
 
-      // Update project cache with new thumbnail
-      queryClient.setQueryData(['project', project.id], result.project)
-      // Invalidate projects lists to reflect thumbnail change in Explore page
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'visible'],
-        refetchType: 'all'
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['projects', 'user', user.id]
+      // Invalidate project caches to reflect thumbnail change
+      invalidateProjectCaches(queryClient, {
+        projectId: project.id,
+        userId: user.id,
+        project: result.project
       })
 
       toast.success('Thumbnail saved!')

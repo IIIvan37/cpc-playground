@@ -2,6 +2,8 @@
  * Project management hooks
  */
 
+// Cache invalidation utility
+export { invalidateProjectCaches } from './invalidate-project-caches'
 export {
   projectKeys,
   useActiveProject,
