@@ -148,7 +148,7 @@ export function Toolbar() {
       programManager={<ProgramManager />}
       outputFormat={outputFormat}
       onOutputFormatChange={(v) => setOutputFormat(v as OutputFormat)}
-      isReady={isReady && !!currentProject}
+      isReady={isReady}
       isCompiling={isCompiling}
       isLibrary={currentProject?.isLibrary ?? false}
       onRun={handleCompileAndRun}
