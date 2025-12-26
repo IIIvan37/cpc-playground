@@ -1,12 +1,17 @@
+import type { EditorView } from '@codemirror/view'
 import { getDefaultStore, useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCurrentFile } from '@/hooks/projects/use-current-project'
-import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
-import { currentProgramAtom, currentProgramIdAtom } from '@/store/programs'
+import {
+  codeAtom,
+  editorThemeAtom,
+  errorLinesAtom,
+  goToLineAtom
+} from '@/store'
+import { currentProgramAtom } from '@/store/programs'
 import { isDependencyFileAtom, isReadOnlyModeAtom } from '@/store/projects'
 import { CodeEditorView } from './code-editor.view'
-
-const LINE_HEIGHT = 21
+import { useCodeMirrorMethods } from './use-codemirror'
 
 // Store reference for external sync (bypasses React re-renders)
 const store = getDefaultStore()
@@ -15,36 +20,32 @@ const store = getDefaultStore()
  * Container component for code editor
  * Handles business logic and delegates rendering to CodeEditorView
  *
- * Uses uncontrolled textarea with key-based remount to avoid React Concurrent
- * Mode issues where controlled inputs can lose input events.
+ * Uses CodeMirror for syntax highlighting and advanced editing features.
  */
 export function CodeEditor() {
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
   const errorLines = useAtomValue(errorLinesAtom)
+  const [editorTheme, setEditorTheme] = useAtom(editorThemeAtom)
   const currentFile = useCurrentFile()
   const currentProgram = useAtomValue(currentProgramAtom)
-  const currentProgramId = useAtomValue(currentProgramIdAtom)
   const globalCode = useAtomValue(codeAtom)
   const isDependencyFile = useAtomValue(isDependencyFileAtom)
   const isReadOnlyMode = useAtomValue(isReadOnlyModeAtom)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const lineNumbersRef = useRef<HTMLDivElement>(null)
-  const [scrollTop, setScrollTop] = useState(0)
+  const editorViewRef = useRef<EditorView | null>(null)
 
-  // Local state for display (line numbers, etc.)
+  // Local state for display
   const [localCode, setLocalCode] = useState(
     currentFile?.content.value ?? globalCode
   )
 
-  // Editor key for remounting textarea on content source change
-  // - fileId: remount when switching project files
-  // - programId: remount when switching saved programs
-  // - 'scratch-{length}': remount when loading shared code (new scratch with different content)
+  // Editor key for remounting CodeMirror on content source change
   const fileId = currentFile?.id
-  const editorKey = fileId ?? currentProgramId ?? `scratch-${globalCode.length}`
 
   // Track current fileId to prevent stale syncs
   const currentFileIdRef = useRef(fileId)
+
+  // CodeMirror methods
+  const { goToLine: goToLineInEditor } = useCodeMirrorMethods(editorViewRef)
 
   // Sync local -> global using store.set (bypasses React subscription)
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -63,12 +64,10 @@ export function CodeEditor() {
     }
   }, [localCode, fileId])
 
-  // Reset local code when file changes (codeAtom is synced by setCurrentFileAtom)
+  // Reset local code when file changes
   useEffect(() => {
-    // Update ref immediately
     currentFileIdRef.current = fileId
 
-    // Cancel any pending sync to prevent stale content from overwriting
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current)
       syncTimeoutRef.current = null
@@ -79,83 +78,33 @@ export function CodeEditor() {
   }, [fileId, currentFile])
 
   // Sync from globalCode only when NOT in project file mode
-  // This handles shared code loading and program mode
   useEffect(() => {
     if (!currentFile && globalCode) {
       setLocalCode(globalCode)
     }
   }, [currentFile, globalCode])
 
-  const lines = localCode.split('\n')
-
   const handleInput = useCallback((value: string) => {
     setLocalCode(value)
   }, [])
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Tab') {
-        e.preventDefault()
-        const textarea = e.currentTarget
-        const value = textarea.value
-        const start = textarea.selectionStart
-        const end = textarea.selectionEnd
-        // Multi-line selection ?
-        if (start !== end && value.slice(start, end).includes('\n')) {
-          // Indent all selected lines
-          const before = value.substring(0, start)
-          const selected = value.substring(start, end)
-          const after = value.substring(end)
-          // Indent each line in selection
-          const indented = selected.replaceAll(/^/gm, '    ')
-          const newValue = before + indented + after
-          textarea.value = newValue
-          setLocalCode(newValue)
-          setTimeout(() => {
-            textarea.selectionStart = start
-            textarea.selectionEnd = end + (indented.length - selected.length)
-          }, 0)
-        } else {
-          // Single line: insert spaces
-          const newValue = `${value.substring(0, start)}    ${value.substring(
-            end
-          )}`
-          textarea.value = newValue
-          setLocalCode(newValue)
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = start + 4
-          }, 0)
-        }
-      }
-    },
-    []
-  )
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
-    const target = e.target as HTMLTextAreaElement
-    setScrollTop(target.scrollTop)
-    if (lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = target.scrollTop
-    }
+  const handleViewCreated = useCallback((view: EditorView) => {
+    editorViewRef.current = view
   }, [])
+
+  const handleToggleTheme = useCallback(() => {
+    setEditorTheme(
+      editorTheme === 'vscode-dark' ? 'vscode-light' : 'vscode-dark'
+    )
+  }, [editorTheme, setEditorTheme])
 
   // Navigate to line when goToLine changes
   useEffect(() => {
-    if (goToLine !== null && textareaRef.current) {
-      const textarea = textareaRef.current
-
-      let charPosition = 0
-      for (let i = 0; i < goToLine - 1 && i < lines.length; i++) {
-        charPosition += lines[i].length + 1
-      }
-
-      textarea.focus()
-      textarea.setSelectionRange(charPosition, charPosition)
-      textarea.scrollTop = Math.max(0, (goToLine - 5) * LINE_HEIGHT)
-
+    if (goToLine !== null) {
+      goToLineInEditor(goToLine)
       setGoToLine(null)
     }
-  }, [goToLine, lines, setGoToLine])
+  }, [goToLine, goToLineInEditor, setGoToLine])
 
   // Determine file name and type for header
   const fileName =
@@ -169,22 +118,18 @@ export function CodeEditor() {
     | 'dependency' => {
     if (isDependencyFile) return 'dependency'
     if (currentFile) {
-      // Check if project file has been modified from saved version
       return localCode === currentFile.content.value
         ? 'project-saved'
         : 'project-modified'
     }
     if (currentProgram) {
-      // Check if code has been modified from saved version
       return localCode === currentProgram.code ? 'saved' : 'modified'
     }
     return 'scratch'
   }
   const fileType = getFileType()
 
-  // Use the correct source for initial code based on mode:
-  // - Project file mode: use currentFile.content.value
-  // - Program/Scratch mode: use globalCode directly (not localCode which updates async via useEffect)
+  // Use the correct source for initial code
   const initialCode = currentFile?.content.value ?? globalCode
 
   // Dependency files are always read-only
@@ -194,17 +139,15 @@ export function CodeEditor() {
     <CodeEditorView
       fileName={fileName}
       fileType={fileType}
-      fileId={editorKey}
       code={initialCode}
-      lines={lines}
       errorLines={errorLines}
-      scrollTop={scrollTop}
       readOnly={isReadOnly}
-      textareaRef={textareaRef}
-      lineNumbersRef={lineNumbersRef}
+      fileId={fileId}
+      theme={editorTheme}
+      editorTheme={editorTheme}
+      onToggleTheme={handleToggleTheme}
       onInput={handleInput}
-      onKeyDown={handleKeyDown}
-      onScroll={handleScroll}
+      onViewCreated={handleViewCreated}
     />
   )
 }

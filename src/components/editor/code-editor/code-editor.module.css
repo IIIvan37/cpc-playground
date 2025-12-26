@@ -16,6 +16,12 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 .title {
   font-size: var(--font-size-sm);
   font-weight: bold;
@@ -126,4 +132,14 @@
 
 .editor::placeholder {
   color: var(--color-disabled-text);
+}
+
+.codemirrorContainer {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.codemirrorContainer .cm-editor {
+  height: 100%;
 }

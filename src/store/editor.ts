@@ -47,6 +47,10 @@ export const goToLineAtom = atom<number | null>(null)
 // Error lines to highlight in editor
 export const errorLinesAtom = atom<number[]>([])
 
+// Editor theme selection
+export type EditorTheme = 'vscode-light' | 'vscode-dark'
+export const editorThemeAtom = atom<EditorTheme>('vscode-dark')
+
 // Console output
 export interface ConsoleMessage {
   id: string
