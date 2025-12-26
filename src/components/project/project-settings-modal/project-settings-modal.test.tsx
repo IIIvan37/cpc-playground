@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createStore, Provider } from 'jotai'
 import type { ReactNode } from 'react'
@@ -86,6 +86,12 @@ vi.mock('@/hooks', () => ({
     isLoading: false
   }),
   useAvailableDependencies: () => mockAvailableDepsForHook,
+  useAllTags: () => ({
+    tags: ['game', 'demo', 'utility', 'tool'],
+    loading: false,
+    error: null,
+    refetch: vi.fn()
+  }),
   useHandleSaveProject: () => ({
     handleSave: mockHandleSave,
     loading: false
@@ -324,7 +330,11 @@ describe('ProjectSettingsModal', () => {
     it('has tag input field', () => {
       renderComponent()
 
-      const tagInput = screen.getByPlaceholderText('Add a tag...')
+      // The combobox should render an input element
+      const inputs = screen.getAllByRole('textbox')
+      const tagInput = inputs.find(
+        (input) => input.getAttribute('placeholder') === 'Add a tag...'
+      )
       expect(tagInput).toBeInTheDocument()
     })
   })
@@ -357,6 +367,89 @@ describe('ProjectSettingsModal', () => {
           })
         )
       })
+    })
+  })
+
+  describe('tag autocompletion', () => {
+    it('shows available tags in combobox', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const inputs = screen.getAllByRole('textbox')
+      const tagInput = inputs.find(
+        (input) => input.getAttribute('placeholder') === 'Add a tag...'
+      )
+      expect(tagInput).toBeInTheDocument()
+
+      // Type to open dropdown
+      await user.type(tagInput!, 'g')
+
+      // Check that available tags are shown
+      expect(screen.getByText('game')).toBeInTheDocument()
+    })
+
+    it('allows selecting a tag from suggestions', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const inputs = screen.getAllByRole('textbox')
+      const tagInput = inputs.find(
+        (input) => input.getAttribute('placeholder') === 'Add a tag...'
+      )
+
+      // Type partial tag name
+      await user.type(tagInput!, 'gam')
+
+      // Select the suggestion by clicking the button
+      await user.click(screen.getByRole('button', { name: 'game' }))
+
+      // Click the Add button
+      const tagInputSection = tagInput!.closest('[class*="tagInput"]')
+      const addButton = within(tagInputSection as HTMLElement).getByRole(
+        'button',
+        {
+          name: /add/i
+        }
+      )
+      await user.click(addButton)
+
+      // Check that add tag was called
+      expect(mockHandleAddTag).toHaveBeenCalledWith(
+        'project-1',
+        'user-1',
+        'game'
+      )
+    })
+
+    it('allows adding custom tags not in suggestions', async () => {
+      const user = userEvent.setup()
+      renderComponent()
+
+      const inputs = screen.getAllByRole('textbox')
+      const tagInput = inputs.find(
+        (input) => input.getAttribute('placeholder') === 'Add a tag...'
+      )
+
+      // Type a custom tag
+      await user.type(tagInput!, 'custom-tag')
+
+      // Find the Add button in the tag input section
+      const tagInputSection = tagInput!.closest('[class*="tagInput"]')
+      const addButton = within(tagInputSection as HTMLElement).getByRole(
+        'button',
+        {
+          name: /add/i
+        }
+      )
+
+      await user.click(addButton)
+
+      // Check that add tag was called with custom tag
+      expect(mockHandleAddTag).toHaveBeenCalledWith(
+        'project-1',
+        'user-1',
+        'custom-tag'
+      )
     })
   })
 

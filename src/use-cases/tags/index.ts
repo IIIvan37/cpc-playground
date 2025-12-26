@@ -6,6 +6,13 @@ export type {
 export { createAddTagUseCase } from './add-tag.use-case'
 
 export type {
+  GetAllTagsInput,
+  GetAllTagsOutput,
+  GetAllTagsUseCase
+} from './get-all-tags.use-case'
+export { createGetAllTagsUseCase } from './get-all-tags.use-case'
+
+export type {
   RemoveTagInput,
   RemoveTagOutput,
   RemoveTagUseCase

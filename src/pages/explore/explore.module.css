@@ -109,6 +109,7 @@
     border-color 0.2s,
     background 0.2s;
 }
+
 .listItem:focus,
 .listItem:hover {
   border-color: var(--color-accent);

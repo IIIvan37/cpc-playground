@@ -3,7 +3,7 @@ import Checkbox from '@/components/ui/checkbox/checkbox'
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox'
 import { Modal } from '@/components/ui/modal'
 import { Select, SelectItem } from '@/components/ui/select/select'
-import type { UserSearchResult } from '@/hooks'
+
 import styles from './project-settings-modal.module.css'
 
 type DependencyInfo = Readonly<{
@@ -39,7 +39,16 @@ export type ProjectSettingsModalViewProps = Readonly<{
       name: string
     }>
   >
-  foundUsers: readonly UserSearchResult[]
+  // Available tags for autocompletion
+  availableTags: readonly string[]
+
+  // User search results
+  foundUsers: ReadonlyArray<
+    Readonly<{
+      id: string
+      username: string
+    }>
+  >
   searchingUsers: boolean
 
   // Form handlers
@@ -81,6 +90,7 @@ export function ProjectSettingsModalView({
   currentDependencies,
   currentUserShares,
   availableDependencies,
+  availableTags,
   foundUsers,
   searchingUsers,
   onNameChange,
@@ -179,15 +189,20 @@ export function ProjectSettingsModalView({
               <div className={styles.emptyState}>No tags yet</div>
             )}
             <div className={styles.tagInput}>
-              <input
-                type='text'
-                className={`${styles.input} ${styles.tagInputField}`}
-                placeholder='Add a tag...'
+              <Combobox
+                options={availableTags.map((tag) => ({
+                  value: tag,
+                  label: tag
+                }))}
                 value={newTag}
-                onChange={(e) => onNewTagChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') onAddTag()
+                onValueChange={(value) => onNewTagChange(value)}
+                onInputChange={(value) => onNewTagChange(value)}
+                onSelect={(option) => {
+                  onNewTagChange(option.value)
                 }}
+                placeholder='Add a tag...'
+                emptyMessage='No tags available'
+                className={styles.tagCombobox}
               />
               <Button
                 type='button'

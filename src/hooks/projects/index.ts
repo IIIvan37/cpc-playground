@@ -38,6 +38,7 @@ export {
 } from './use-project-settings'
 // Core CRUD operations
 export {
+  useAllTags,
   useCreateProject,
   useDeleteProject,
   useFetchProject,

@@ -49,7 +49,8 @@ describe('GetProjectUseCase', () => {
       findUserByUsername: vi.fn(),
       searchUsers: vi.fn(),
       addUserShare: vi.fn(),
-      removeUserShare: vi.fn()
+      removeUserShare: vi.fn(),
+      getAllTags: vi.fn()
     }
     mockAuthService = {
       canReadProject: vi.fn(),
