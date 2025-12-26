@@ -47,7 +47,8 @@ export function getEmulatorCanvas(): HTMLCanvasElement | null {
 }
 
 /**
- * Get the default keyboard layout based on URL parameter or browser language
+ * Get the default keyboard layout based on URL parameter
+ * Defaults to QWERTY (English ROM) if no parameter specified
  */
 function getDefaultKeyboardLayout(): 'qwerty' | 'azerty' {
   const urlParams = new URLSearchParams(window.location.search)
@@ -55,9 +56,8 @@ function getDefaultKeyboardLayout(): 'qwerty' | 'azerty' {
   if (lang === 'fr') return 'azerty'
   if (lang === 'en') return 'qwerty'
 
-  // Fallback to browser language
-  const language = navigator.language.toLowerCase()
-  return language.startsWith('fr') ? 'azerty' : 'qwerty'
+  // Default to QWERTY (English ROM) when no lang parameter
+  return 'qwerty'
 }
 
 /**
