@@ -15,7 +15,7 @@ export type AuthorizationService = {
    * @param userId - The user ID to check access for
    * @returns true if accessible, false otherwise
    */
-  canReadProject(project: Project, userId: string): Promise<boolean>
+  canReadProject(project: Project, userId: string | undefined): Promise<boolean>
 
   /**
    * Verify user owns a project (for write operations)
@@ -29,7 +29,7 @@ export type AuthorizationService = {
    * @param userId - The user ID to check access for
    * @returns true if accessible, false otherwise
    */
-  canAccessAsDependency(project: Project, userId: string): boolean
+  canAccessAsDependency(project: Project, userId: string | undefined): boolean
 }
 
 /**
@@ -39,7 +39,10 @@ export function createAuthorizationService(
   projectsRepository: IProjectsRepository
 ): AuthorizationService {
   return {
-    async canReadProject(project: Project, userId: string): Promise<boolean> {
+    async canReadProject(
+      project: Project,
+      userId: string | undefined
+    ): Promise<boolean> {
       // Owner can always read
       if (project.userId === userId) {
         return true
@@ -78,7 +81,10 @@ export function createAuthorizationService(
       return project
     },
 
-    canAccessAsDependency(project: Project, userId: string): boolean {
+    canAccessAsDependency(
+      project: Project,
+      userId: string | undefined
+    ): boolean {
       // Owner can always access
       if (project.userId === userId) {
         return true

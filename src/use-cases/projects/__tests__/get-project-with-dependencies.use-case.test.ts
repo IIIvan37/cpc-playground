@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createProject,
   type DependencyInfo
@@ -12,11 +12,13 @@ import { createFileName } from '@/domain/value-objects/file-name.vo'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import { createInMemoryProjectsRepository } from '@/infrastructure/repositories/__tests__/in-memory-projects.repository'
+import type { GetProjectUseCase } from '../get-project.use-case'
 import { createGetProjectWithDependenciesUseCase } from '../get-project-with-dependencies.use-case'
 
 describe('GetProjectWithDependenciesUseCase', () => {
   let repository: IProjectsRepository
   let authorizationService: AuthorizationService
+  let getProject: GetProjectUseCase
   let useCase: ReturnType<typeof createGetProjectWithDependenciesUseCase>
   const userId = 'user-123'
   const mainProjectId = 'main-project'
@@ -25,10 +27,30 @@ describe('GetProjectWithDependenciesUseCase', () => {
   beforeEach(async () => {
     repository = createInMemoryProjectsRepository()
     authorizationService = createAuthorizationService(repository)
-    useCase = createGetProjectWithDependenciesUseCase(
-      repository,
-      authorizationService
-    )
+    getProject = {
+      execute: vi.fn(async ({ projectId, userId: uid }) => {
+        const project = await repository.findById(projectId)
+        if (!project) {
+          throw new Error(`Project not found: ${projectId}`)
+        }
+        // Simulate the authorization check from getProject
+        if (!uid) {
+          if (project.visibility.value !== 'public') {
+            throw new Error('Access denied to project')
+          }
+        } else {
+          const canRead = await authorizationService.canReadProject(
+            project,
+            uid
+          )
+          if (!canRead) {
+            throw new Error('Access denied to project')
+          }
+        }
+        return { project }
+      })
+    }
+    useCase = createGetProjectWithDependenciesUseCase(getProject)
   })
 
   async function createTestProject(overrides: {
@@ -331,5 +353,46 @@ describe('GetProjectWithDependenciesUseCase', () => {
     })
 
     expect(result.files.map((f) => f.order)).toEqual([0, 1, 2])
+  })
+
+  it('should allow unauthenticated users to access public projects with public dependencies', async () => {
+    // Create a public library dependency
+    await createTestProject({
+      id: libraryId,
+      userId: 'other-user',
+      name: 'Public Library',
+      visibility: 'public',
+      isLibrary: true,
+      files: [{ name: 'utils.asm', content: '; utility functions' }]
+    })
+
+    // Create a public main project with dependency on the public library
+    await createTestProject({
+      id: mainProjectId,
+      userId: 'another-user',
+      name: 'Public Project',
+      visibility: 'public',
+      files: [{ name: 'main.asm', content: 'INCLUDE "utils.asm"' }],
+      dependencies: [{ id: libraryId, name: 'Public Library' }]
+    })
+
+    // Execute as unauthenticated user (userId = undefined)
+    const result = await useCase.execute({
+      projectId: mainProjectId,
+      userId: undefined
+    })
+
+    expect(result.files).toHaveLength(2)
+    expect(result.files.map((f) => f.name)).toContain('main.asm')
+    expect(result.files.map((f) => f.name)).toContain('utils.asm')
+
+    // Verify project context is included
+    const mainFile = result.files.find((f) => f.name === 'main.asm')
+    const utilsFile = result.files.find((f) => f.name === 'utils.asm')
+
+    expect(mainFile?.projectId).toBe(mainProjectId)
+    expect(mainFile?.projectName).toBe('Public Project')
+    expect(utilsFile?.projectId).toBe(libraryId)
+    expect(utilsFile?.projectName).toBe('Public Library')
   })
 })

@@ -13,6 +13,7 @@ import { useSetAtom } from 'jotai'
 import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
 import { type DependencyProject, dependencyFilesAtom } from '@/store/projects'
+import { useAuth } from '../auth'
 import { invalidateProjectCaches } from './invalidate-project-caches'
 import { useActiveProject } from './use-current-project'
 
@@ -117,23 +118,23 @@ const pendingDependencyFetches = new Map<string, Promise<DependencyProject[]>>()
  */
 export function useFetchDependencyFiles() {
   const { activeProject } = useActiveProject()
+  const { user } = useAuth()
   const setDependencyFiles = useSetAtom(dependencyFilesAtom)
 
   // Extract stable values from activeProject to avoid reference changes
   const projectId = activeProject?.id
-  const userId = activeProject?.userId
   const hasDependencies = (activeProject?.dependencies?.length ?? 0) > 0
 
   const fetchDependencyFiles = useCallback(async (): Promise<
     DependencyProject[]
   > => {
-    if (!projectId || !userId || !hasDependencies) {
+    if (!projectId || !hasDependencies) {
       setDependencyFiles([])
       return []
     }
 
     // Check if there's already a pending fetch for this project's dependencies
-    const pendingKey = `${projectId}:${userId ?? ''}`
+    const pendingKey = `${projectId}:${user?.id ?? ''}`
     const pendingFetch = pendingDependencyFetches.get(pendingKey)
     if (pendingFetch) {
       // Wait for the existing fetch to complete
@@ -145,7 +146,7 @@ export function useFetchDependencyFiles() {
       try {
         const result = await container.getProjectWithDependencies.execute({
           projectId,
-          userId
+          userId: user?.id
         })
 
         // Group files by project (excluding the current project's files)
@@ -190,7 +191,7 @@ export function useFetchDependencyFiles() {
       // Clean up the pending promise
       pendingDependencyFetches.delete(pendingKey)
     }
-  }, [projectId, userId, hasDependencies, setDependencyFiles])
+  }, [projectId, hasDependencies, setDependencyFiles, user?.id])
 
   return { fetchDependencyFiles }
 }

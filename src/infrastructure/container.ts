@@ -170,8 +170,7 @@ export function createContainer(): Container {
       authorizationService
     ),
     getProjectWithDependencies: createGetProjectWithDependenciesUseCase(
-      projectsRepository,
-      authorizationService
+      createGetProjectUseCase(projectsRepository, authorizationService)
     ),
     updateProject: createUpdateProjectUseCase(
       projectsRepository,
