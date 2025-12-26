@@ -20,6 +20,15 @@ let cpcecScriptLoaded = false
 // Track the last processed reset trigger to avoid processing it multiple times
 let lastProcessedResetTrigger = 0
 
+/**
+ * Get CPCEC arguments based on URL parameters
+ */
+function getCpcecArguments(): string[] {
+  const urlParams = new URLSearchParams(window.location.search)
+  const lang = urlParams.get('lang')
+  return lang === 'fr' ? ['-lf'] : ['-le']
+}
+
 export function useEmulator() {
   const isReady = useAtomValue(emulatorReadyAtom)
   const isRunning = useAtomValue(emulatorRunningAtom)
@@ -104,6 +113,7 @@ export function useEmulator() {
               canvas,
               ctx,
               wasmBinary,
+              arguments: getCpcecArguments(),
               locateFile: (path: string) => `${CPCEC_BASE_URL}/${path}`,
               preRun: [],
               postRun: [],
@@ -276,38 +286,10 @@ export function useEmulator() {
       : false
   }, [])
 
-  const setKeyboardLayout = useCallback(
-    (layout: string) => {
-      if (!cpcecModule) {
-        addConsoleMessage({ type: 'error', text: 'Emulator not ready' })
-        return
-      }
-
-      try {
-        // Check if _em_set_keyboard_layout exists
-        if (typeof cpcecModule._em_set_keyboard_layout === 'function') {
-          cpcecModule._em_set_keyboard_layout(cpcecModule.allocateUTF8(layout))
-          addConsoleMessage({
-            type: 'info',
-            text: `Keyboard layout set to ${layout.toUpperCase()}`
-          })
-        } else {
-          addConsoleMessage({
-            type: 'warning',
-            text: 'Keyboard layout selection not available'
-          })
-        }
-      } catch (error) {
-        logger.error('Keyboard layout set error', error)
-        const message =
-          error instanceof Error
-            ? error.message
-            : 'Failed to set keyboard layout'
-        addConsoleMessage({ type: 'error', text: message })
-      }
-    },
-    [addConsoleMessage, logger]
-  )
+  const setKeyboardLayout = useCallback((_layout: string) => {
+    // Keyboard layout is now handled by reloading with the correct ROM
+    // This function is kept for compatibility but doesn't do anything
+  }, [])
 
   return {
     isReady,

@@ -47,11 +47,26 @@ export function getEmulatorCanvas(): HTMLCanvasElement | null {
 }
 
 /**
- * Get the default keyboard layout based on browser language
+ * Get the default keyboard layout based on URL parameter or browser language
  */
 function getDefaultKeyboardLayout(): 'qwerty' | 'azerty' {
+  const urlParams = new URLSearchParams(window.location.search)
+  const lang = urlParams.get('lang')
+  if (lang === 'fr') return 'azerty'
+  if (lang === 'en') return 'qwerty'
+
+  // Fallback to browser language
   const language = navigator.language.toLowerCase()
   return language.startsWith('fr') ? 'azerty' : 'qwerty'
+}
+
+/**
+ * Reload the page with the specified language parameter
+ */
+function reloadWithLanguage(lang: 'en' | 'fr') {
+  const url = new URL(window.location.href)
+  url.searchParams.set('lang', lang)
+  window.location.href = url.toString()
 }
 
 /**
@@ -61,14 +76,11 @@ function getDefaultKeyboardLayout(): 'qwerty' | 'azerty' {
 export function EmulatorCanvas() {
   const wrapperRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { initialize, isReady, setKeyboardLayout } = useEmulator()
+  const { initialize, isReady } = useEmulator()
   const { user } = useAuth()
   const { project } = useCurrentProject()
   const { saveThumbnail, loading: savingThumbnail } = useSaveThumbnail()
   const [hasFocus, setHasFocus] = useState(false)
-  const [currentKeyboardLayout, setCurrentKeyboardLayout] = useState(
-    getDefaultKeyboardLayout
-  )
 
   // Can save thumbnail if user owns the current project
   const canSaveThumbnail = !!(user && project && project.userId === user.id)
@@ -91,13 +103,6 @@ export function EmulatorCanvas() {
     // Cleanup: don't remove canvas from DOM, just let it stay
     // It will be moved to the new wrapper when component remounts
   }, [initialize, isReady])
-
-  // Apply default keyboard layout when emulator becomes ready
-  useEffect(() => {
-    if (isReady) {
-      setKeyboardLayout(currentKeyboardLayout)
-    }
-  }, [isReady, currentKeyboardLayout, setKeyboardLayout])
 
   // Handle special CPC keyboard mappings when emulator has focus
   useEffect(() => {
@@ -189,15 +194,13 @@ export function EmulatorCanvas() {
     saveThumbnail()
   }, [saveThumbnail])
 
-  const handleKeyboardLayoutChange = useCallback(
-    (layout: string) => {
-      if (layout === 'qwerty' || layout === 'azerty') {
-        setCurrentKeyboardLayout(layout)
-        setKeyboardLayout(layout)
-      }
-    },
-    [setKeyboardLayout]
-  )
+  const handleKeyboardLayoutChange = useCallback((layout: string) => {
+    if (layout === 'qwerty') {
+      reloadWithLanguage('en')
+    } else if (layout === 'azerty') {
+      reloadWithLanguage('fr')
+    }
+  }, [])
 
   const statusText = useMemo(() => {
     if (!isReady) return '○ Loading...'
@@ -212,7 +215,7 @@ export function EmulatorCanvas() {
       statusText={statusText}
       canSaveThumbnail={canSaveThumbnail}
       savingThumbnail={savingThumbnail}
-      currentKeyboardLayout={currentKeyboardLayout}
+      currentKeyboardLayout={getDefaultKeyboardLayout()}
       onFocus={handleFocus}
       onBlur={handleBlur}
       onSaveThumbnail={handleSaveThumbnail}
