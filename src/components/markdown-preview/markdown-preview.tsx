@@ -1,6 +1,7 @@
 import { FileTextIcon } from '@radix-ui/react-icons'
 import { useAtomValue } from 'jotai'
 import { lazy, memo, Suspense } from 'react'
+import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
 import { codeAtom } from '@/store'
 import styles from './markdown-preview.module.css'
@@ -20,7 +21,9 @@ const MemoizedMarkdown = memo(function MemoizedMarkdown({
 }) {
   return (
     <Suspense fallback={<pre className={styles.loading}>{content}</pre>}>
-      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>
+        {content}
+      </Markdown>
     </Suspense>
   )
 })
