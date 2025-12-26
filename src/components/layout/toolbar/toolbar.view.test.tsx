@@ -150,12 +150,14 @@ describe('ViewModeSelectView', () => {
     expect(screen.getByRole('combobox')).toHaveTextContent('Emulator')
   })
 
-  it('does not show emulator in combobox when isMarkdownFile is true', () => {
-    render(
-      <ViewModeSelectView value='editor' onChange={vi.fn()} isMarkdownFile />
-    )
-    // When markdown file, the select should not include "emulator" as an option
-    // We can verify this by checking the combobox displays the current value correctly
+  it('displays markdown value', () => {
+    render(<ViewModeSelectView value='markdown' onChange={vi.fn()} />)
+    expect(screen.getByRole('combobox')).toHaveTextContent('Markdown')
+  })
+
+  it('always shows all view options regardless of isMarkdownFile', () => {
+    render(<ViewModeSelectView value='editor' onChange={vi.fn()} />)
+    // All options should be available
     expect(screen.getByRole('combobox')).toHaveTextContent('Editor')
   })
 })

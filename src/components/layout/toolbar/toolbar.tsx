@@ -7,7 +7,6 @@ import {
   useCurrentFile,
   useEmulator,
   useGetProjectWithDependencies,
-  useIsMarkdownFile,
   useToastActions
 } from '@/hooks'
 import { createLogger } from '@/lib/logger'
@@ -37,7 +36,6 @@ export function Toolbar() {
   const { activeProject: currentProject } = useActiveProject()
   const { user } = useAuth()
   const currentFile = useCurrentFile()
-  const isMarkdownFile = useIsMarkdownFile()
   const { getProjectWithDependencies } = useGetProjectWithDependencies()
   const { compile } = useAssembler()
   const { isReady, loadSna, loadDsk, injectDsk, isInjectAvailable, reset } =
@@ -159,7 +157,6 @@ export function Toolbar() {
       onReset={reset}
       viewMode={viewMode}
       onViewModeChange={(v) => setViewMode(v as ViewMode)}
-      isMarkdownFile={isMarkdownFile}
     />
   )
 }

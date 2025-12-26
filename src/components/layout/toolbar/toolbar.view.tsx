@@ -84,13 +84,11 @@ export function RunControlsView({
 type ViewModeSelectViewProps = Readonly<{
   value: string
   onChange: (value: string) => void
-  isMarkdownFile?: boolean
 }>
 
 export function ViewModeSelectView({
   value,
-  onChange,
-  isMarkdownFile = false
+  onChange
 }: ViewModeSelectViewProps) {
   return (
     <Flex gap='var(--spacing-sm)' align='center'>
@@ -98,8 +96,8 @@ export function ViewModeSelectView({
       <Select value={value} onValueChange={onChange}>
         <SelectItem value='split'>Split</SelectItem>
         <SelectItem value='editor'>Editor</SelectItem>
-        {!isMarkdownFile && <SelectItem value='emulator'>Emulator</SelectItem>}
-        {isMarkdownFile && <SelectItem value='markdown'>Markdown</SelectItem>}
+        <SelectItem value='emulator'>Emulator</SelectItem>
+        <SelectItem value='markdown'>Markdown</SelectItem>
       </Select>
     </Flex>
   )
@@ -126,7 +124,6 @@ export type ToolbarViewProps = Readonly<{
   // View mode controls
   viewMode: string
   onViewModeChange: (value: string) => void
-  isMarkdownFile?: boolean
 }>
 
 export function ToolbarView({
@@ -141,8 +138,7 @@ export function ToolbarView({
   isInjectAvailable,
   onReset,
   viewMode,
-  onViewModeChange,
-  isMarkdownFile = false
+  onViewModeChange
 }: ToolbarViewProps) {
   return (
     <div className={styles.toolbar}>
@@ -168,11 +164,7 @@ export function ToolbarView({
         />
       </Flex>
 
-      <ViewModeSelectView
-        value={viewMode}
-        onChange={onViewModeChange}
-        isMarkdownFile={isMarkdownFile}
-      />
+      <ViewModeSelectView value={viewMode} onChange={onViewModeChange} />
     </div>
   )
 }
