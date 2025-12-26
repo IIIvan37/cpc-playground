@@ -91,12 +91,20 @@ describe('Emulator Store', () => {
       expect(store.get(viewModeAtom)).toBe('emulator')
     })
 
+    it('should allow setting to markdown mode', () => {
+      store.set(viewModeAtom, 'markdown')
+      expect(store.get(viewModeAtom)).toBe('markdown')
+    })
+
     it('should allow switching between all modes', () => {
       store.set(viewModeAtom, 'editor')
       expect(store.get(viewModeAtom)).toBe('editor')
 
       store.set(viewModeAtom, 'emulator')
       expect(store.get(viewModeAtom)).toBe('emulator')
+
+      store.set(viewModeAtom, 'markdown')
+      expect(store.get(viewModeAtom)).toBe('markdown')
 
       store.set(viewModeAtom, 'split')
       expect(store.get(viewModeAtom)).toBe('split')

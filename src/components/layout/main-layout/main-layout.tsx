@@ -1,5 +1,5 @@
-import { useAtomValue } from 'jotai'
-import { memo } from 'react'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { memo, useEffect } from 'react'
 import { ConsolePanel } from '@/components/console'
 import { CodeEditor } from '@/components/editor'
 import { EmulatorCanvas } from '@/components/emulator'
@@ -23,18 +23,29 @@ import { MainLayoutView } from './main-layout.view'
  * unmounts, so CPCEC binding is preserved during navigation.
  */
 const RightPanel = memo(function RightPanel({
-  isMarkdownFile
+  isMarkdownFile,
+  viewMode
 }: {
   isMarkdownFile: boolean
+  viewMode: 'editor' | 'emulator' | 'split' | 'markdown'
 }) {
+  const showMarkdown = isMarkdownFile && viewMode !== 'markdown'
+
   return (
     <>
-      <div style={{ display: isMarkdownFile ? 'none' : 'contents' }}>
+      <div style={{ display: showMarkdown ? 'none' : 'contents' }}>
         <EmulatorCanvas />
       </div>
-      {isMarkdownFile && <MarkdownPreview />}
+      {showMarkdown && <MarkdownPreview />}
     </>
   )
+})
+
+/**
+ * Markdown panel for fullscreen markdown view
+ */
+const MarkdownPanel = memo(function MarkdownPanel() {
+  return <MarkdownPreview />
 })
 
 // Memoized editor that never re-renders
@@ -48,6 +59,7 @@ const MemoizedEditor = memo(function MemoizedEditor() {
  */
 export function MainLayout() {
   const viewMode = useAtomValue(viewModeAtom)
+  const setViewMode = useSetAtom(viewModeAtom)
   const { activeProject } = useActiveProject()
   const isMarkdownFile = useIsMarkdownFile()
 
@@ -60,6 +72,14 @@ export function MainLayout() {
   // Auto-save file content (only for authenticated users with cloud projects)
   useAutoSaveFile()
 
+  // Automatically adjust view mode based on file type
+  useEffect(() => {
+    if (viewMode === 'markdown' && !isMarkdownFile) {
+      // If we're in markdown mode but the current file is not markdown, switch to split mode
+      setViewMode('split')
+    }
+  }, [viewMode, isMarkdownFile, setViewMode])
+
   return (
     <MainLayoutView
       viewMode={viewMode}
@@ -71,7 +91,10 @@ export function MainLayout() {
         </ResizableSidebar>
       }
       editor={<MemoizedEditor />}
-      emulator={<RightPanel isMarkdownFile={isMarkdownFile} />}
+      emulator={
+        <RightPanel isMarkdownFile={isMarkdownFile} viewMode={viewMode} />
+      }
+      markdown={<MarkdownPanel />}
       console={<ConsolePanel />}
     />
   )
