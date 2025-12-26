@@ -34,6 +34,25 @@ import { vsCodeLight } from '@fsegurai/codemirror-theme-vscode-light'
 import { type RefObject, useEffect, useRef } from 'react'
 import { z80 } from './z80-language'
 
+// Create a transparent version of VS Code dark theme
+const transparentVsCodeDark = [
+  vsCodeDark,
+  EditorView.theme({
+    '&': {
+      backgroundColor: 'transparent !important'
+    },
+    '.cm-scroller': {
+      backgroundColor: 'transparent !important'
+    },
+    '.cm-content': {
+      backgroundColor: 'transparent !important'
+    },
+    '.cm-line': {
+      backgroundColor: 'transparent !important'
+    }
+  })
+]
+
 // Effect to update error lines
 const setErrorLines = StateEffect.define<readonly number[]>()
 
@@ -53,7 +72,7 @@ const errorLinesField = StateField.define<readonly number[]>({
 })
 
 // Decoration for error lines
-const errorLineDecoration = Decoration.line({ class: 'cm-errorLine' })
+const errorLineDecoration = Decoration.line({ class: 'cm-error-line' })
 
 // Plugin to apply error line decorations
 const errorLinePlugin = ViewPlugin.fromClass(
@@ -141,7 +160,8 @@ export function useCodeMirror({
       viewRef.current = null
     }
 
-    const themeExtension = theme === 'vscode-dark' ? vsCodeDark : vsCodeLight
+    const themeExtension =
+      theme === 'vscode-dark' ? transparentVsCodeDark : vsCodeLight
 
     const extensions: Extension[] = [
       history(),

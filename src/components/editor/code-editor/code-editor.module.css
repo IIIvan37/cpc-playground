@@ -41,6 +41,10 @@
   background-color: var(--color-background);
 }
 
+.editorWrapper.transparentBg {
+  background-color: transparent;
+}
+
 .lineNumbersWrapper {
   background-color: rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -137,7 +141,7 @@
 .codemirrorContainer {
   flex: 1;
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .codemirrorContainer .cm-editor {

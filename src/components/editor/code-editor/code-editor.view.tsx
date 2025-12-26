@@ -148,7 +148,11 @@ export function CodeEditorView({
         editorTheme={editorTheme}
         onToggleTheme={onToggleTheme}
       />
-      <div className={styles.editorWrapper}>
+      <div
+        className={`${styles.editorWrapper} ${
+          editorTheme === 'vscode-dark' ? styles.transparentBg : ''
+        }`}
+      >
         <CodeMirrorEditorView
           key={fileId}
           code={code}
