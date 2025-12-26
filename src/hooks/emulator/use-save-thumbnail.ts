@@ -2,6 +2,7 @@
  * Hook for capturing emulator screenshots and saving as project thumbnails
  */
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { getEmulatorCanvas } from '@/components/emulator'
 import { useAuth, useCurrentProject, useToastActions } from '@/hooks'
@@ -77,6 +78,7 @@ export function useSaveThumbnail() {
   const { user } = useAuth()
   const { project } = useCurrentProject()
   const toast = useToastActions()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
 
   const saveThumbnail = useCallback(async () => {
@@ -102,6 +104,17 @@ export function useSaveThumbnail() {
         imageBlob: blob
       })
 
+      // Update project cache with new thumbnail
+      queryClient.setQueryData(['project', project.id], result.project)
+      // Invalidate projects lists to reflect thumbnail change in Explore page
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'visible'],
+        refetchType: 'all'
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'user', user.id]
+      })
+
       toast.success('Thumbnail saved!')
       return { success: true, thumbnailUrl: result.thumbnailUrl }
     } catch (error) {
@@ -111,7 +124,7 @@ export function useSaveThumbnail() {
     } finally {
       setLoading(false)
     }
-  }, [user, project, toast])
+  }, [user, project, toast, queryClient])
 
   return { saveThumbnail, loading }
 }
