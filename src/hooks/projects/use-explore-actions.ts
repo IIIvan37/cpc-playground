@@ -29,12 +29,15 @@ export function useHandleCreateProject() {
       userId: string
       name: string
       isLibrary: boolean
+      initialCode?: string
     }): Promise<OperationResult> => {
       setLoading(true)
       try {
+        const hasInitialCode = params.initialCode?.trim()
+        const defaultContent = params.isLibrary ? '' : MINIMAL_ASM_TEMPLATE
         const initialFile = {
           name: params.isLibrary ? 'lib.asm' : 'main.asm',
-          content: params.isLibrary ? '' : MINIMAL_ASM_TEMPLATE,
+          content: hasInitialCode ? params.initialCode!.trim() : defaultContent,
           isMain: !params.isLibrary
         }
 

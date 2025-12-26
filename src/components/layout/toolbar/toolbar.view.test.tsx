@@ -175,7 +175,19 @@ describe('ToolbarView', () => {
     isInjectAvailable: true,
     onReset: vi.fn(),
     viewMode: 'split',
-    onViewModeChange: vi.fn()
+    onViewModeChange: vi.fn(),
+    // New project creation props
+    isAuthenticated: true,
+    hasActiveProject: false,
+    onCreateProjectFromCode: vi.fn(),
+    showCreateProjectDialog: false,
+    newProjectName: '',
+    newProjectIsLibrary: false,
+    creatingProject: false,
+    onNewProjectNameChange: vi.fn(),
+    onNewProjectIsLibraryChange: vi.fn(),
+    onCreateProjectSubmit: vi.fn(),
+    onCloseCreateProjectDialog: vi.fn()
   }
 
   it('renders program manager slot', () => {
