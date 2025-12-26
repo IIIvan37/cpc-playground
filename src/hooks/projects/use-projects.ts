@@ -83,9 +83,14 @@ export function useUpdateProject() {
       const result = await container.updateProject.execute(params)
       return { result, userId: params.userId, projectId: params.projectId }
     },
-    onSuccess: ({ result, projectId }) => {
+    onSuccess: ({ result, userId, projectId }) => {
       // Update cache directly with the updated project
       queryClient.setQueryData(['project', projectId], result.project)
+      // Invalidate projects lists to reflect changes in Explore page
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'user', userId]
+      })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
     }
   })
 
