@@ -9,6 +9,8 @@
  * This patch wraps those listeners to check a global flag before processing.
  */
 
+import { createLogger } from './logger'
+
 /** Global flag to control whether CPCEC should receive keyboard events */
 let cpcecKeyboardEnabled = false
 
@@ -34,6 +36,7 @@ const originalDocumentAddEventListener =
 
 // Track if we've already patched
 let patched = false
+const logger = createLogger('CPCECPatch')
 
 /**
  * Wrap a keyboard event listener to check the enabled flag
@@ -106,7 +109,7 @@ export function installCpcecKeyboardPatch(): void {
     }
   } as typeof document.addEventListener
 
-  console.log('[CPCEC Patch] Keyboard event patch installed')
+  logger.info('Keyboard event patch installed')
 }
 
 // Auto-install on import

@@ -9,6 +9,7 @@ import type {
   CompilationResult,
   IAssemblerAdapter
 } from '@/domain/services/assembler-adapter.interface'
+import { createLogger } from '@/lib/logger'
 import RasmWorker from '@/workers/rasm.worker?worker'
 
 /**
@@ -26,6 +27,7 @@ export function createRasmWorkerAdapter(): IAssemblerAdapter {
       reject: (error: Error) => void
     }
   >()
+  const logger = createLogger('RasmWorkerAdapter')
 
   function getWorker(): Worker {
     if (!worker) {
@@ -50,7 +52,7 @@ export function createRasmWorkerAdapter(): IAssemblerAdapter {
       })
 
       worker.addEventListener('error', (e: ErrorEvent) => {
-        console.error('[RasmWorkerAdapter] Worker error:', e)
+        logger.error('Worker error', e)
         // Reject all pending requests
         for (const [id, pending] of pendingRequests) {
           pending.reject(new Error(`Worker error: ${e.message}`))

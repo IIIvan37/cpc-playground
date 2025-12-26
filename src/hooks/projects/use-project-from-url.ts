@@ -1,6 +1,7 @@
 import { useSetAtom } from 'jotai'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { createLogger } from '@/lib/logger'
 import { codeAtom } from '@/store'
 import { isReadOnlyModeAtom, viewOnlyProjectAtom } from '@/store/projects'
 import { useAuth } from '../auth'
@@ -26,6 +27,7 @@ export function useProjectFromUrl() {
   const setIsReadOnlyMode = useSetAtom(isReadOnlyModeAtom)
   const setCode = useSetAtom(codeAtom)
   const [searchParams] = useSearchParams()
+  const logger = useMemo(() => createLogger('useProjectFromUrl'), [])
 
   // Get project ID from URL search params (reactive)
   const projectId = searchParams.get('project')
@@ -77,7 +79,7 @@ export function useProjectFromUrl() {
         }
       })
       .catch((err) => {
-        console.error('Failed to load project from URL:', err)
+        logger.error('Failed to load project from URL', err)
         // Reset on error so we can retry
         loadedProjectState = null
       })
@@ -88,6 +90,7 @@ export function useProjectFromUrl() {
     projectId,
     setCode,
     setViewOnlyProject,
-    setIsReadOnlyMode
+    setIsReadOnlyMode,
+    logger
   ])
 }

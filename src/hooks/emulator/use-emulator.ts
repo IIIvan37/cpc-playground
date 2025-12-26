@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { createLogger } from '@/lib/logger'
 import {
   emulatorReadyAtom,
   emulatorResetTriggerAtom,
@@ -26,6 +27,7 @@ export function useEmulator() {
   const setEmulatorReady = useSetAtom(emulatorReadyAtom)
   const setEmulatorRunning = useSetAtom(emulatorRunningAtom)
   const { addMessage: addConsoleMessage } = useConsoleMessages()
+  const logger = useMemo(() => createLogger('useEmulator'), [])
 
   // Listen for external reset triggers (e.g., when switching projects)
   useEffect(() => {
@@ -105,8 +107,8 @@ export function useEmulator() {
               locateFile: (path: string) => `${CPCEC_BASE_URL}/${path}`,
               preRun: [],
               postRun: [],
-              print: (text: string) => console.log('[CPCEC]', text),
-              printErr: (text: string) => console.error('[CPCEC]', text),
+              print: (text: string) => logger.info(`[CPCEC] ${text}`),
+              printErr: (text: string) => logger.error(`[CPCEC] ${text}`),
               onRuntimeInitialized: () => {
                 cpcecModule = Module
                 setEmulatorReady(true)
@@ -148,7 +150,7 @@ export function useEmulator() {
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [setEmulatorReady, addConsoleMessage]
+    [setEmulatorReady, addConsoleMessage, logger]
   )
 
   const loadSna = useCallback(
@@ -159,12 +161,12 @@ export function useEmulator() {
       }
 
       try {
-        console.log('[Emulator] Loading SNA, size:', snaData.length)
+        logger.debug(`Loading SNA, size: ${snaData.length}`)
 
         // Write SNA to MEMFS
         const filename = '/program.sna'
         cpcecModule.FS.writeFile(filename, snaData)
-        console.log('[Emulator] SNA written to MEMFS')
+        logger.debug('SNA written to MEMFS')
 
         // Use em_load_file to load the SNA
         cpcecModule._em_load_file(cpcecModule.allocateUTF8(filename))
@@ -175,13 +177,13 @@ export function useEmulator() {
           text: `SNA loaded (${snaData.length} bytes)`
         })
       } catch (error) {
-        console.error('[Emulator] SNA load error:', error)
+        logger.error('SNA load error', error)
         const message =
           error instanceof Error ? error.message : 'Failed to load SNA'
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [setEmulatorRunning, addConsoleMessage]
+    [setEmulatorRunning, addConsoleMessage, logger]
   )
 
   const loadDsk = useCallback(
@@ -192,12 +194,12 @@ export function useEmulator() {
       }
 
       try {
-        console.log('[Emulator] Loading DSK, size:', dskData.length)
+        logger.debug(`Loading DSK, size: ${dskData.length}`)
 
         // Write DSK to MEMFS
         const filename = '/program.dsk'
         cpcecModule.FS.writeFile(filename, dskData)
-        console.log('[Emulator] DSK written to MEMFS')
+        logger.debug('DSK written to MEMFS')
 
         // Use em_load_file to load the DSK
         cpcecModule._em_load_file(cpcecModule.allocateUTF8(filename))
@@ -208,13 +210,13 @@ export function useEmulator() {
           text: `DSK loaded (${dskData.length} bytes) - Type CAT then RUN"PROGRAM`
         })
       } catch (error) {
-        console.error('[Emulator] DSK load error:', error)
+        logger.error('DSK load error', error)
         const message =
           error instanceof Error ? error.message : 'Failed to load DSK'
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [setEmulatorRunning, addConsoleMessage]
+    [setEmulatorRunning, addConsoleMessage, logger]
   )
 
   const injectDsk = useCallback(
@@ -225,16 +227,16 @@ export function useEmulator() {
       }
 
       try {
-        console.log('[Emulator] Injecting DSK, size:', dskData.length)
-        console.log(
-          '[Emulator] Available CPCEC functions:',
+        logger.debug(`Injecting DSK, size: ${dskData.length}`)
+        logger.debug(
+          'Available CPCEC functions',
           Object.keys(cpcecModule).filter((key) => key.startsWith('_em_'))
         )
 
         // Write DSK to MEMFS
         const filename = '/program.dsk'
         cpcecModule.FS.writeFile(filename, dskData)
-        console.log('[Emulator] DSK written to MEMFS')
+        logger.debug('DSK written to MEMFS')
 
         // Check if _em_inject_file exists
         if (typeof cpcecModule._em_inject_file === 'function') {
@@ -251,13 +253,13 @@ export function useEmulator() {
           })
         }
       } catch (error) {
-        console.error('[Emulator] DSK inject error:', error)
+        logger.error('DSK inject error', error)
         const message =
           error instanceof Error ? error.message : 'Failed to inject DSK'
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [addConsoleMessage]
+    [addConsoleMessage, logger]
   )
 
   const reset = useCallback(() => {
@@ -296,7 +298,7 @@ export function useEmulator() {
           })
         }
       } catch (error) {
-        console.error('[Emulator] Keyboard layout set error:', error)
+        logger.error('Keyboard layout set error', error)
         const message =
           error instanceof Error
             ? error.message
@@ -304,7 +306,7 @@ export function useEmulator() {
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [addConsoleMessage]
+    [addConsoleMessage, logger]
   )
 
   return {
