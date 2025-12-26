@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
+  useAllTags,
   useAuth,
   useAvailableDependencies,
   useConfirmDialog,
@@ -45,6 +46,9 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
   const { handleAddShare, loading: addShareLoading } = useHandleAddShare()
   const { handleRemoveShare, loading: removeShareLoading } =
     useHandleRemoveShare()
+
+  // Available tags for autocompletion
+  const { tags: availableTags = [] } = useAllTags()
 
   // User search
   const {
@@ -250,6 +254,7 @@ function ProjectSettingsModalContent({ onClose }: ProjectSettingsModalProps) {
         currentDependencies={currentDependencies}
         currentUserShares={currentProject.userShares || []}
         availableDependencies={filteredDependencies}
+        availableTags={availableTags}
         foundUsers={foundUsers}
         searchingUsers={searchUsersLoading}
         onNameChange={setName}

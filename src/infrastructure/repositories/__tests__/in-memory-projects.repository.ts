@@ -362,6 +362,10 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
       )
     },
 
+    async getAllTags(): Promise<readonly Tag[]> {
+      return Array.from(tags.values())
+    },
+
     // ========================================================================
     // Test helpers (not part of interface)
     // ========================================================================

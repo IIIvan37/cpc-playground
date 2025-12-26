@@ -87,6 +87,11 @@ export interface IProjectsRepository {
   getTags(projectId: string): Promise<readonly Tag[]>
 
   /**
+   * Get all available tags in the system
+   */
+  getAllTags(): Promise<readonly Tag[]>
+
+  /**
    * Add a tag to a project (creates tag if it doesn't exist)
    */
   addTag(projectId: string, tagName: string): Promise<Tag>

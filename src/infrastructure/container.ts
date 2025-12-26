@@ -82,8 +82,16 @@ import {
   createRemoveUserShareUseCase,
   createSearchUsersUseCase
 } from '@/use-cases/shares'
-import type { AddTagUseCase, RemoveTagUseCase } from '@/use-cases/tags'
-import { createAddTagUseCase, createRemoveTagUseCase } from '@/use-cases/tags'
+import type {
+  AddTagUseCase,
+  GetAllTagsUseCase,
+  RemoveTagUseCase
+} from '@/use-cases/tags'
+import {
+  createAddTagUseCase,
+  createGetAllTagsUseCase,
+  createRemoveTagUseCase
+} from '@/use-cases/tags'
 import { createApiSharedCodeRepository } from './repositories/api-shared-code.repository'
 import { createSupabaseAuthRepository } from './repositories/supabase-auth.repository'
 import { createSupabaseProjectsRepository } from './repositories/supabase-projects.repository'
@@ -120,6 +128,7 @@ export type Container = {
   deleteFile: DeleteFileUseCase
   // Tags use cases
   addTag: AddTagUseCase
+  getAllTags: GetAllTagsUseCase
   removeTag: RemoveTagUseCase
   // Dependencies use cases
   addDependency: AddDependencyUseCase
@@ -199,6 +208,7 @@ export function createContainer(): Container {
       authorizationService
     ),
     addTag: createAddTagUseCase(projectsRepository, authorizationService),
+    getAllTags: createGetAllTagsUseCase(projectsRepository),
     removeTag: createRemoveTagUseCase(projectsRepository, authorizationService),
     addDependency: createAddDependencyUseCase(
       projectsRepository,

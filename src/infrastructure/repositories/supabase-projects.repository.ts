@@ -669,6 +669,21 @@ export function createSupabaseProjectsRepository(
         .filter((t): t is Tag => Boolean(t.id && t.name))
     },
 
+    async getAllTags(): Promise<readonly Tag[]> {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('id, name')
+        .order('name')
+
+      if (error) throw error
+      if (!data) return []
+
+      return data.map((tag) => ({
+        id: tag.id,
+        name: tag.name
+      }))
+    },
+
     async addTag(projectId: string, tagName: string): Promise<Tag> {
       // Normalize tag name (lowercase, trimmed)
       const normalizedName = tagName.toLowerCase().trim()

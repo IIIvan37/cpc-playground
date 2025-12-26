@@ -150,12 +150,13 @@ function ProjectListItem({
   }
 
   return (
-    <button
-      type='button'
+    <div
       className={styles.listItem}
       data-testid='project-item'
       onClick={onClick}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
+      tabIndex={0}
+      role='button'
     >
       {thumbnailUrl && (
         <div className={styles.thumbnailContainer}>
@@ -199,7 +200,7 @@ function ProjectListItem({
           )}
         </div>
       </div>
-    </button>
+    </div>
   )
 }
 

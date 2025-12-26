@@ -17,6 +17,7 @@ describe('ProjectSettingsModalView', () => {
     currentDependencies: [] as readonly { id: string; name: string }[],
     currentUserShares: [] as readonly { userId: string; username: string }[],
     availableDependencies: [] as readonly { id: string; name: string }[],
+    availableTags: [] as readonly string[],
     foundUsers: [] as readonly { id: string; username: string }[],
     searchingUsers: false,
     onNameChange: vi.fn(),

@@ -1,7 +1,10 @@
 import { PlayIcon, ResetIcon } from '@radix-ui/react-icons'
 import type { ReactNode } from 'react'
 import Button from '@/components/ui/button/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import Flex from '@/components/ui/flex/flex'
+import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
 import { Select, SelectItem } from '@/components/ui/select/select'
 import styles from './toolbar.module.css'
 
@@ -124,6 +127,21 @@ export type ToolbarViewProps = Readonly<{
   // View mode controls
   viewMode: string
   onViewModeChange: (value: string) => void
+
+  // Authentication and project state
+  isAuthenticated: boolean
+  hasActiveProject: boolean
+
+  // Project creation
+  onCreateProjectFromCode: () => void
+  showCreateProjectDialog: boolean
+  newProjectName: string
+  newProjectIsLibrary: boolean
+  creatingProject: boolean
+  onNewProjectNameChange: (name: string) => void
+  onNewProjectIsLibraryChange: (isLibrary: boolean) => void
+  onCreateProjectSubmit: () => void
+  onCloseCreateProjectDialog: () => void
 }>
 
 export function ToolbarView({
@@ -138,12 +156,34 @@ export function ToolbarView({
   isInjectAvailable,
   onReset,
   viewMode,
-  onViewModeChange
+  onViewModeChange,
+  isAuthenticated,
+  hasActiveProject,
+  onCreateProjectFromCode,
+  showCreateProjectDialog,
+  newProjectName,
+  newProjectIsLibrary,
+  creatingProject,
+  onNewProjectNameChange,
+  onNewProjectIsLibraryChange,
+  onCreateProjectSubmit,
+  onCloseCreateProjectDialog
 }: ToolbarViewProps) {
   return (
     <div className={styles.toolbar}>
       <Flex gap='var(--spacing-md)' align='center'>
         {programManager}
+
+        {isAuthenticated && !hasActiveProject && (
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={onCreateProjectFromCode}
+            title='Create a new project from current code'
+          >
+            New Project
+          </Button>
+        )}
 
         <div className={styles.separator} />
 
@@ -165,6 +205,45 @@ export function ToolbarView({
       </Flex>
 
       <ViewModeSelectView value={viewMode} onChange={onViewModeChange} />
+
+      <Modal
+        open={showCreateProjectDialog}
+        title='Create New Project'
+        onClose={onCloseCreateProjectDialog}
+      >
+        <div style={{ padding: '1rem' }}>
+          <Input
+            label='Project Name'
+            value={newProjectName}
+            onChange={(e) => onNewProjectNameChange(e.target.value)}
+            placeholder='My Awesome Project'
+            autoFocus
+          />
+          <Checkbox
+            label='Library Project'
+            checked={newProjectIsLibrary}
+            onChange={(e) => onNewProjectIsLibraryChange(e.target.checked)}
+          />
+          <div
+            style={{
+              marginTop: '1rem',
+              display: 'flex',
+              gap: '0.5rem',
+              justifyContent: 'flex-end'
+            }}
+          >
+            <Button variant='ghost' onClick={onCloseCreateProjectDialog}>
+              Cancel
+            </Button>
+            <Button
+              onClick={onCreateProjectSubmit}
+              disabled={!newProjectName.trim() || creatingProject}
+            >
+              {creatingProject ? 'Creating...' : 'Create Project'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

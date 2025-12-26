@@ -1,4 +1,5 @@
 import { useAtom, useAtomValue } from 'jotai'
+import { useState } from 'react'
 import { ProgramManager } from '@/components/program/program-manager'
 import {
   useActiveProject,
@@ -7,6 +8,7 @@ import {
   useCurrentFile,
   useEmulator,
   useGetProjectWithDependencies,
+  useHandleCreateProject,
   useToastActions
 } from '@/hooks'
 import { createLogger } from '@/lib/logger'
@@ -16,6 +18,7 @@ const logger = createLogger('Toolbar')
 import {
   codeAtom,
   compilationStatusAtom,
+  currentProgramIdAtom,
   type OutputFormat,
   outputFormatAtom,
   type ViewMode,
@@ -30,8 +33,14 @@ import { ToolbarView } from './toolbar.view'
 export function Toolbar() {
   const code = useAtomValue(codeAtom)
   const compilationStatus = useAtomValue(compilationStatusAtom)
+  const currentProgramId = useAtomValue(currentProgramIdAtom)
   const [viewMode, setViewMode] = useAtom(viewModeAtom)
   const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
+
+  // Project creation modal state
+  const [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
+  const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
 
   const { activeProject: currentProject } = useActiveProject()
   const { user } = useAuth()
@@ -41,6 +50,8 @@ export function Toolbar() {
   const { isReady, loadSna, loadDsk, injectDsk, isInjectAvailable, reset } =
     useEmulator()
   const toast = useToastActions()
+  const { handleCreate: createProject, loading: creating } =
+    useHandleCreateProject()
 
   const handleCompileAndRun = async () => {
     // Collect files from the current project and its dependencies
@@ -143,6 +154,53 @@ export function Toolbar() {
 
   const isCompiling = compilationStatus === 'compiling'
 
+  // Project creation handlers
+  const handleCreateProjectFromCode = () => {
+    if (!user) {
+      toast.error(
+        'Authentication required',
+        'You must be logged in to create projects'
+      )
+      return
+    }
+    setShowCreateProjectDialog(true)
+    // Pre-fill project name based on current program or use default
+    if (currentProgramId) {
+      // If we have a current program, use its name as base
+      const programName = `Project from ${currentProgramId}`
+      setNewProjectName(programName)
+    } else {
+      setNewProjectName('New Project')
+    }
+  }
+
+  const handleCreateProjectSubmit = async () => {
+    if (!newProjectName.trim() || !user) return
+
+    const result = await createProject({
+      userId: user.id,
+      name: newProjectName.trim(),
+      isLibrary: newProjectIsLibrary,
+      initialCode: code
+    })
+
+    if (result.success) {
+      setShowCreateProjectDialog(false)
+      setNewProjectName('')
+      setNewProjectIsLibrary(false)
+      toast.success(
+        'Project created',
+        'Your new project has been created successfully'
+      )
+    }
+  }
+
+  const handleCloseCreateProjectDialog = () => {
+    setShowCreateProjectDialog(false)
+    setNewProjectName('')
+    setNewProjectIsLibrary(false)
+  }
+
   return (
     <ToolbarView
       programManager={<ProgramManager />}
@@ -157,6 +215,17 @@ export function Toolbar() {
       onReset={reset}
       viewMode={viewMode}
       onViewModeChange={(v) => setViewMode(v as ViewMode)}
+      isAuthenticated={!!user}
+      hasActiveProject={!!currentProject}
+      onCreateProjectFromCode={handleCreateProjectFromCode}
+      showCreateProjectDialog={showCreateProjectDialog}
+      newProjectName={newProjectName}
+      newProjectIsLibrary={newProjectIsLibrary}
+      creatingProject={creating}
+      onNewProjectNameChange={setNewProjectName}
+      onNewProjectIsLibraryChange={setNewProjectIsLibrary}
+      onCreateProjectSubmit={handleCreateProjectSubmit}
+      onCloseCreateProjectDialog={handleCloseCreateProjectDialog}
     />
   )
 }

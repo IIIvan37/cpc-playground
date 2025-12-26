@@ -8,7 +8,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 import type { Project } from '@/domain/entities/project.entity'
 import { PROJECT_ERRORS } from '@/domain/errors/error-messages'
 import { container } from '@/infrastructure/container'
@@ -317,4 +317,26 @@ export function useGetProjectWithDependencies() {
     container.getProjectWithDependencies
   )
   return { getProjectWithDependencies: execute, loading, error, reset, data }
+}
+
+/**
+ * Hook to fetch all available tags for autocompletion
+ */
+export function useAllTags() {
+  const { execute, loading, error, reset, data } = useUseCase(
+    container.getAllTags
+  )
+
+  // Auto-fetch tags on mount
+  React.useEffect(() => {
+    execute({})
+  }, [execute])
+
+  return {
+    tags: data?.tags ?? [],
+    loading,
+    error,
+    reset,
+    refetch: useCallback(() => execute({}), [execute])
+  }
 }

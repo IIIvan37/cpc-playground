@@ -1,3 +1,4 @@
+import { ChevronDownIcon } from '@radix-ui/react-icons'
 import {
   type InputHTMLAttributes,
   type KeyboardEvent,
@@ -73,7 +74,15 @@ export default function Combobox({
     onValueChange(newValue)
     onInputChange?.(newValue)
     setIsOpen(true)
+    setHighlightedIndex(0) // Reset highlight when typing
   }
+
+  // Filter options based on input value
+  const filteredOptions = options.filter(
+    (option) =>
+      option.label.toLowerCase().includes(value.toLowerCase()) ||
+      option.value.toLowerCase().includes(value.toLowerCase())
+  )
 
   const handleSelectOption = (option: ComboboxOption) => {
     onValueChange(option.value)
@@ -95,7 +104,7 @@ export default function Combobox({
       case 'ArrowDown':
         e.preventDefault()
         setHighlightedIndex((prev) =>
-          prev < options.length - 1 ? prev + 1 : prev
+          prev < filteredOptions.length - 1 ? prev + 1 : prev
         )
         break
       case 'ArrowUp':
@@ -104,8 +113,8 @@ export default function Combobox({
         break
       case 'Enter':
         e.preventDefault()
-        if (options[highlightedIndex]) {
-          handleSelectOption(options[highlightedIndex])
+        if (filteredOptions[highlightedIndex]) {
+          handleSelectOption(filteredOptions[highlightedIndex])
         }
         break
       case 'Escape':
@@ -118,30 +127,39 @@ export default function Combobox({
 
   const inputElement = (
     <div className={styles.inputWrapper}>
-      <input
-        ref={inputRef}
-        id={inputId}
-        type='text'
-        className={`${styles.input} ${error ? styles.inputError : ''} ${
-          className || ''
+      <div
+        className={`${styles.inputContainer} ${
+          error ? styles.inputContainerError : ''
         }`}
-        value={value}
-        onChange={(e) => handleInputChange(e.target.value)}
-        onFocus={() => setIsOpen(true)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        autoComplete='off'
-        {...props}
-      />
-      {isOpen && (options.length > 0 || loading) && (
+      >
+        <input
+          ref={inputRef}
+          id={inputId}
+          type='text'
+          className={`${styles.input} ${error ? styles.inputError : ''} ${
+            className || ''
+          }`}
+          value={value}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          autoComplete='off'
+          {...props}
+        />
+        <div className={`${styles.icon} ${isOpen ? styles.iconOpen : ''}`}>
+          <ChevronDownIcon />
+        </div>
+      </div>
+      {isOpen && (filteredOptions.length > 0 || loading) && (
         <div ref={dropdownRef} className={styles.dropdown}>
           {loading && <div className={styles.loading}>Loading...</div>}
-          {!loading && options.length === 0 && (
+          {!loading && filteredOptions.length === 0 && value && (
             <div className={styles.empty}>{emptyMessage}</div>
           )}
           {!loading &&
-            options.length > 0 &&
-            options.map((option, index) => (
+            filteredOptions.length > 0 &&
+            filteredOptions.map((option, index) => (
               <button
                 type='button'
                 key={option.value}

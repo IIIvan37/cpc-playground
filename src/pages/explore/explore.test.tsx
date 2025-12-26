@@ -12,6 +12,7 @@ vi.mock('@/hooks', () => ({
   useHandleCreateProject: vi.fn(),
   useHandleForkProject: vi.fn(),
   useFetchVisibleProjects: vi.fn(),
+
   getThumbnailUrl: vi.fn((path: string | null | undefined) =>
     path
       ? `https://test.supabase.co/storage/v1/object/public/thumbnails/${path}`

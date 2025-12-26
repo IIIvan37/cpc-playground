@@ -37,6 +37,7 @@ export {
   useAddTag,
   // Shares
   useAddUserShare,
+  useAllTags,
   useAvailableDependencies,
   useAvailableLibraries,
   // CRUD
