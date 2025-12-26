@@ -1,7 +1,8 @@
 import { useAtom, useSetAtom } from 'jotai'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useConsoleMessages } from '@/hooks/emulator/use-console-messages'
 import { container } from '@/infrastructure/container'
+import { createLogger } from '@/lib/logger'
 import { codeAtom } from '@/store/editor'
 import { currentProgramIdAtom } from '@/store/programs'
 import { currentFileIdAtom } from '@/store/projects'
@@ -12,6 +13,7 @@ export function useSharedCode() {
   const setCurrentFileId = useSetAtom(currentFileIdAtom)
   const setCurrentProgramId = useSetAtom(currentProgramIdAtom)
   const [isLoading, setIsLoading] = useState(false)
+  const logger = useMemo(() => createLogger('useSharedCode'), [])
 
   const { getSharedCode } = container
 
@@ -32,11 +34,8 @@ export function useSharedCode() {
       try {
         const { code } = await getSharedCode.execute({ shareId: id })
 
-        console.log(
-          '[useSharedCode] Received code length:',
-          code?.length,
-          'First 100 chars:',
-          code?.substring(0, 100)
+        logger.debug(
+          `Received code length: ${code?.length}, First 100 chars: ${code?.substring(0, 100)}`
         )
 
         if (code) {
@@ -76,7 +75,8 @@ export function useSharedCode() {
     addMessage,
     getSharedCode,
     setCurrentFileId,
-    setCurrentProgramId
+    setCurrentProgramId,
+    logger
   ])
 
   return { isLoading }

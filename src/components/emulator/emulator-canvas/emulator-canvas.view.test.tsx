@@ -12,9 +12,11 @@ describe('EmulatorCanvasView', () => {
     statusText: '○ Click to type',
     canSaveThumbnail: false,
     savingThumbnail: false,
+    currentKeyboardLayout: 'azerty',
     onFocus: vi.fn(),
     onBlur: vi.fn(),
-    onSaveThumbnail: vi.fn()
+    onSaveThumbnail: vi.fn(),
+    onKeyboardLayoutChange: vi.fn()
   }
 
   describe('rendering', () => {

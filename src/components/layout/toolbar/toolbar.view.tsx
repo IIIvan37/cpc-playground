@@ -31,7 +31,10 @@ type RunControlsViewProps = Readonly<{
   isReady: boolean
   isCompiling: boolean
   isLibrary: boolean
+  outputFormat: string
   onRun: () => void
+  onInject: () => void
+  isInjectAvailable: boolean
   onReset: () => void
 }>
 
@@ -39,9 +42,14 @@ export function RunControlsView({
   isReady,
   isCompiling,
   isLibrary,
+  outputFormat,
   onRun,
+  onInject,
+  isInjectAvailable,
   onReset
 }: RunControlsViewProps) {
+  const canInject = outputFormat === 'dsk' && isInjectAvailable
+
   return (
     <>
       <Button
@@ -54,6 +62,16 @@ export function RunControlsView({
         <PlayIcon />
         <span>{isCompiling ? 'Compiling...' : 'Run'}</span>
       </Button>
+      {canInject && (
+        <Button
+          variant='secondary'
+          onClick={onInject}
+          disabled={!isReady || isCompiling || isLibrary}
+          title='Inject DSK without running it'
+        >
+          <span>Inject</span>
+        </Button>
+      )}
       <Button variant='secondary' onClick={onReset} disabled={!isReady}>
         <ResetIcon />
         <span>Reset</span>
@@ -100,6 +118,8 @@ export type ToolbarViewProps = Readonly<{
   isCompiling: boolean
   isLibrary: boolean
   onRun: () => void
+  onInject: () => void
+  isInjectAvailable: boolean
   onReset: () => void
 
   // View mode controls
@@ -116,6 +136,8 @@ export function ToolbarView({
   isCompiling,
   isLibrary,
   onRun,
+  onInject,
+  isInjectAvailable,
   onReset,
   viewMode,
   onViewModeChange,
@@ -137,7 +159,10 @@ export function ToolbarView({
           isReady={isReady}
           isCompiling={isCompiling}
           isLibrary={isLibrary}
+          outputFormat={outputFormat}
           onRun={onRun}
+          onInject={onInject}
+          isInjectAvailable={isInjectAvailable}
           onReset={onReset}
         />
       </Flex>

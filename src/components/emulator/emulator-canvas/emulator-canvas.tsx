@@ -47,17 +47,28 @@ export function getEmulatorCanvas(): HTMLCanvasElement | null {
 }
 
 /**
+ * Get the default keyboard layout based on browser language
+ */
+function getDefaultKeyboardLayout(): 'qwerty' | 'azerty' {
+  const language = navigator.language.toLowerCase()
+  return language.startsWith('fr') ? 'azerty' : 'qwerty'
+}
+
+/**
  * Container component for CPC emulator canvas
  * Handles keyboard blocking, CPC keyboard mappings, and emulator initialization
  */
 export function EmulatorCanvas() {
   const wrapperRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { initialize, isReady } = useEmulator()
+  const { initialize, isReady, setKeyboardLayout } = useEmulator()
   const { user } = useAuth()
   const { project } = useCurrentProject()
   const { saveThumbnail, loading: savingThumbnail } = useSaveThumbnail()
   const [hasFocus, setHasFocus] = useState(false)
+  const [currentKeyboardLayout, setCurrentKeyboardLayout] = useState(
+    getDefaultKeyboardLayout
+  )
 
   // Can save thumbnail if user owns the current project
   const canSaveThumbnail = !!(user && project && project.userId === user.id)
@@ -80,6 +91,13 @@ export function EmulatorCanvas() {
     // Cleanup: don't remove canvas from DOM, just let it stay
     // It will be moved to the new wrapper when component remounts
   }, [initialize, isReady])
+
+  // Apply default keyboard layout when emulator becomes ready
+  useEffect(() => {
+    if (isReady) {
+      setKeyboardLayout(currentKeyboardLayout)
+    }
+  }, [isReady, currentKeyboardLayout, setKeyboardLayout])
 
   // Handle special CPC keyboard mappings when emulator has focus
   useEffect(() => {
@@ -104,11 +122,13 @@ export function EmulatorCanvas() {
         if (press) press(0x09)
       }
 
-      // Map Shift+0-9 to CPC function keys F0-F9
-      if (e.shiftKey && e.code?.startsWith('Digit')) {
+      // Map Shift+F1-F10 to CPC function keys F1-F0
+      if (e.shiftKey && e.code?.startsWith('F') && e.code.length <= 3) {
         e.preventDefault()
         e.stopPropagation()
-        const fnNum = Number.parseInt(e.code.charAt(5), 10)
+        const fNum = Number.parseInt(e.code.slice(1), 10)
+        // F10 -> F0, F1-F9 -> F1-F9
+        const fnNum = fNum === 10 ? 0 : fNum
         const pressFn = Module._em_press_fn as
           | ((fn: number) => void)
           | undefined
@@ -130,9 +150,11 @@ export function EmulatorCanvas() {
         if (release) release(0x09)
       }
 
-      // Handle Shift+number key release for CPC function keys
-      if (e.code?.startsWith('Digit')) {
-        const fnNum = Number.parseInt(e.code.charAt(5), 10)
+      // Handle Shift+F1-F10 key release for CPC function keys
+      if (e.code?.startsWith('F') && e.code.length <= 3) {
+        const fNum = Number.parseInt(e.code.slice(1), 10)
+        // F10 -> F0, F1-F9 -> F1-F9
+        const fnNum = fNum === 10 ? 0 : fNum
         const releaseFn = Module._em_release_fn as
           | ((fn: number) => void)
           | undefined
@@ -167,6 +189,16 @@ export function EmulatorCanvas() {
     saveThumbnail()
   }, [saveThumbnail])
 
+  const handleKeyboardLayoutChange = useCallback(
+    (layout: string) => {
+      if (layout === 'qwerty' || layout === 'azerty') {
+        setCurrentKeyboardLayout(layout)
+        setKeyboardLayout(layout)
+      }
+    },
+    [setKeyboardLayout]
+  )
+
   const statusText = useMemo(() => {
     if (!isReady) return '○ Loading...'
     return hasFocus ? '● Active' : '○ Click to type'
@@ -180,9 +212,11 @@ export function EmulatorCanvas() {
       statusText={statusText}
       canSaveThumbnail={canSaveThumbnail}
       savingThumbnail={savingThumbnail}
+      currentKeyboardLayout={currentKeyboardLayout}
       onFocus={handleFocus}
       onBlur={handleBlur}
       onSaveThumbnail={handleSaveThumbnail}
+      onKeyboardLayoutChange={handleKeyboardLayoutChange}
     />
   )
 }

@@ -10,6 +10,7 @@ import type {
   SignUpCredentials,
   Unsubscribe
 } from '@/domain/repositories/auth.repository.interface'
+import { createLogger } from '@/lib/logger'
 import type { Database } from '@/types/database.types'
 
 type UserProfileRow = Database['public']['Tables']['user_profiles']['Row']
@@ -53,6 +54,8 @@ function mapToUserProfile(row: UserProfileRow): UserProfile {
 export function createSupabaseAuthRepository(
   supabase: SupabaseClient<Database>
 ): IAuthRepository {
+  const logger = createLogger('SupabaseAuthRepository')
+
   return {
     async signIn(credentials: SignInCredentials): Promise<AuthResult> {
       try {
@@ -121,7 +124,7 @@ export function createSupabaseAuthRepository(
         return { error: null }
       } catch (error) {
         // Ignore network errors, session will be cleared locally anyway
-        console.warn('SignOut error (ignored):', error)
+        logger.warn('SignOut error (ignored)', error)
         return { error: null }
       }
     },
@@ -189,7 +192,7 @@ export function createSupabaseAuthRepository(
           .single()
 
         if (error) {
-          console.error('Failed to fetch user profile:', error)
+          logger.error('Failed to fetch user profile', error)
           return null
         }
 
@@ -197,7 +200,7 @@ export function createSupabaseAuthRepository(
 
         return mapToUserProfile(data)
       } catch (error) {
-        console.error('Failed to fetch user profile:', error)
+        logger.error('Failed to fetch user profile', error)
         return null
       }
     },

@@ -5,10 +5,11 @@
  */
 
 import { useAtomValue, useSetAtom } from 'jotai'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { OutputFormat } from '@/domain/services/assembler.interface'
 import type { CompilationFile } from '@/domain/services/assembler-adapter.interface'
 import { getAssemblerAdapter } from '@/infrastructure/assemblers/adapter-registry'
+import { createLogger } from '@/lib/logger'
 import {
   compilationErrorAtom,
   compilationOutputAtom,
@@ -24,6 +25,7 @@ export function useAssembler() {
   const setCompilationOutput = useSetAtom(compilationOutputAtom)
   const { addMessage: addConsoleMessage, clearErrorLines } =
     useConsoleMessages()
+  const logger = useMemo(() => createLogger('useAssembler'), [])
 
   // Track initialization status
   const isInitializedRef = useRef(false)
@@ -43,7 +45,7 @@ export function useAssembler() {
         }
         isInitializedRef.current = true
       } catch (error) {
-        console.error(`Failed to initialize ${assemblerType} adapter:`, error)
+        logger.error(`Failed to initialize ${assemblerType} adapter`, error)
       } finally {
         initializingRef.current = false
       }
@@ -52,7 +54,7 @@ export function useAssembler() {
     // Reset when assembler type changes
     isInitializedRef.current = false
     initAdapter()
-  }, [assemblerType])
+  }, [assemblerType, logger])
 
   const compile = useCallback(
     async (

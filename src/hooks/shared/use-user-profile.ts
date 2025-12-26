@@ -6,6 +6,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { container } from '@/infrastructure/container'
+import { createLogger } from '@/lib/logger'
 import { useAuth } from '../auth'
 
 export type { UserProfile } from '@/domain/entities/user.entity'
@@ -15,6 +16,7 @@ export function useUserProfile() {
   const queryClient = useQueryClient()
 
   const { getUserProfile, updateUserProfile } = container
+  const logger = createLogger('useUserProfile')
 
   // Use React Query to fetch and cache user profile
   const {
@@ -31,7 +33,7 @@ export function useUserProfile() {
       })
 
       if (!fetchedProfile) {
-        console.warn(
+        logger.warn(
           'User profile not found. Please sign out and sign in again.'
         )
         return null

@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { createLogger } from '@/lib/logger'
 import {
   emulatorReadyAtom,
   emulatorResetTriggerAtom,
@@ -26,6 +27,7 @@ export function useEmulator() {
   const setEmulatorReady = useSetAtom(emulatorReadyAtom)
   const setEmulatorRunning = useSetAtom(emulatorRunningAtom)
   const { addMessage: addConsoleMessage } = useConsoleMessages()
+  const logger = useMemo(() => createLogger('useEmulator'), [])
 
   // Listen for external reset triggers (e.g., when switching projects)
   useEffect(() => {
@@ -105,8 +107,8 @@ export function useEmulator() {
               locateFile: (path: string) => `${CPCEC_BASE_URL}/${path}`,
               preRun: [],
               postRun: [],
-              print: (text: string) => console.log('[CPCEC]', text),
-              printErr: (text: string) => console.error('[CPCEC]', text),
+              print: (text: string) => logger.info(`[CPCEC] ${text}`),
+              printErr: (text: string) => logger.error(`[CPCEC] ${text}`),
               onRuntimeInitialized: () => {
                 cpcecModule = Module
                 setEmulatorReady(true)
@@ -148,7 +150,7 @@ export function useEmulator() {
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [setEmulatorReady, addConsoleMessage]
+    [setEmulatorReady, addConsoleMessage, logger]
   )
 
   const loadSna = useCallback(
@@ -159,12 +161,12 @@ export function useEmulator() {
       }
 
       try {
-        console.log('[Emulator] Loading SNA, size:', snaData.length)
+        logger.debug(`Loading SNA, size: ${snaData.length}`)
 
         // Write SNA to MEMFS
         const filename = '/program.sna'
         cpcecModule.FS.writeFile(filename, snaData)
-        console.log('[Emulator] SNA written to MEMFS')
+        logger.debug('SNA written to MEMFS')
 
         // Use em_load_file to load the SNA
         cpcecModule._em_load_file(cpcecModule.allocateUTF8(filename))
@@ -175,13 +177,13 @@ export function useEmulator() {
           text: `SNA loaded (${snaData.length} bytes)`
         })
       } catch (error) {
-        console.error('[Emulator] SNA load error:', error)
+        logger.error('SNA load error', error)
         const message =
           error instanceof Error ? error.message : 'Failed to load SNA'
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [setEmulatorRunning, addConsoleMessage]
+    [setEmulatorRunning, addConsoleMessage, logger]
   )
 
   const loadDsk = useCallback(
@@ -192,12 +194,12 @@ export function useEmulator() {
       }
 
       try {
-        console.log('[Emulator] Loading DSK, size:', dskData.length)
+        logger.debug(`Loading DSK, size: ${dskData.length}`)
 
         // Write DSK to MEMFS
         const filename = '/program.dsk'
         cpcecModule.FS.writeFile(filename, dskData)
-        console.log('[Emulator] DSK written to MEMFS')
+        logger.debug('DSK written to MEMFS')
 
         // Use em_load_file to load the DSK
         cpcecModule._em_load_file(cpcecModule.allocateUTF8(filename))
@@ -208,13 +210,56 @@ export function useEmulator() {
           text: `DSK loaded (${dskData.length} bytes) - Type CAT then RUN"PROGRAM`
         })
       } catch (error) {
-        console.error('[Emulator] DSK load error:', error)
+        logger.error('DSK load error', error)
         const message =
           error instanceof Error ? error.message : 'Failed to load DSK'
         addConsoleMessage({ type: 'error', text: message })
       }
     },
-    [setEmulatorRunning, addConsoleMessage]
+    [setEmulatorRunning, addConsoleMessage, logger]
+  )
+
+  const injectDsk = useCallback(
+    (dskData: Uint8Array) => {
+      if (!cpcecModule) {
+        addConsoleMessage({ type: 'error', text: 'Emulator not ready' })
+        return
+      }
+
+      try {
+        logger.debug(`Injecting DSK, size: ${dskData.length}`)
+        logger.debug(
+          'Available CPCEC functions',
+          Object.keys(cpcecModule).filter((key) => key.startsWith('_em_'))
+        )
+
+        // Write DSK to MEMFS
+        const filename = '/program.dsk'
+        cpcecModule.FS.writeFile(filename, dskData)
+        logger.debug('DSK written to MEMFS')
+
+        // Check if _em_inject_file exists
+        if (typeof cpcecModule._em_inject_file === 'function') {
+          cpcecModule._em_inject_file(cpcecModule.allocateUTF8(filename))
+          addConsoleMessage({
+            type: 'success',
+            text: `DSK injected (${dskData.length} bytes) - Ready to be accessed`
+          })
+        } else {
+          // Function not available yet
+          addConsoleMessage({
+            type: 'warning',
+            text: `Inject function not available - use Run instead`
+          })
+        }
+      } catch (error) {
+        logger.error('DSK inject error', error)
+        const message =
+          error instanceof Error ? error.message : 'Failed to inject DSK'
+        addConsoleMessage({ type: 'error', text: message })
+      }
+    },
+    [addConsoleMessage, logger]
   )
 
   const reset = useCallback(() => {
@@ -225,12 +270,54 @@ export function useEmulator() {
     }
   }, [setEmulatorRunning, addConsoleMessage])
 
+  const isInjectAvailable = useCallback(() => {
+    return cpcecModule
+      ? typeof cpcecModule._em_inject_file === 'function'
+      : false
+  }, [])
+
+  const setKeyboardLayout = useCallback(
+    (layout: string) => {
+      if (!cpcecModule) {
+        addConsoleMessage({ type: 'error', text: 'Emulator not ready' })
+        return
+      }
+
+      try {
+        // Check if _em_set_keyboard_layout exists
+        if (typeof cpcecModule._em_set_keyboard_layout === 'function') {
+          cpcecModule._em_set_keyboard_layout(cpcecModule.allocateUTF8(layout))
+          addConsoleMessage({
+            type: 'info',
+            text: `Keyboard layout set to ${layout.toUpperCase()}`
+          })
+        } else {
+          addConsoleMessage({
+            type: 'warning',
+            text: 'Keyboard layout selection not available'
+          })
+        }
+      } catch (error) {
+        logger.error('Keyboard layout set error', error)
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to set keyboard layout'
+        addConsoleMessage({ type: 'error', text: message })
+      }
+    },
+    [addConsoleMessage, logger]
+  )
+
   return {
     isReady,
     isRunning,
     initialize,
     loadSna,
     loadDsk,
+    injectDsk,
+    isInjectAvailable,
+    setKeyboardLayout,
     reset
   }
 }
