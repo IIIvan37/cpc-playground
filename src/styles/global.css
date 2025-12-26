@@ -91,6 +91,144 @@ img {
 /* CodeMirror error line highlighting */
 .cm-error-line,
 .cm-editor .cm-error-line {
-  background-color: rgba(255, 0, 0, 0.1);
+  background-color: rgba(255, 0, 0, 0.2);
   border-left: 3px solid #ff4444;
+}
+
+/* CodeMirror lint gutter markers */
+.cm-gutter-lint {
+  width: 12px;
+}
+
+.cm-gutter-lint .cm-gutterElement {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  margin: 2px 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  /* Hide by default - only show when there's an actual lint issue */
+  display: none;
+}
+
+.cm-gutter-lint .cm-gutterElement.cm-lintRange-error {
+  background-color: #ff4444;
+  border-color: #cc0000;
+  box-shadow: 0 0 4px rgba(255, 68, 68, 0.4);
+  display: block;
+}
+
+.cm-gutter-lint .cm-gutterElement.cm-lintRange-warning {
+  background-color: #ffaa00;
+  border-color: #cc8800;
+  box-shadow: 0 0 4px rgba(255, 170, 0, 0.4);
+  display: block;
+}
+
+.cm-gutter-lint .cm-gutterElement.cm-lintRange-info {
+  background-color: #0088ff;
+  border-color: #0066cc;
+  box-shadow: 0 0 4px rgba(0, 136, 255, 0.4);
+  display: block;
+}
+
+/* Hover effects for gutter markers */
+.cm-gutter-lint .cm-gutterElement:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
+}
+
+.cm-gutter-lint .cm-gutterElement.cm-lintRange-warning:hover {
+  box-shadow: 0 0 8px rgba(255, 170, 0, 0.6);
+}
+
+.cm-gutter-lint .cm-gutterElement.cm-lintRange-info:hover {
+  box-shadow: 0 0 8px rgba(0, 136, 255, 0.6);
+}
+
+/* Active line gutter marker - only show if there's an actual lint marker */
+.cm-gutter-lint .cm-gutterElement.cm-activeLineGutter {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* CodeMirror error tooltips */
+.cm-error-tooltip {
+  background-color: var(--color-background, #1e1e1e);
+  color: var(--color-text, #ffffff);
+  border: 1px solid var(--color-border, #3e3e3e);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: var(--font-mono, "Fira Code", "Monaco", "Consolas", monospace);
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 400px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  position: relative;
+}
+
+/* Tooltip arrow */
+.cm-error-tooltip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid var(--color-border, #3e3e3e);
+}
+
+.cm-error-tooltip::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 21px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid var(--color-background, #1e1e1e);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .cm-error-tooltip {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border-color: #3e3e3e;
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .cm-error-tooltip {
+  background-color: #ffffff;
+  color: #000000;
+  border-color: #cccccc;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .cm-error-tooltip::before {
+  border-bottom-color: #cccccc;
+}
+
+[data-theme="light"] .cm-error-tooltip::after {
+  border-bottom-color: #ffffff;
+}
+
+/* Error type styling */
+.cm-error-tooltip[data-severity="error"] {
+  border-left: 3px solid #ff4444;
+}
+
+.cm-error-tooltip[data-severity="warning"] {
+  border-left: 3px solid #ffaa00;
+}
+
+.cm-error-tooltip[data-severity="info"] {
+  border-left: 3px solid #0088ff;
 }

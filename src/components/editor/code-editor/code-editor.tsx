@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCurrentFile } from '@/hooks/projects/use-current-project'
 import {
   codeAtom,
+  consoleMessagesAtom,
   editorThemeAtom,
-  errorLinesAtom,
   goToLineAtom
 } from '@/store'
 import { currentProgramAtom } from '@/store/programs'
@@ -24,7 +24,7 @@ const store = getDefaultStore()
  */
 export function CodeEditor() {
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
-  const errorLines = useAtomValue(errorLinesAtom)
+  const consoleMessages = useAtomValue(consoleMessagesAtom)
   const [editorTheme, setEditorTheme] = useAtom(editorThemeAtom)
   const currentFile = useCurrentFile()
   const currentProgram = useAtomValue(currentProgramAtom)
@@ -140,7 +140,7 @@ export function CodeEditor() {
       fileName={fileName}
       fileType={fileType}
       code={initialCode}
-      errorLines={errorLines}
+      consoleMessages={consoleMessages}
       readOnly={isReadOnly}
       fileId={fileId}
       theme={editorTheme}

@@ -5,6 +5,14 @@ import Button from '@/components/ui/button/button'
 import styles from './code-editor.module.css'
 import { useCodeMirror } from './use-codemirror'
 
+type ConsoleMessage = Readonly<{
+  id: string
+  type: 'info' | 'error' | 'success' | 'warning'
+  text: string
+  timestamp: Date
+  line?: number
+}>
+
 // --- EditorHeaderView ---
 type EditorHeaderViewProps = Readonly<{
   fileName: string | undefined
@@ -67,7 +75,7 @@ export function EditorHeaderView({
 type CodeMirrorEditorViewProps = Readonly<{
   code: string
   readOnly?: boolean
-  errorLines: readonly number[]
+  consoleMessages: readonly ConsoleMessage[]
   onInput: (value: string) => void
   onViewCreated?: (view: EditorView) => void
   theme?: 'vscode-light' | 'vscode-dark'
@@ -76,7 +84,7 @@ type CodeMirrorEditorViewProps = Readonly<{
 function CodeMirrorEditorView({
   code,
   readOnly = false,
-  errorLines,
+  consoleMessages,
   onInput,
   onViewCreated,
   theme = 'vscode-dark'
@@ -86,7 +94,7 @@ function CodeMirrorEditorView({
   useCodeMirror({
     initialCode: code,
     readOnly,
-    errorLines,
+    consoleMessages,
     onInput,
     containerRef,
     onViewCreated,
@@ -111,7 +119,7 @@ export type CodeEditorViewProps = Readonly<{
 
   // Editor state
   code: string
-  errorLines: readonly number[]
+  consoleMessages: readonly ConsoleMessage[]
   readOnly?: boolean
   theme?: 'vscode-light' | 'vscode-dark'
 
@@ -131,7 +139,7 @@ export function CodeEditorView({
   fileName,
   fileType,
   code,
-  errorLines,
+  consoleMessages,
   readOnly = false,
   fileId,
   theme = 'vscode-dark',
@@ -157,7 +165,7 @@ export function CodeEditorView({
           key={fileId}
           code={code}
           readOnly={readOnly}
-          errorLines={errorLines}
+          consoleMessages={consoleMessages}
           onInput={onInput}
           onViewCreated={onViewCreated}
           theme={theme}

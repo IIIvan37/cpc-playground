@@ -51,7 +51,7 @@ export function getEmulatorCanvas(): HTMLCanvasElement | null {
  * Defaults to QWERTY (English ROM) if no parameter specified
  */
 function getDefaultKeyboardLayout(): 'qwerty' | 'azerty' {
-  const urlParams = new URLSearchParams(window.location.search)
+  const urlParams = new URLSearchParams(globalThis.location?.search || '')
   const lang = urlParams.get('lang')
   if (lang === 'fr') return 'azerty'
   if (lang === 'en') return 'qwerty'
@@ -64,9 +64,9 @@ function getDefaultKeyboardLayout(): 'qwerty' | 'azerty' {
  * Reload the page with the specified language parameter
  */
 function reloadWithLanguage(lang: 'en' | 'fr') {
-  const url = new URL(window.location.href)
+  const url = new URL(globalThis.location?.href || '')
   url.searchParams.set('lang', lang)
-  window.location.href = url.toString()
+  globalThis.location.href = url.toString()
 }
 
 /**

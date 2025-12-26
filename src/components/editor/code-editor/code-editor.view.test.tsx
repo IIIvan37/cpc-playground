@@ -3,6 +3,14 @@ import { describe, expect, it, vi } from 'vitest'
 import styles from './code-editor.module.css'
 import { CodeEditorView, EditorHeaderView } from './code-editor.view'
 
+type ConsoleMessage = Readonly<{
+  id: string
+  type: 'info' | 'error' | 'success' | 'warning'
+  text: string
+  timestamp: Date
+  line?: number
+}>
+
 describe('EditorHeaderView', () => {
   it('renders file name when provided', () => {
     render(
@@ -108,6 +116,7 @@ describe('CodeEditorView', () => {
     editorKey: 'test-editor-key',
     code: 'LD A, 0\nLD B, 1',
     errorLines: [] as readonly number[],
+    consoleMessages: [] as readonly ConsoleMessage[],
     onInput: vi.fn(),
     editorTheme: 'vscode-dark' as const,
     onToggleTheme: vi.fn()
