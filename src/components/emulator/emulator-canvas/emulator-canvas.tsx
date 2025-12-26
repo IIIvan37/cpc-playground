@@ -53,11 +53,12 @@ export function getEmulatorCanvas(): HTMLCanvasElement | null {
 export function EmulatorCanvas() {
   const wrapperRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { initialize, isReady } = useEmulator()
+  const { initialize, isReady, setKeyboardLayout } = useEmulator()
   const { user } = useAuth()
   const { project } = useCurrentProject()
   const { saveThumbnail, loading: savingThumbnail } = useSaveThumbnail()
   const [hasFocus, setHasFocus] = useState(false)
+  const [currentKeyboardLayout, setCurrentKeyboardLayout] = useState('azerty')
 
   // Can save thumbnail if user owns the current project
   const canSaveThumbnail = !!(user && project && project.userId === user.id)
@@ -167,6 +168,14 @@ export function EmulatorCanvas() {
     saveThumbnail()
   }, [saveThumbnail])
 
+  const handleKeyboardLayoutChange = useCallback(
+    (layout: string) => {
+      setCurrentKeyboardLayout(layout)
+      setKeyboardLayout(layout)
+    },
+    [setKeyboardLayout]
+  )
+
   const statusText = useMemo(() => {
     if (!isReady) return '○ Loading...'
     return hasFocus ? '● Active' : '○ Click to type'
@@ -180,9 +189,11 @@ export function EmulatorCanvas() {
       statusText={statusText}
       canSaveThumbnail={canSaveThumbnail}
       savingThumbnail={savingThumbnail}
+      currentKeyboardLayout={currentKeyboardLayout}
       onFocus={handleFocus}
       onBlur={handleBlur}
       onSaveThumbnail={handleSaveThumbnail}
+      onKeyboardLayoutChange={handleKeyboardLayoutChange}
     />
   )
 }

@@ -274,6 +274,39 @@ export function useEmulator() {
       : false
   }, [])
 
+  const setKeyboardLayout = useCallback(
+    (layout: string) => {
+      if (!cpcecModule) {
+        addConsoleMessage({ type: 'error', text: 'Emulator not ready' })
+        return
+      }
+
+      try {
+        // Check if _em_set_keyboard_layout exists
+        if (typeof cpcecModule._em_set_keyboard_layout === 'function') {
+          cpcecModule._em_set_keyboard_layout(cpcecModule.allocateUTF8(layout))
+          addConsoleMessage({
+            type: 'info',
+            text: `Keyboard layout set to ${layout.toUpperCase()}`
+          })
+        } else {
+          addConsoleMessage({
+            type: 'warning',
+            text: 'Keyboard layout selection not available'
+          })
+        }
+      } catch (error) {
+        console.error('[Emulator] Keyboard layout set error:', error)
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to set keyboard layout'
+        addConsoleMessage({ type: 'error', text: message })
+      }
+    },
+    [addConsoleMessage]
+  )
+
   return {
     isReady,
     isRunning,
@@ -282,6 +315,7 @@ export function useEmulator() {
     loadDsk,
     injectDsk,
     isInjectAvailable,
+    setKeyboardLayout,
     reset
   }
 }

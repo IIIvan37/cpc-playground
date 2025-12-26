@@ -1,5 +1,6 @@
 import { CameraIcon } from '@radix-ui/react-icons'
 import type { RefObject } from 'react'
+import { Select, SelectItem } from '@/components/ui/select/select'
 import styles from './emulator-canvas.module.css'
 
 type EmulatorCanvasViewProps = Readonly<{
@@ -9,9 +10,11 @@ type EmulatorCanvasViewProps = Readonly<{
   statusText: string
   canSaveThumbnail: boolean
   savingThumbnail: boolean
+  currentKeyboardLayout: string
   onFocus: () => void
   onBlur: () => void
   onSaveThumbnail: () => void
+  onKeyboardLayoutChange: (layout: string) => void
 }>
 
 export function EmulatorCanvasView({
@@ -21,15 +24,32 @@ export function EmulatorCanvasView({
   statusText,
   canSaveThumbnail,
   savingThumbnail,
+  currentKeyboardLayout,
   onFocus,
   onBlur,
-  onSaveThumbnail
+  onSaveThumbnail,
+  onKeyboardLayoutChange
 }: EmulatorCanvasViewProps) {
   return (
     <div className={styles.container} ref={containerRef}>
       <div className={styles.header}>
         <span className={styles.title}>CPC Emulator</span>
         <div className={styles.headerActions}>
+          <div className={styles.languageSelector}>
+            <label
+              htmlFor='keyboard-layout-select'
+              className={styles.languageLabel}
+            >
+              Keyboard:
+            </label>
+            <Select
+              value={currentKeyboardLayout}
+              onValueChange={onKeyboardLayoutChange}
+            >
+              <SelectItem value='qwerty'>QWERTY</SelectItem>
+              <SelectItem value='azerty'>AZERTY</SelectItem>
+            </Select>
+          </div>
           {canSaveThumbnail && (
             <button
               type='button'
