@@ -89,7 +89,8 @@ img {
 }
 
 /* CodeMirror error line highlighting */
-.cm-errorLine {
+.cm-editor .cm-error-line,
+.cm-error-line {
   background-color: rgba(255, 0, 0, 0.1);
   border-left: 3px solid #ff4444;
 }

@@ -41,6 +41,10 @@
   background-color: var(--color-background);
 }
 
+.editorWrapper.transparentBg {
+  background-color: transparent;
+}
+
 .lineNumbersWrapper {
   background-color: rgba(0, 0, 0, 0.3);
   overflow: hidden;
