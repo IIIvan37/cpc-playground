@@ -31,6 +31,7 @@ export function Toolbar() {
   const compilationStatus = useAtomValue(compilationStatusAtom)
   const [viewMode, setViewMode] = useAtom(viewModeAtom)
   const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
+
   const { project: currentProject } = useCurrentProject()
   const currentFile = useCurrentFile()
   const isMarkdownFile = useIsMarkdownFile()

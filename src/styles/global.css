@@ -87,3 +87,9 @@ img {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent);
 }
+
+/* CodeMirror error line highlighting */
+.cm-errorLine {
+  background-color: rgba(255, 0, 0, 0.1);
+  border-left: 3px solid #ff4444;
+}

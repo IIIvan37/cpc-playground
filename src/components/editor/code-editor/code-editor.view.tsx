@@ -1,5 +1,7 @@
 import type { EditorView } from '@codemirror/view'
+import { MoonIcon, SunIcon } from '@radix-ui/react-icons'
 import { useRef } from 'react'
+import Button from '@/components/ui/button/button'
 import styles from './code-editor.module.css'
 import { useCodeMirror } from './use-codemirror'
 
@@ -13,11 +15,15 @@ type EditorHeaderViewProps = Readonly<{
     | 'modified'
     | 'scratch'
     | 'dependency'
+  editorTheme: 'vscode-light' | 'vscode-dark'
+  onToggleTheme: () => void
 }>
 
 export function EditorHeaderView({
   fileName,
-  fileType
+  fileType,
+  editorTheme,
+  onToggleTheme
 }: EditorHeaderViewProps) {
   const getHintText = () => {
     switch (fileType) {
@@ -39,7 +45,19 @@ export function EditorHeaderView({
   return (
     <div className={styles.header}>
       <span className={styles.title}>{fileName ?? 'Scratch'}</span>
-      <span className={styles.hint}>{getHintText()}</span>
+      <div className={styles.headerActions}>
+        <span className={styles.hint}>{getHintText()}</span>
+        <Button
+          variant='ghost'
+          size='sm'
+          onClick={onToggleTheme}
+          title={`Switch to ${
+            editorTheme === 'vscode-dark' ? 'light' : 'dark'
+          } theme`}
+        >
+          {editorTheme === 'vscode-dark' ? <SunIcon /> : <MoonIcon />}
+        </Button>
+      </div>
     </div>
   )
 }
@@ -52,6 +70,7 @@ type CodeMirrorEditorViewProps = Readonly<{
   errorLines: readonly number[]
   onInput: (value: string) => void
   onViewCreated?: (view: EditorView) => void
+  theme?: 'vscode-light' | 'vscode-dark'
 }>
 
 function CodeMirrorEditorView({
@@ -59,7 +78,8 @@ function CodeMirrorEditorView({
   readOnly = false,
   errorLines,
   onInput,
-  onViewCreated
+  onViewCreated,
+  theme = 'vscode-dark'
 }: CodeMirrorEditorViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -69,7 +89,8 @@ function CodeMirrorEditorView({
     errorLines,
     onInput,
     containerRef,
-    onViewCreated
+    onViewCreated,
+    theme
   })
 
   return <div ref={containerRef} className={styles.codemirrorContainer} />
@@ -92,6 +113,11 @@ export type CodeEditorViewProps = Readonly<{
   code: string
   errorLines: readonly number[]
   readOnly?: boolean
+  theme?: 'vscode-light' | 'vscode-dark'
+
+  // Theme controls
+  editorTheme: 'vscode-light' | 'vscode-dark'
+  onToggleTheme: () => void
 
   // File identification for remounting
   fileId?: string
@@ -108,12 +134,20 @@ export function CodeEditorView({
   errorLines,
   readOnly = false,
   fileId,
+  theme = 'vscode-dark',
+  editorTheme,
+  onToggleTheme,
   onInput,
   onViewCreated
 }: CodeEditorViewProps) {
   return (
     <div className={styles.container}>
-      <EditorHeaderView fileName={fileName} fileType={fileType} />
+      <EditorHeaderView
+        fileName={fileName}
+        fileType={fileType}
+        editorTheme={editorTheme}
+        onToggleTheme={onToggleTheme}
+      />
       <div className={styles.editorWrapper}>
         <CodeMirrorEditorView
           key={fileId}
@@ -122,6 +156,7 @@ export function CodeEditorView({
           errorLines={errorLines}
           onInput={onInput}
           onViewCreated={onViewCreated}
+          theme={theme}
         />
       </div>
     </div>

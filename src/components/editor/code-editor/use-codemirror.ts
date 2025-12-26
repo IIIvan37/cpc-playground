@@ -29,8 +29,9 @@ import {
   ViewPlugin,
   type ViewUpdate
 } from '@codemirror/view'
+import { vsCodeDark } from '@fsegurai/codemirror-theme-vscode-dark'
+import { vsCodeLight } from '@fsegurai/codemirror-theme-vscode-light'
 import { type RefObject, useEffect, useRef } from 'react'
-import { cpcThemeExtension } from './codemirror-theme'
 import { z80 } from './z80-language'
 
 // Effect to update error lines
@@ -101,6 +102,7 @@ type UseCodeMirrorProps = {
   onInput: (value: string) => void
   containerRef: RefObject<HTMLDivElement | null>
   onViewCreated?: (view: EditorView) => void
+  theme?: 'vscode-light' | 'vscode-dark'
 }
 
 export function useCodeMirror({
@@ -109,7 +111,8 @@ export function useCodeMirror({
   errorLines,
   onInput,
   containerRef,
-  onViewCreated
+  onViewCreated,
+  theme = 'vscode-dark'
 }: UseCodeMirrorProps) {
   const viewRef = useRef<EditorView | null>(null)
   const onInputRef = useRef(onInput)
@@ -138,6 +141,8 @@ export function useCodeMirror({
       viewRef.current = null
     }
 
+    const themeExtension = theme === 'vscode-dark' ? vsCodeDark : vsCodeLight
+
     const extensions: Extension[] = [
       history(),
       drawSelection(),
@@ -153,7 +158,7 @@ export function useCodeMirror({
       errorLinesField,
       errorLinePlugin,
       z80(),
-      ...cpcThemeExtension,
+      themeExtension,
       keymap.of([
         ...defaultKeymap,
         ...historyKeymap,
@@ -194,7 +199,7 @@ export function useCodeMirror({
       viewRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, errorLines, containerRef, onViewCreated])
+  }, [readOnly, errorLines, containerRef, onViewCreated, theme])
 
   // Update editor content when initialCode changes externally (e.g., after save)
   useEffect(() => {

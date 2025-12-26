@@ -2,7 +2,12 @@ import type { EditorView } from '@codemirror/view'
 import { getDefaultStore, useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCurrentFile } from '@/hooks/projects/use-current-project'
-import { codeAtom, errorLinesAtom, goToLineAtom } from '@/store'
+import {
+  codeAtom,
+  editorThemeAtom,
+  errorLinesAtom,
+  goToLineAtom
+} from '@/store'
 import { currentProgramAtom } from '@/store/programs'
 import { isDependencyFileAtom, isReadOnlyModeAtom } from '@/store/projects'
 import { CodeEditorView } from './code-editor.view'
@@ -20,6 +25,7 @@ const store = getDefaultStore()
 export function CodeEditor() {
   const [goToLine, setGoToLine] = useAtom(goToLineAtom)
   const errorLines = useAtomValue(errorLinesAtom)
+  const [editorTheme, setEditorTheme] = useAtom(editorThemeAtom)
   const currentFile = useCurrentFile()
   const currentProgram = useAtomValue(currentProgramAtom)
   const globalCode = useAtomValue(codeAtom)
@@ -86,6 +92,12 @@ export function CodeEditor() {
     editorViewRef.current = view
   }, [])
 
+  const handleToggleTheme = useCallback(() => {
+    setEditorTheme(
+      editorTheme === 'vscode-dark' ? 'vscode-light' : 'vscode-dark'
+    )
+  }, [editorTheme, setEditorTheme])
+
   // Navigate to line when goToLine changes
   useEffect(() => {
     if (goToLine !== null) {
@@ -131,6 +143,9 @@ export function CodeEditor() {
       errorLines={errorLines}
       readOnly={isReadOnly}
       fileId={fileId}
+      theme={editorTheme}
+      editorTheme={editorTheme}
+      onToggleTheme={handleToggleTheme}
       onInput={handleInput}
       onViewCreated={handleViewCreated}
     />
