@@ -127,3 +127,13 @@
 .editor::placeholder {
   color: var(--color-disabled-text);
 }
+
+.codemirrorContainer {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.codemirrorContainer .cm-editor {
+  height: 100%;
+}
