@@ -208,5 +208,35 @@ describe('AuthorizationService', () => {
 
       expect(result).toBe(false)
     })
+
+    it('should return true for public project when userId is undefined (unauthenticated)', () => {
+      const project = createTestProjectEntity({ visibility: 'public' })
+
+      const result = service.canAccessAsDependency(project, undefined)
+
+      expect(result).toBe(true)
+    })
+
+    it('should return true for library project when userId is undefined (unauthenticated)', () => {
+      const project = createTestProjectEntity({
+        visibility: 'private',
+        isLibrary: true
+      })
+
+      const result = service.canAccessAsDependency(project, undefined)
+
+      expect(result).toBe(true)
+    })
+
+    it('should return false for private non-library project when userId is undefined (unauthenticated)', () => {
+      const project = createTestProjectEntity({
+        visibility: 'private',
+        isLibrary: false
+      })
+
+      const result = service.canAccessAsDependency(project, undefined)
+
+      expect(result).toBe(false)
+    })
   })
 })

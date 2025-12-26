@@ -1,5 +1,4 @@
-import type { AuthorizationService } from '@/domain/services'
-import type { IProjectsRepository } from '../../domain/repositories/projects.repository.interface'
+import type { GetProjectUseCase } from './get-project.use-case'
 
 /**
  * File with project context for compilation
@@ -19,7 +18,7 @@ export interface FileWithProject {
  */
 export interface GetProjectWithDependenciesInput {
   projectId: string
-  userId: string
+  userId: string | undefined
 }
 
 /**
@@ -42,8 +41,7 @@ export type GetProjectWithDependenciesUseCase = {
  * Factory for creating a get project with dependencies use case
  */
 export const createGetProjectWithDependenciesUseCase = (
-  repository: IProjectsRepository,
-  authorizationService: AuthorizationService
+  getProject: GetProjectUseCase
 ): GetProjectWithDependenciesUseCase => {
   return {
     /**
@@ -64,21 +62,10 @@ export const createGetProjectWithDependenciesUseCase = (
         visitedProjects.add(id)
 
         // Fetch the project
-        const project = await repository.findById(id)
-        if (!project) {
-          throw new Error(`Project not found: ${id}`)
-        }
-
-        // Check user has access to this project as a dependency
-        // User can access if: they own it, it's public, or it's a library
-        // Pass the already-fetched project to avoid refetching
-        const canAccess = authorizationService.canAccessAsDependency(
-          project,
+        const { project } = await getProject.execute({
+          projectId: id,
           userId
-        )
-        if (!canAccess) {
-          throw new Error('Access denied to project')
-        }
+        })
 
         // Add files from this project
         const projectFiles = project.files.map((file) => ({

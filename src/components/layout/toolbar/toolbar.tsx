@@ -1,9 +1,10 @@
 import { useAtom, useAtomValue } from 'jotai'
 import { ProgramManager } from '@/components/program/program-manager'
 import {
+  useActiveProject,
   useAssembler,
+  useAuth,
   useCurrentFile,
-  useCurrentProject,
   useEmulator,
   useGetProjectWithDependencies,
   useIsMarkdownFile,
@@ -33,7 +34,8 @@ export function Toolbar() {
   const [viewMode, setViewMode] = useAtom(viewModeAtom)
   const [outputFormat, setOutputFormat] = useAtom(outputFormatAtom)
 
-  const { project: currentProject } = useCurrentProject()
+  const { activeProject: currentProject } = useActiveProject()
+  const { user } = useAuth()
   const currentFile = useCurrentFile()
   const isMarkdownFile = useIsMarkdownFile()
   const { getProjectWithDependencies } = useGetProjectWithDependencies()
@@ -53,7 +55,7 @@ export function Toolbar() {
         // Get all files including dependencies
         const result = await getProjectWithDependencies({
           projectId: currentProject.id,
-          userId: currentProject.userId
+          userId: user?.id
         })
 
         // Separate current project files from dependency files
@@ -105,7 +107,7 @@ export function Toolbar() {
         // Get all files including dependencies
         const result = await getProjectWithDependencies({
           projectId: currentProject.id,
-          userId: currentProject.userId
+          userId: user?.id
         })
 
         // Separate current project files from dependency files
@@ -148,7 +150,7 @@ export function Toolbar() {
       programManager={<ProgramManager />}
       outputFormat={outputFormat}
       onOutputFormatChange={(v) => setOutputFormat(v as OutputFormat)}
-      isReady={isReady}
+      isReady={isReady && !!currentProject}
       isCompiling={isCompiling}
       isLibrary={currentProject?.isLibrary ?? false}
       onRun={handleCompileAndRun}

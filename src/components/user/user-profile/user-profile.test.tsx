@@ -3,8 +3,16 @@ import userEvent from '@testing-library/user-event'
 import { createStore, Provider } from 'jotai'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { User } from '@/domain/entities/user.entity'
-import { userAtom } from '@/hooks'
 import { UserProfile } from './user-profile'
+
+// Mock container first to avoid initialization issues
+vi.mock('@/infrastructure/container', () => ({
+  container: {
+    signOut: vi.fn(),
+    getUserProfile: vi.fn(),
+    updateUserProfile: vi.fn()
+  }
+}))
 
 // Mock hooks
 const mockSignOut = vi.fn()
@@ -35,6 +43,9 @@ vi.mock('@/hooks', async () => {
     })
   }
 })
+
+// Import userAtom after the mock to avoid hoisting issues
+import { userAtom } from '@/hooks'
 
 const mockUser: User = {
   id: 'user-123',

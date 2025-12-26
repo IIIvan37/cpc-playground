@@ -54,7 +54,6 @@ function createErrorLinePlugin(consoleMessages: readonly ConsoleMessage[]) {
 
       constructor(view: EditorView) {
         this.decorations = this.computeDecorations(view, consoleMessages)
-        console.log('Error line plugin created with messages:', consoleMessages)
       }
 
       update(update: ViewUpdate) {
@@ -71,10 +70,8 @@ function createErrorLinePlugin(consoleMessages: readonly ConsoleMessage[]) {
         messages: readonly ConsoleMessage[]
       ) {
         const builder = new RangeSetBuilder<Decoration>()
-        console.log('Computing decorations for messages:', messages)
 
         for (const message of messages) {
-          console.log('Message:', message.type, message.text, message.line)
           // Check if this is an error message (either by type or by content)
           const isError =
             message.type === 'error' ||
@@ -82,20 +79,11 @@ function createErrorLinePlugin(consoleMessages: readonly ConsoleMessage[]) {
               message.line !== undefined)
           if (isError && message.line !== undefined) {
             const line = view.state.doc.line(message.line)
-            console.log(
-              'Adding decoration for error at line',
-              message.line,
-              'from',
-              line.from,
-              'to',
-              line.to
-            )
             builder.add(line.from, line.to, errorLineDecoration)
           }
         }
 
         const result = builder.finish()
-        console.log('Final decorations:', result.size)
         return result
       }
     },
@@ -126,7 +114,6 @@ const transparentVsCodeDark = [
 
 // Linter function that provides diagnostics from console messages
 function consoleLinter(consoleMessages: readonly ConsoleMessage[]) {
-  console.log('consoleLinter called with messages:', consoleMessages)
   return (view: EditorView) => {
     const diagnostics: any[] = []
     for (const message of consoleMessages) {
@@ -279,7 +266,6 @@ export function useCodeMirror({
 
   // Update linter when console messages change
   useEffect(() => {
-    console.log('useEffect triggered with consoleMessages:', consoleMessages)
     if (viewRef.current) {
       // Reconfigure linter
       viewRef.current.dispatch({
