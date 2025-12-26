@@ -90,7 +90,11 @@ export function useUpdateProject() {
       queryClient.invalidateQueries({
         queryKey: ['projects', 'user', userId]
       })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+      // Use refetchType: 'all' to force refetch even if stale
+      queryClient.invalidateQueries({
+        queryKey: ['projects', 'visible'],
+        refetchType: 'all'
+      })
     }
   })
 
