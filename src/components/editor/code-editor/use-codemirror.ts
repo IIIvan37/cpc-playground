@@ -113,6 +113,14 @@ export function useCodeMirror({
 }: UseCodeMirrorProps) {
   const viewRef = useRef<EditorView | null>(null)
   const onInputRef = useRef(onInput)
+  const initialCodeRef = useRef(initialCode)
+
+  // Update initialCode ref only if it's different (for external changes)
+  useEffect(() => {
+    if (initialCodeRef.current !== initialCode) {
+      initialCodeRef.current = initialCode
+    }
+  }, [initialCode])
 
   // Keep callback ref updated
   useEffect(() => {
@@ -162,7 +170,7 @@ export function useCodeMirror({
     ]
 
     const state = EditorState.create({
-      doc: initialCode,
+      doc: initialCodeRef.current,
       extensions
     })
 
@@ -186,7 +194,21 @@ export function useCodeMirror({
       viewRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, initialCode, errorLines, containerRef, onViewCreated])
+  }, [readOnly, errorLines, containerRef, onViewCreated])
+
+  // Update editor content when initialCode changes externally (e.g., after save)
+  useEffect(() => {
+    if (viewRef.current && initialCodeRef.current !== initialCode) {
+      initialCodeRef.current = initialCode
+      viewRef.current.dispatch({
+        changes: {
+          from: 0,
+          to: viewRef.current.state.doc.length,
+          insert: initialCode
+        }
+      })
+    }
+  }, [initialCode])
 
   // Update error lines when they change
   useEffect(() => {

@@ -93,6 +93,9 @@ export type CodeEditorViewProps = Readonly<{
   errorLines: readonly number[]
   readOnly?: boolean
 
+  // File identification for remounting
+  fileId?: string
+
   // Handlers
   onInput: (value: string) => void
   onViewCreated?: (view: EditorView) => void
@@ -104,6 +107,7 @@ export function CodeEditorView({
   code,
   errorLines,
   readOnly = false,
+  fileId,
   onInput,
   onViewCreated
 }: CodeEditorViewProps) {
@@ -112,6 +116,7 @@ export function CodeEditorView({
       <EditorHeaderView fileName={fileName} fileType={fileType} />
       <div className={styles.editorWrapper}>
         <CodeMirrorEditorView
+          key={fileId}
           code={code}
           readOnly={readOnly}
           errorLines={errorLines}

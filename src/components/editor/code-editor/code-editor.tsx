@@ -130,6 +130,7 @@ export function CodeEditor() {
       code={initialCode}
       errorLines={errorLines}
       readOnly={isReadOnly}
+      fileId={fileId}
       onInput={handleInput}
       onViewCreated={handleViewCreated}
     />
