@@ -31,7 +31,10 @@ describe('RunControlsView', () => {
     isReady: true,
     isCompiling: false,
     isLibrary: false,
+    outputFormat: 'sna',
     onRun: vi.fn(),
+    onInject: vi.fn(),
+    isInjectAvailable: true,
     onReset: vi.fn()
   }
 
@@ -89,6 +92,41 @@ describe('RunControlsView', () => {
 
     expect(handleReset).toHaveBeenCalledTimes(1)
   })
+
+  it('renders Inject button when outputFormat is dsk', () => {
+    render(<RunControlsView {...defaultProps} outputFormat='dsk' />)
+    expect(screen.getByRole('button', { name: /inject/i })).toBeInTheDocument()
+  })
+
+  it('does not render Inject button when outputFormat is sna', () => {
+    render(<RunControlsView {...defaultProps} outputFormat='sna' />)
+    expect(
+      screen.queryByRole('button', { name: /inject/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it('calls onInject when Inject button is clicked', async () => {
+    const user = userEvent.setup()
+    const handleInject = vi.fn()
+    render(
+      <RunControlsView
+        {...defaultProps}
+        outputFormat='dsk'
+        onInject={handleInject}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: /inject/i }))
+
+    expect(handleInject).toHaveBeenCalledTimes(1)
+  })
+
+  it('disables Inject button when not ready', () => {
+    render(
+      <RunControlsView {...defaultProps} outputFormat='dsk' isReady={false} />
+    )
+    expect(screen.getByRole('button', { name: /inject/i })).toBeDisabled()
+  })
 })
 
 describe('ViewModeSelectView', () => {
@@ -131,6 +169,8 @@ describe('ToolbarView', () => {
     isCompiling: false,
     isLibrary: false,
     onRun: vi.fn(),
+    onInject: vi.fn(),
+    isInjectAvailable: true,
     onReset: vi.fn(),
     viewMode: 'split',
     onViewModeChange: vi.fn()

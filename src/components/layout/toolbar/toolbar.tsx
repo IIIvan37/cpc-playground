@@ -6,7 +6,8 @@ import {
   useCurrentProject,
   useEmulator,
   useGetProjectWithDependencies,
-  useIsMarkdownFile
+  useIsMarkdownFile,
+  useToastActions
 } from '@/hooks'
 import { createLogger } from '@/lib/logger'
 
@@ -37,7 +38,9 @@ export function Toolbar() {
   const isMarkdownFile = useIsMarkdownFile()
   const { getProjectWithDependencies } = useGetProjectWithDependencies()
   const { compile } = useAssembler()
-  const { isReady, loadSna, loadDsk, reset } = useEmulator()
+  const { isReady, loadSna, loadDsk, injectDsk, isInjectAvailable, reset } =
+    useEmulator()
+  const toast = useToastActions()
 
   const handleCompileAndRun = async () => {
     // Collect files from the current project and its dependencies
@@ -86,6 +89,58 @@ export function Toolbar() {
     }
   }
 
+  const handleCompileAndInject = async () => {
+    // Only available for DSK format
+    if (outputFormat !== 'dsk') {
+      return
+    }
+
+    // Collect files from the current project and its dependencies
+    let additionalFiles:
+      | { name: string; content: string; projectName?: string }[]
+      | undefined
+
+    if (currentProject && currentFile) {
+      try {
+        // Get all files including dependencies
+        const result = await getProjectWithDependencies({
+          projectId: currentProject.id,
+          userId: currentProject.userId
+        })
+
+        // Separate current project files from dependency files
+        additionalFiles = result.files
+          .filter((f) => f.id !== currentFile.id)
+          .map((f) => ({
+            name: f.name,
+            content: f.content,
+            // Only add projectName for dependency files (not current project)
+            ...(f.projectId !== currentProject.id && {
+              projectName: f.projectName
+            })
+          }))
+      } catch (error) {
+        logger.error('Error fetching dependencies:', error)
+        // Fallback to just current project files
+        additionalFiles = (currentProject.files ?? [])
+          .filter((f) => f.id !== currentFile.id)
+          .map((f) => ({
+            name: f.name.value,
+            content: f.content.value
+          }))
+      }
+    }
+
+    const binary = await compile(code, outputFormat, additionalFiles)
+    if (binary && isReady) {
+      injectDsk(binary)
+      toast.success(
+        'DSK injected successfully',
+        'The disk is ready to be accessed in the emulator'
+      )
+    }
+  }
+
   const isCompiling = compilationStatus === 'compiling'
 
   return (
@@ -97,6 +152,8 @@ export function Toolbar() {
       isCompiling={isCompiling}
       isLibrary={currentProject?.isLibrary ?? false}
       onRun={handleCompileAndRun}
+      onInject={handleCompileAndInject}
+      isInjectAvailable={isInjectAvailable()}
       onReset={reset}
       viewMode={viewMode}
       onViewModeChange={(v) => setViewMode(v as ViewMode)}

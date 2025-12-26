@@ -217,6 +217,49 @@ export function useEmulator() {
     [setEmulatorRunning, addConsoleMessage]
   )
 
+  const injectDsk = useCallback(
+    (dskData: Uint8Array) => {
+      if (!cpcecModule) {
+        addConsoleMessage({ type: 'error', text: 'Emulator not ready' })
+        return
+      }
+
+      try {
+        console.log('[Emulator] Injecting DSK, size:', dskData.length)
+        console.log(
+          '[Emulator] Available CPCEC functions:',
+          Object.keys(cpcecModule).filter((key) => key.startsWith('_em_'))
+        )
+
+        // Write DSK to MEMFS
+        const filename = '/program.dsk'
+        cpcecModule.FS.writeFile(filename, dskData)
+        console.log('[Emulator] DSK written to MEMFS')
+
+        // Check if _em_inject_file exists
+        if (typeof cpcecModule._em_inject_file === 'function') {
+          cpcecModule._em_inject_file(cpcecModule.allocateUTF8(filename))
+          addConsoleMessage({
+            type: 'success',
+            text: `DSK injected (${dskData.length} bytes) - Ready to be accessed`
+          })
+        } else {
+          // Function not available yet
+          addConsoleMessage({
+            type: 'warning',
+            text: `Inject function not available - use Run instead`
+          })
+        }
+      } catch (error) {
+        console.error('[Emulator] DSK inject error:', error)
+        const message =
+          error instanceof Error ? error.message : 'Failed to inject DSK'
+        addConsoleMessage({ type: 'error', text: message })
+      }
+    },
+    [addConsoleMessage]
+  )
+
   const reset = useCallback(() => {
     if (cpcecModule?._em_reset) {
       cpcecModule._em_reset()
@@ -225,12 +268,20 @@ export function useEmulator() {
     }
   }, [setEmulatorRunning, addConsoleMessage])
 
+  const isInjectAvailable = useCallback(() => {
+    return cpcecModule
+      ? typeof cpcecModule._em_inject_file === 'function'
+      : false
+  }, [])
+
   return {
     isReady,
     isRunning,
     initialize,
     loadSna,
     loadDsk,
+    injectDsk,
+    isInjectAvailable,
     reset
   }
 }
