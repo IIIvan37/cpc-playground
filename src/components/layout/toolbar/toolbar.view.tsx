@@ -99,6 +99,7 @@ export function ViewModeSelectView({
         <SelectItem value='split'>Split</SelectItem>
         <SelectItem value='editor'>Editor</SelectItem>
         {!isMarkdownFile && <SelectItem value='emulator'>Emulator</SelectItem>}
+        {isMarkdownFile && <SelectItem value='markdown'>Markdown</SelectItem>}
       </Select>
     </Flex>
   )

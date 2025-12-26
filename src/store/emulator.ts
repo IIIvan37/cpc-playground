@@ -9,7 +9,7 @@ export const emulatorInstanceAtom = atom<typeof globalThis.cpcec | null>(null)
 export const emulatorResetTriggerAtom = atom(0)
 
 // View mode
-export type ViewMode = 'split' | 'editor' | 'emulator'
+export type ViewMode = 'split' | 'editor' | 'emulator' | 'markdown'
 export const viewModeAtom = atom<ViewMode>('split')
 
 // Emulator actions

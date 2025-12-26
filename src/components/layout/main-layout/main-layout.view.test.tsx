@@ -10,6 +10,7 @@ describe('MainLayoutView', () => {
     toolbar: <div data-testid='toolbar'>Toolbar</div>,
     editor: <div data-testid='editor'>Editor</div>,
     emulator: <div data-testid='emulator'>Emulator</div>,
+    markdown: <div data-testid='markdown'>Markdown</div>,
     console: <div data-testid='console'>Console</div>
   }
 

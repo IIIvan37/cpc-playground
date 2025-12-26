@@ -43,6 +43,11 @@
   flex-direction: column;
 }
 
+.markdownPanel {
+  display: flex;
+  flex-direction: column;
+}
+
 .footer {
   padding: 0 var(--spacing-lg) var(--spacing-lg);
 }
