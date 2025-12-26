@@ -6,19 +6,17 @@ import {
   indentWithTab
 } from '@codemirror/commands'
 import { bracketMatching, indentOnInput } from '@codemirror/language'
-import { lintGutter } from '@codemirror/lint'
+import { linter, lintGutter } from '@codemirror/lint'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import {
+  Compartment,
   EditorState,
   type Extension,
-  RangeSetBuilder,
-  StateEffect,
-  StateField
+  RangeSetBuilder
 } from '@codemirror/state'
 // Custom gutter marker for error lines
 import {
   Decoration,
-  type DecorationSet,
   drawSelection,
   dropCursor,
   EditorView,
@@ -33,6 +31,79 @@ import { vsCodeDark } from '@fsegurai/codemirror-theme-vscode-dark'
 import { vsCodeLight } from '@fsegurai/codemirror-theme-vscode-light'
 import { type RefObject, useEffect, useRef } from 'react'
 import { z80 } from './z80-language'
+
+type ConsoleMessage = Readonly<{
+  id: string
+  type: 'info' | 'error' | 'success' | 'warning'
+  text: string
+  timestamp: Date
+  line?: number
+}>
+
+// Decoration for error lines
+const errorLineDecoration = Decoration.mark({
+  class: 'cm-error-line',
+  block: true
+})
+
+// Function to create error line plugin
+function createErrorLinePlugin(consoleMessages: readonly ConsoleMessage[]) {
+  return ViewPlugin.fromClass(
+    class {
+      decorations: any
+
+      constructor(view: EditorView) {
+        this.decorations = this.computeDecorations(view, consoleMessages)
+        console.log('Error line plugin created with messages:', consoleMessages)
+      }
+
+      update(update: ViewUpdate) {
+        if (update.docChanged || update.viewportChanged) {
+          this.decorations = this.computeDecorations(
+            update.view,
+            consoleMessages
+          )
+        }
+      }
+
+      computeDecorations(
+        view: EditorView,
+        messages: readonly ConsoleMessage[]
+      ) {
+        const builder = new RangeSetBuilder<Decoration>()
+        console.log('Computing decorations for messages:', messages)
+
+        for (const message of messages) {
+          console.log('Message:', message.type, message.text, message.line)
+          // Check if this is an error message (either by type or by content)
+          const isError =
+            message.type === 'error' ||
+            (message.text?.includes('[/input.asm:') &&
+              message.line !== undefined)
+          if (isError && message.line !== undefined) {
+            const line = view.state.doc.line(message.line)
+            console.log(
+              'Adding decoration for error at line',
+              message.line,
+              'from',
+              line.from,
+              'to',
+              line.to
+            )
+            builder.add(line.from, line.to, errorLineDecoration)
+          }
+        }
+
+        const result = builder.finish()
+        console.log('Final decorations:', result.size)
+        return result
+      }
+    },
+    {
+      decorations: (value) => value.decorations
+    }
+  )
+}
 
 // Create a transparent version of VS Code dark theme
 const transparentVsCodeDark = [
@@ -53,71 +124,46 @@ const transparentVsCodeDark = [
   })
 ]
 
-// Effect to update error lines
-const setErrorLines = StateEffect.define<readonly number[]>()
-
-// State field to track error lines
-const errorLinesField = StateField.define<readonly number[]>({
-  create() {
-    return []
-  },
-  update(value, tr) {
-    for (const effect of tr.effects) {
-      if (effect.is(setErrorLines)) {
-        return effect.value
-      }
-    }
-    return value
-  }
-})
-
-// Decoration for error lines
-const errorLineDecoration = Decoration.line({ class: 'cm-error-line' })
-
-// Plugin to apply error line decorations
-const errorLinePlugin = ViewPlugin.fromClass(
-  class {
-    decorations: DecorationSet
-
-    constructor(view: EditorView) {
-      this.decorations = this.buildDecorations(view)
-    }
-
-    update(update: ViewUpdate) {
-      if (
-        update.docChanged ||
-        update.transactions.some((tr) =>
-          tr.effects.some((e) => e.is(setErrorLines))
-        )
-      ) {
-        this.decorations = this.buildDecorations(update.view)
-      }
-    }
-
-    buildDecorations(view: EditorView): DecorationSet {
-      const builder = new RangeSetBuilder<Decoration>()
-      const errorLines = view.state.field(errorLinesField)
-      const doc = view.state.doc
-
-      for (const lineNum of errorLines) {
-        if (lineNum >= 1 && lineNum <= doc.lines) {
-          const line = doc.line(lineNum)
-          builder.add(line.from, line.from, errorLineDecoration)
+// Linter function that provides diagnostics from console messages
+function consoleLinter(consoleMessages: readonly ConsoleMessage[]) {
+  console.log('consoleLinter called with messages:', consoleMessages)
+  return (view: EditorView) => {
+    const diagnostics: any[] = []
+    for (const message of consoleMessages) {
+      if (message.line !== undefined) {
+        // Create diagnostics for all message types
+        let severity: 'info' | 'warning' | 'error'
+        if (message.type === 'error') {
+          severity = 'error'
+        } else if (message.type === 'warning') {
+          severity = 'warning'
+        } else {
+          severity = 'info'
         }
-      }
 
-      return builder.finish()
+        // Check if this is an error message from RASM (contains file reference)
+        if (message.text?.includes('[/input.asm:')) {
+          severity = 'error'
+        }
+
+        const line = view.state.doc.line(message.line)
+        diagnostics.push({
+          from: line.from,
+          to: line.to,
+          severity,
+          message: message.text
+        })
+      }
     }
-  },
-  {
-    decorations: (v) => v.decorations
+    console.log('Diagnostics created:', diagnostics)
+    return diagnostics
   }
-)
+}
 
 type UseCodeMirrorProps = {
   initialCode: string
   readOnly?: boolean
-  errorLines: readonly number[]
+  consoleMessages: readonly ConsoleMessage[]
   onInput: (value: string) => void
   containerRef: RefObject<HTMLDivElement | null>
   onViewCreated?: (view: EditorView) => void
@@ -127,13 +173,15 @@ type UseCodeMirrorProps = {
 export function useCodeMirror({
   initialCode,
   readOnly = false,
-  errorLines,
+  consoleMessages,
   onInput,
   containerRef,
   onViewCreated,
   theme = 'vscode-dark'
 }: UseCodeMirrorProps) {
   const viewRef = useRef<EditorView | null>(null)
+  const linterCompartment = useRef(new Compartment())
+  const errorLineCompartment = useRef(new Compartment())
   const onInputRef = useRef(onInput)
   const initialCodeRef = useRef(initialCode)
 
@@ -175,8 +223,8 @@ export function useCodeMirror({
       highlightSelectionMatches(),
       lineNumbers(),
       lintGutter(),
-      errorLinesField,
-      errorLinePlugin,
+      linterCompartment.current.of(linter(consoleLinter(consoleMessages))),
+      errorLineCompartment.current.of(createErrorLinePlugin(consoleMessages)),
       z80(),
       themeExtension,
       keymap.of([
@@ -206,12 +254,6 @@ export function useCodeMirror({
 
     viewRef.current = view
 
-    if (errorLines.length > 0) {
-      view.dispatch({
-        effects: setErrorLines.of(errorLines)
-      })
-    }
-
     onViewCreated?.(view)
 
     return () => {
@@ -219,7 +261,7 @@ export function useCodeMirror({
       viewRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, errorLines, containerRef, onViewCreated, theme])
+  }, [readOnly, containerRef, onViewCreated, theme, consoleMessages])
 
   // Update editor content when initialCode changes externally (e.g., after save)
   useEffect(() => {
@@ -235,14 +277,24 @@ export function useCodeMirror({
     }
   }, [initialCode])
 
-  // Update error lines when they change
+  // Update linter when console messages change
   useEffect(() => {
+    console.log('useEffect triggered with consoleMessages:', consoleMessages)
     if (viewRef.current) {
+      // Reconfigure linter
       viewRef.current.dispatch({
-        effects: setErrorLines.of(errorLines)
+        effects: linterCompartment.current.reconfigure(
+          linter(consoleLinter(consoleMessages))
+        )
+      })
+      // Reconfigure error line plugin
+      viewRef.current.dispatch({
+        effects: errorLineCompartment.current.reconfigure(
+          createErrorLinePlugin(consoleMessages)
+        )
       })
     }
-  }, [errorLines])
+  }, [consoleMessages])
 
   return viewRef
 }
