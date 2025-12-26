@@ -85,6 +85,11 @@ export function useUpdateFile() {
         })
         if (res.project) {
           queryClient.setQueryData(['project', params.projectId], res.project)
+          // Invalidate projects lists to reflect updated_at changes
+          queryClient.invalidateQueries({ queryKey: ['projects', 'visible'] })
+          queryClient.invalidateQueries({
+            queryKey: ['projects', 'user', params.userId]
+          })
           logger.debug('Cache updated after file update', {
             projectId: params.projectId,
             fileId: result.file.id
