@@ -1,0 +1,653 @@
+
+> cpc-playground@0.0.0 test:coverage /Users/ivanduchauffour/iiivan/cpc-playground
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90m/Users/ivanduchauffour/iiivan/cpc-playground[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | src/components/user/user-profile/user-profile.test.tsx
+[22m[39m[CPCECPatch] Keyboard event patch installed 
+
+ [32m✓[39m src/components/ui/modal/modal.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 523[2mms[22m[39m
+ [32m✓[39m src/hooks/auth/__tests__/use-auth.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 737[2mms[22m[39m
+ [32m✓[39m src/components/layout/toolbar/toolbar.view.test.tsx [2m([22m[2m27 tests[22m[2m)[22m[33m 908[2mms[22m[39m
+ [32m✓[39m src/components/auth/auth-modal/auth-modal.view.test.tsx [2m([22m[2m25 tests[22m[2m)[22m[33m 925[2mms[22m[39m
+ [32m✓[39m src/components/project/project-settings-modal/project-settings-modal.view.test.tsx [2m([22m[2m28 tests[22m[2m)[22m[33m 1286[2mms[22m[39m
+ [32m✓[39m src/components/project/file-browser/file-browser.view.test.tsx [2m([22m[2m31 tests[22m[2m)[22m[33m 1323[2mms[22m[39m
+ [32m✓[39m src/components/auth/auth-modal/auth-modal.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 1423[2mms[22m[39m
+ [32m✓[39m src/components/program/program-manager/program-manager.view.test.tsx [2m([22m[2m25 tests[22m[2m)[22m[33m 1434[2mms[22m[39m
+ [32m✓[39m src/components/user/user-profile/user-profile.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1026[2mms[22m[39m
+ [32m✓[39m src/components/markdown-preview/markdown-preview.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 572[2mms[22m[39m
+       [33m[2m✓[22m[39m renders markdown content as HTML [33m 424[2mms[22m[39m
+[90mstderr[2m | src/components/ui/combobox/combobox.test.tsx[2m > [22m[2mCombobox[2m > [22m[2mopens dropdown with arrow keys when closed
+[22m[39mAn update to Combobox inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/components/ui/button/button.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 346[2mms[22m[39m
+ [32m✓[39m src/components/ui/combobox/combobox.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[33m 661[2mms[22m[39m
+ [32m✓[39m src/components/layout/app-header/app-header.view.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 454[2mms[22m[39m
+ [32m✓[39m src/components/project/project-settings-modal/project-settings-modal.test.tsx [2m([22m[2m18 tests[22m[2m)[22m[33m 2241[2mms[22m[39m
+       [33m[2m✓[22m[39m calls handleSave with form values [33m 472[2mms[22m[39m
+ [32m✓[39m src/components/console/console-panel/console-panel.view.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 329[2mms[22m[39m
+ [32m✓[39m src/components/emulator/emulator-canvas/emulator-canvas.view.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 349[2mms[22m[39m
+ [32m✓[39m src/components/editor/code-editor/code-editor.view.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 384[2mms[22m[39m
+ [32m✓[39m src/components/ui/select/select.spec.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 383[2mms[22m[39m
+[90mstderr[2m | src/components/ui/checkbox/checkbox.spec.tsx[2m > [22m[2mCheckbox[2m > [22m[2mhandles checked state
+[22m[39mYou provided a `checked` prop to a form field without an `onChange` handler. This will render a read-only field. If the field should be mutable use `defaultChecked`. Otherwise, set either `onChange` or `readOnly`.
+
+ [32m✓[39m src/components/ui/checkbox/checkbox.spec.tsx [2m([22m[2m10 tests[22m[2m)[22m[32m 283[2mms[22m[39m
+[90mstderr[2m | src/components/console/console-panel/console-panel.test.tsx[2m > [22m[2mConsolePanel[2m > [22m[2mauto-scroll behavior[2m > [22m[2mauto-scrolls to bottom on new messages
+[22m[39mAn update to ConsolePanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/components/console/console-panel/console-panel.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 313[2mms[22m[39m
+ [32m✓[39m src/components/ui/resizable-sidebar/resizable-sidebar.view.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[32m 262[2mms[22m[39m
+ [32m✓[39m src/components/project/read-only-project-banner/read-only-project-banner.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[32m 259[2mms[22m[39m
+ [32m✓[39m src/components/project/file-browser/file-browser.test.tsx [2m([22m[2m26 tests[22m[2m)[22m[33m 3004[2mms[22m[39m
+       [33m[2m✓[22m[39m renames file with new name [33m 343[2mms[22m[39m
+ [32m✓[39m src/components/ui/flex/flex.test.tsx [2m([22m[2m25 tests[22m[2m)[22m[33m 301[2mms[22m[39m
+[90mstderr[2m | src/components/ui/radio/radio.spec.tsx[2m > [22m[2mRadio[2m > [22m[2mhandles checked state
+[22m[39mYou provided a `checked` prop to a form field without an `onChange` handler. This will render a read-only field. If the field should be mutable use `defaultChecked`. Otherwise, set either `onChange` or `readOnly`.
+
+ [32m✓[39m src/components/layout/main-layout/main-layout.view.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[32m 220[2mms[22m[39m
+ [32m✓[39m src/components/ui/radio/radio.spec.tsx [2m([22m[2m10 tests[22m[2m)[22m[32m 275[2mms[22m[39m
+ [32m✓[39m src/components/project/read-only-project-banner/read-only-project-banner.view.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 255[2mms[22m[39m
+ [32m✓[39m src/components/ui/input/input.spec.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 156[2mms[22m[39m
+ [32m✓[39m src/hooks/projects/__tests__/use-projects.test.tsx [2m([22m[2m21 tests[22m[2m)[22m[32m 200[2mms[22m[39m
+ [32m✓[39m src/components/user/user-profile/user-profile.view.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[32m 205[2mms[22m[39m
+ [32m✓[39m src/domain/value-objects/__tests__/file-content.vo.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m src/pages/explore/explore.view.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[32m 206[2mms[22m[39m
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museCreateFile[2m > [22m[2mcreates file and updates projects state
+[22m[39m[useFiles] Creating file { projectId: [32m'project-1'[39m, name: [32m'test.asm'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museCreateFile[2m > [22m[2mcreates file and updates projects state
+[22m[39m[useFiles] Cache updated after file creation { projectId: [32m'project-1'[39m, fileId: [32m'new-file-1'[39m, totalFiles: [33m1[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museCreateFile[2m > [22m[2msets current file when creating main file
+[22m[39m[useFiles] Creating file { projectId: [32m'project-1'[39m, name: [32m'newmain.asm'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museCreateFile[2m > [22m[2msets current file when creating main file
+[22m[39m[useFiles] Cache updated after file creation { projectId: [32m'project-1'[39m, fileId: [32m'new-main'[39m, totalFiles: [33m1[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museCreateFile[2m > [22m[2mexposes loading state
+[22m[39m[useFiles] Creating file { projectId: [32m'project-1'[39m, name: [32m'test.asm'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museCreateFile[2m > [22m[2mexposes loading state
+[22m[39m[useFiles] Cache updated after file creation { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m, totalFiles: [33m1[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museUpdateFile[2m > [22m[2mupdates file and projects state
+[22m[39m[useFiles] Updating file { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museUpdateFile[2m > [22m[2mupdates file and projects state
+[22m[39m[useFiles] Cache updated after file update { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museUpdateFile[2m > [22m[2mupdates isMain flag on all files when setting main
+[22m[39m[useFiles] Updating file { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museUpdateFile[2m > [22m[2mupdates isMain flag on all files when setting main
+[22m[39m[useFiles] Cache updated after file update { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museDeleteFile[2m > [22m[2mdeletes file and updates projects state
+[22m[39m[useFiles] Deleting file { fileId: [32m'file-1'[39m, projectId: [32m'project-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museDeleteFile[2m > [22m[2mdeletes file and updates projects state
+[22m[39m[useFiles] Cache updated after file deletion { projectId: [32m'project-1'[39m, remainingFiles: [33m1[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museDeleteFile[2m > [22m[2mclears current file if deleted
+[22m[39m[useFiles] Deleting file { fileId: [32m'file-1'[39m, projectId: [32m'project-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museDeleteFile[2m > [22m[2mclears current file if deleted
+[22m[39m[useFiles] Cache updated after file deletion { projectId: [32m'project-1'[39m, remainingFiles: [33m1[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museDeleteFile[2m > [22m[2mkeeps current file if different file deleted
+[22m[39m[useFiles] Deleting file { fileId: [32m'file-1'[39m, projectId: [32m'project-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museDeleteFile[2m > [22m[2mkeeps current file if different file deleted
+[22m[39m[useFiles] Cache updated after file deletion { projectId: [32m'project-1'[39m, remainingFiles: [33m1[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museSetMainFile[2m > [22m[2msets file as main using updateFile
+[22m[39m[useFiles] Setting main file { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+[useFiles] Updating file { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museSetMainFile[2m > [22m[2msets file as main using updateFile
+[22m[39m[useFiles] Cache updated after file update { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museSetMainFile[2m > [22m[2msets file as main using updateFile
+[22m[39m[useFiles] Main file set successfully { fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museSetMainFile[2m > [22m[2mexposes loading state during update
+[22m[39m[useFiles] Setting main file { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+[useFiles] Updating file { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museSetMainFile[2m > [22m[2mexposes loading state during update
+[22m[39m[useFiles] Cache updated after file update { projectId: [32m'project-1'[39m, fileId: [32m'file-1'[39m }
+
+[90mstdout[2m | src/hooks/files/__tests__/use-files.test.tsx[2m > [22m[2museFiles hooks[2m > [22m[2museSetMainFile[2m > [22m[2mexposes loading state during update
+[22m[39m[useFiles] Main file set successfully { fileId: [32m'file-1'[39m }
+
+ [32m✓[39m src/hooks/core/__tests__/use-use-case.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m src/hooks/files/__tests__/use-files.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m src/infrastructure/repositories/__tests__/supabase-projects.repository.test.ts [2m([22m[2m64 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m src/pages/explore/explore.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/components/ui/tag/tag.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/components/ui/badge/badge.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+[90mstderr[2m | src/__tests__/share.test.ts[2m > [22m[2mshare function[2m > [22m[2mPOST request - Create share[2m > [22m[2mshould return 500 when store.setJSON throws an error
+[22m[39mError creating share: Error: Store error
+    at [90m/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/__tests__/share.test.ts:152:43
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+
+[90mstderr[2m | src/__tests__/share.test.ts[2m > [22m[2mshare function[2m > [22m[2mGET request - Retrieve share[2m > [22m[2mshould return 500 when store.get throws an error
+[22m[39mError retrieving share: Error: Store read error
+    at [90m/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/__tests__/share.test.ts:244:39
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+
+ [32m✓[39m src/__tests__/share.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mcreates a project without initial code
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mcreates a project without initial code
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mcreates a project with initial code
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mcreates a project with initial code
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mcreates a library project
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mcreates a library project
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mhandles creation failure
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mhandles creation failure
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mhandles creation error
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mhandles creation error
+[22m[39m[ExploreActions] Failed to create project: Error: Database error
+    at [90m/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/hooks/projects/__tests__/use-explore-actions.test.tsx:145:19
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mtrims initial code
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleCreateProject[2m > [22m[2mtrims initial code
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/hooks/projects/__tests__/use-explore-actions.test.tsx[2m > [22m[2museHandleForkProject[2m > [22m[2mhandles fork error
+[22m[39m[ExploreActions] Failed to fork project: Error: Fork error
+    at [90m/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/hooks/projects/__tests__/use-explore-actions.test.tsx:235:19
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/vitest@4.0.16_@opentelemetry+api@1.9.0_@types+node@24.10.4_@vitest+ui@4.0.16_jsdom@27.3.0/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+
+ [32m✓[39m src/hooks/projects/__tests__/use-explore-actions.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m src/use-cases/programs/__tests__/programs.use-cases.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/use-cases/auth/__tests__/auth.use-cases.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/components/crt-effect/crt-effect/crt-effect.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/use-cases/projects/__tests__/get-project.use-case.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/domain/value-objects/__tests__/project-name.vo.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/infrastructure/repositories/__tests__/supabase-auth.repository.test.ts [2m([22m[2m44 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/domain/entities/__tests__/project.entity.test.ts [2m([22m[2m41 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/domain/entities/__tests__/project-file.entity.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstderr[2m | src/store/__tests__/programs.test.ts[2m > [22m[2mPrograms Store[2m > [22m[2mAction Atoms[2m > [22m[2msaveProgramAtom[2m > [22m[2mshould throw on invalid name
+[22m[39m[ProgramsStore] Failed to save program: ValidationError: Program name cannot be empty
+    at createProgramName [90m(/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/domain/value-objects/program-name.vo.ts:24:11[90m)[39m
+    at Object.execute [90m(/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/use-cases/programs/save-program.use-case.ts:20:27[90m)[39m
+    at Object.write [90m(/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/store/programs.ts:56:63[90m)[39m
+    at atomWrite [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/jotai@2.16.0_@babel+core@7.28.5_@babel+template@7.27.2_@types+react@19.2.7_react@19.2.3/node_modules/[4mjotai[24m/esm/vanilla/internals.mjs:108:53[90m)[39m
+    at writeAtomState [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/jotai@2.16.0_@babel+core@7.28.5_@babel+template@7.27.2_@types+react@19.2.7_react@19.2.3/node_modules/[4mjotai[24m/esm/vanilla/internals.mjs:427:12[90m)[39m
+    at storeSet [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/jotai@2.16.0_@babel+core@7.28.5_@babel+template@7.27.2_@types+react@19.2.7_react@19.2.3/node_modules/[4mjotai[24m/esm/vanilla/internals.mjs:596:12[90m)[39m
+    at Object.set [90m(file:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/jotai@2.16.0_@babel+core@7.28.5_@babel+template@7.27.2_@types+react@19.2.7_react@19.2.3/node_modules/[4mjotai[24m/esm/vanilla/internals.mjs:643:14[90m)[39m
+    at [90m/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/store/__tests__/programs.test.ts:186:17
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/ivanduchauffour/iiivan/cpc-playground/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.0.16/node_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+
+[90mstderr[2m | src/store/__tests__/programs.test.ts[2m > [22m[2mPrograms Store[2m > [22m[2mAction Atoms[2m > [22m[2mloadProgramAtom[2m > [22m[2mshould throw on non-existent program
+[22m[39m[ProgramsStore] Failed to load program: NotFoundError: Program not found
+    at Object.execute [90m(/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/use-cases/programs/load-program.use-case.ts:22:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at Object.write [90m(/Users/ivanduchauffour/iiivan/cpc-playground/[39msrc/store/programs.ts:91:25[90m)[39m
+
+ [32m✓[39m src/store/__tests__/programs.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/use-cases/tags/__tests__/remove-tag.use-case.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/store/__tests__/editor.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/domain/services/__tests__/authorization.service.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstderr[2m | src/infrastructure/assemblers/__tests__/rasm-worker-adapter.test.ts[2m > [22m[2mRasmWorkerAdapter[2m > [22m[2mworker error handling[2m > [22m[2mshould reject pending requests on worker error
+[22m[39m[RasmWorkerAdapter] Worker error { message: [32m'Worker crashed'[39m }
+
+ [32m✓[39m src/infrastructure/assemblers/__tests__/rasm-worker-adapter.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/use-cases/projects/__tests__/get-visible-projects.use-case.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/domain/entities/__tests__/user.entity.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/use-cases/projects/__tests__/get-project-with-dependencies.use-case.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/use-cases/dependencies/__tests__/add-dependency.use-case.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/store/__tests__/projects.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/workers/__tests__/rasm.worker.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/use-cases/files/__tests__/file.use-cases.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/use-cases/projects/__tests__/update-project.use-case.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/domain/value-objects/__tests__/username.vo.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/use-cases/tags/__tests__/add-tag.use-case.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/use-cases/shares/__tests__/remove-user-share.use-case.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/use-cases/projects/__tests__/create-project.use-case.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/store/__tests__/emulator.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/use-cases/shares/__tests__/add-user-share.use-case.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/infrastructure/assemblers/__tests__/adapter-registry.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/infrastructure/assemblers/__tests__/rasm-assembler.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/use-cases/shared-code/__tests__/get-shared-code.use-case.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/domain/value-objects/__tests__/file-name.vo.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/use-cases/dependencies/__tests__/remove-dependency.use-case.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/domain/value-objects/__tests__/visibility.vo.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/domain/services/__tests__/project-filter.service.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/domain/entities/__tests__/program.entity.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/components/editor/code-editor/z80-language.unit.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/use-cases/tags/__tests__/get-all-tags.use-case.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/domain/value-objects/__tests__/program-name.vo.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/use-cases/projects/__tests__/delete-project.use-case.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/infrastructure/assemblers/__tests__/rasm-error-parser.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/use-cases/projects/__tests__/get-projects.use-case.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/infrastructure/assemblers/__tests__/assembler-registry.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [2m[90m↓[39m[22m src/infrastructure/repositories/__tests__/access-control.integration.test.ts [2m([22m[2m18 tests[22m[2m | [22m[33m18 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m src/infrastructure/repositories/__tests__/supabase-projects.repository.integration.test.ts [2m([22m[2m11 tests[22m[2m | [22m[33m11 skipped[39m[2m)[22m
+
+[2m Test Files [22m [1m[32m82 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (84)[39m
+[2m      Tests [22m [1m[32m1218 passed[39m[22m[2m | [22m[33m29 skipped[39m[90m (1247)[39m
+[2m   Start at [22m 08:29:45
+[2m   Duration [22m 8.38s[2m (transform 3.20s, setup 6.72s, import 11.42s, tests 21.97s, environment 32.26s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   67.09 |    67.82 |   68.46 |   68.09 |                   
+ netlify/functions |     100 |      100 |     100 |     100 |                   
+  share.ts         |     100 |      100 |     100 |     100 |                   
+ ...uth/auth-modal |      94 |    97.67 |   83.33 |      94 |                   
+  ...al.module.css |       0 |        0 |       0 |       0 |                   
+  auth-modal.tsx   |   97.36 |    91.66 |     100 |   97.36 | 39                
+  ...odal.view.tsx |   83.33 |      100 |      75 |   83.33 | 150-163           
+ .../console-panel |     100 |    83.33 |     100 |     100 |                   
+  ...el.module.css |       0 |        0 |       0 |       0 |                   
+  ...ole-panel.tsx |     100 |       50 |     100 |     100 | 20                
+  ...anel.view.tsx |     100 |      100 |     100 |     100 |                   
+ ...ect/crt-effect |     100 |      100 |     100 |     100 |                   
+  ...ct.module.css |       0 |        0 |       0 |       0 |                   
+  crt-effect.tsx   |     100 |      100 |     100 |     100 |                   
+ ...or/code-editor |   70.37 |    68.55 |   84.61 |   71.87 |                   
+  ...or.module.css |       0 |        0 |       0 |       0 |                   
+  ...itor.view.tsx |     100 |    83.33 |     100 |     100 | 63-66,161         
+  ...codemirror.ts |   47.12 |    29.78 |      70 |   49.39 | ...56-257,290-326 
+  z80-language.ts  |   84.48 |     85.1 |     100 |    87.5 | ...84-185,222-223 
+ ...nents/emulator |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...mulator-canvas |    3.06 |     4.16 |    5.55 |    3.44 |                   
+  ...as.module.css |       0 |        0 |       0 |       0 |                   
+  ...or-canvas.tsx |    2.06 |        0 |       0 |    2.32 | 16-21,32-210      
+  ...nvas.view.tsx |     100 |       75 |     100 |     100 | 53                
+ ...out/app-header |     100 |      100 |     100 |     100 |                   
+  ...er.module.css |       0 |        0 |       0 |       0 |                   
+  ...ader.view.tsx |     100 |      100 |     100 |     100 |                   
+ ...ut/main-layout |     100 |      100 |     100 |     100 |                   
+  ...ut.module.css |       0 |        0 |       0 |       0 |                   
+  ...yout.view.tsx |     100 |      100 |     100 |     100 |                   
+ ...layout/toolbar |   71.42 |    90.47 |   66.66 |   71.42 |                   
+  ...ar.module.css |       0 |        0 |       0 |       0 |                   
+  toolbar.view.tsx |   71.42 |    90.47 |   66.66 |   71.42 | 218-225           
+ ...rkdown-preview |   77.77 |      100 |      75 |      75 |                   
+  ...ew.module.css |       0 |        0 |       0 |       0 |                   
+  ...n-preview.tsx |   77.77 |      100 |      75 |      75 | 56-57             
+ ...rogram-manager |   66.66 |    83.33 |   66.66 |   66.66 |                   
+  ...er.module.css |       0 |        0 |       0 |       0 |                   
+  ...ager.view.tsx |   66.66 |    83.33 |   66.66 |   66.66 | 64-65             
+ ...t/file-browser |   90.85 |     81.2 |   95.45 |   93.12 |                   
+  ...er.module.css |       0 |        0 |       0 |       0 |                   
+  file-browser.tsx |   89.06 |    70.51 |   94.73 |   91.45 | ...99,232,244-245 
+  ...wser.view.tsx |      95 |    95.83 |   95.45 |   97.29 | 355               
+  file-dialog.tsx  |     100 |      100 |     100 |     100 |                   
+ ...settings-modal |   67.21 |    63.21 |   57.89 |   68.37 |                   
+  ...al.module.css |       0 |        0 |       0 |       0 |                   
+  ...ngs-modal.tsx |   67.96 |     52.3 |   52.63 |   69.38 | ...02-214,219-225 
+  ...odal.view.tsx |   63.15 |    95.45 |   63.15 |   63.15 | ...66-288,326-342 
+ ...project-banner |     100 |      100 |     100 |     100 |                   
+  ...er.module.css |       0 |        0 |       0 |       0 |                   
+  ...ct-banner.tsx |     100 |      100 |     100 |     100 |                   
+  ...nner.view.tsx |     100 |      100 |     100 |     100 |                   
+ ...nents/ui/badge |     100 |      100 |     100 |     100 |                   
+  badge.module.css |       0 |        0 |       0 |       0 |                   
+  badge.tsx        |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...ents/ui/button |     100 |      100 |     100 |     100 |                   
+  ...on.module.css |       0 |        0 |       0 |       0 |                   
+  button.tsx       |     100 |      100 |     100 |     100 |                   
+ ...ts/ui/checkbox |     100 |      100 |     100 |     100 |                   
+  ...ox.module.css |       0 |        0 |       0 |       0 |                   
+  checkbox.tsx     |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...ts/ui/combobox |   85.71 |    78.94 |   93.33 |   87.27 |                   
+  ...ox.module.css |       0 |        0 |       0 |       0 |                   
+  combobox.tsx     |   85.71 |    78.94 |   93.33 |   87.27 | 96-100,111-113    
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...confirm-dialog |     100 |       80 |     100 |     100 |                   
+  ...og.module.css |       0 |        0 |       0 |       0 |                   
+  ...rm-dialog.tsx |     100 |       80 |     100 |     100 | 40                
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...onents/ui/flex |     100 |      100 |     100 |     100 |                   
+  flex.tsx         |     100 |      100 |     100 |     100 |                   
+ ...nents/ui/input |     100 |    92.85 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  input.module.css |       0 |        0 |       0 |       0 |                   
+  input.tsx        |     100 |    92.85 |     100 |     100 | 40                
+ ...nents/ui/modal |      96 |    96.29 |     100 |   95.23 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  modal.module.css |       0 |        0 |       0 |       0 |                   
+  modal.tsx        |      96 |    96.29 |     100 |   95.23 | 72                
+ ...nents/ui/radio |     100 |      100 |     100 |     100 |                   
+  radio.module.css |       0 |        0 |       0 |       0 |                   
+  radio.tsx        |     100 |      100 |     100 |     100 |                   
+ ...izable-sidebar |     100 |      100 |     100 |     100 |                   
+  ...ar.module.css |       0 |        0 |       0 |       0 |                   
+  ...ebar.view.tsx |     100 |      100 |     100 |     100 |                   
+ ...ents/ui/select |     100 |      100 |     100 |     100 |                   
+  ...ct.module.css |       0 |        0 |       0 |       0 |                   
+  select.tsx       |     100 |      100 |     100 |     100 |                   
+ ...ponents/ui/tag |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  tag.module.css   |       0 |        0 |       0 |       0 |                   
+  tag.tsx          |     100 |      100 |     100 |     100 |                   
+ ...r/user-profile |   93.93 |     87.5 |     100 |   93.54 |                   
+  ...le.module.css |       0 |        0 |       0 |       0 |                   
+  user-profile.tsx |   93.54 |       80 |     100 |    93.1 | 45-46             
+  ...file.view.tsx |     100 |      100 |     100 |     100 |                   
+ ...omain/entities |     100 |      100 |     100 |     100 |                   
+  ...ram.entity.ts |     100 |      100 |     100 |     100 |                   
+  ...ile.entity.ts |     100 |      100 |     100 |     100 |                   
+  ...ect.entity.ts |     100 |      100 |     100 |     100 |                   
+  user.entity.ts   |     100 |      100 |     100 |     100 |                   
+ src/domain/errors |     100 |      100 |     100 |     100 |                   
+  domain.error.ts  |     100 |      100 |     100 |     100 |                   
+  ...r-messages.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...omain/services |     100 |      100 |     100 |     100 |                   
+  ...on.service.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...er.service.ts |     100 |      100 |     100 |     100 |                   
+ .../value-objects |     100 |      100 |     100 |     100 |                   
+  ...content.vo.ts |     100 |      100 |     100 |     100 |                   
+  file-name.vo.ts  |     100 |      100 |     100 |     100 |                   
+  ...am-name.vo.ts |     100 |      100 |     100 |     100 |                   
+  ...ct-name.vo.ts |     100 |      100 |     100 |     100 |                   
+  username.vo.ts   |     100 |      100 |     100 |     100 |                   
+  visibility.vo.ts |     100 |      100 |     100 |     100 |                   
+ src/hooks         |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ src/hooks/auth    |   95.12 |       90 |   84.61 |   95.12 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  use-auth.ts      |   95.12 |       90 |   84.61 |   95.12 | 113,118           
+ src/hooks/core    |      51 |    58.33 |   34.88 |   52.27 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...irm-dialog.ts |       0 |      100 |       0 |       0 | 44-71             
+  use-toast.ts     |   38.88 |     37.5 |   20.83 |   41.66 | ...45,163,170,177 
+  use-use-case.ts  |    90.9 |      100 |   83.33 |   89.65 | 95-97             
+ ...hooks/emulator |    4.16 |     1.23 |       0 |    4.23 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  use-assembler.ts |       0 |        0 |       0 |       0 | 22-144            
+  ...e-messages.ts |    5.88 |        0 |       0 |    6.25 | 23-61             
+  use-emulator.ts  |    4.16 |      2.5 |       0 |    4.16 | 26-280            
+  ...-thumbnail.ts |    8.51 |        0 |       0 |    8.69 | 24-126            
+ src/hooks/files   |   73.97 |    39.28 |   69.23 |   73.97 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...-save-file.ts |       5 |        0 |       0 |       5 | 12-54             
+  use-files.ts     |     100 |    68.75 |     100 |     100 | 37-43,81-130      
+ ...hooks/projects |   36.45 |    26.78 |    28.7 |    37.7 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...ect-caches.ts |     100 |    85.71 |     100 |     100 | 36                
+  ...nt-project.ts |   72.41 |    53.84 |      60 |      75 | 46,111-124        
+  ...pendencies.ts |     3.7 |        0 |       0 |    3.92 | 24-103,120-196    
+  ...re-actions.ts |   97.29 |    81.25 |     100 |     100 | 63-88,102         
+  ...e-projects.ts |       0 |        0 |       0 |       0 | 5-15              
+  ...t-from-url.ts |    2.94 |        0 |       0 |    3.22 | 24-84             
+  ...t-settings.ts |     1.4 |        0 |       0 |    1.47 | 49-303            
+  use-projects.ts  |   77.55 |       50 |   71.42 |   77.65 | ...72,290,316-340 
+  use-shares.ts    |       0 |        0 |       0 |       0 | 14-81             
+  use-tags.ts      |       0 |        0 |       0 |       0 | 15-86             
+  ...r-projects.ts |    3.84 |        0 |       0 |       5 | 16-85             
+ src/hooks/shared  |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...arch-users.ts |       0 |        0 |       0 |       0 | 18-48             
+  ...hared-code.ts |       0 |        0 |       0 |       0 | 11-82             
+  ...er-profile.ts |       0 |        0 |       0 |       0 | 15-74             
+ ...infrastructure |     100 |      100 |     100 |     100 |                   
+  ...-container.ts |     100 |      100 |     100 |     100 |                   
+ ...ure/assemblers |   97.56 |     87.5 |   97.14 |   97.52 |                   
+  ...r-registry.ts |     100 |      100 |     100 |     100 |                   
+  ...r-registry.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...-assembler.ts |   96.29 |    89.47 |     100 |   96.29 | 93                
+  ...ror-parser.ts |     100 |      100 |     100 |     100 |                   
+  ...er-adapter.ts |   95.83 |    77.27 |   91.66 |   95.74 | 78,88             
+ ...e/repositories |    75.6 |    75.78 |   66.66 |   78.21 |                   
+  ...repository.ts |    6.89 |        0 |    8.33 |    8.69 | 16-43,52-77       
+  ...repository.ts |   88.88 |     92.3 |   78.94 |   89.74 | 282-301           
+  ...repository.ts |   79.72 |    73.33 |   77.27 |   82.12 | ...81,751,823-840 
+ src/lib           |   84.33 |     65.3 |      80 |   86.41 |                   
+  constants.ts     |     100 |       50 |     100 |     100 | 2                 
+  ...oard-patch.ts |   72.72 |    66.66 |      75 |      75 | 21-28,54-57,86-88 
+  logger.ts        |   91.66 |    63.63 |   83.33 |   94.28 | 120-127           
+  supabase.ts      |      80 |       75 |     100 |      80 | 8                 
+ src/pages/explore |   69.56 |    72.04 |   56.25 |   70.37 |                   
+  ...ader.view.tsx |     100 |       50 |     100 |     100 | 25                
+  ...list.view.tsx |      80 |    87.71 |      70 |      84 | 80,148-149,157    
+  ...page.view.tsx |     100 |      100 |     100 |     100 |                   
+  ...re.module.css |       0 |        0 |       0 |       0 |                   
+  explore.tsx      |   65.45 |    53.57 |   47.05 |      66 | ...96-106,114,140 
+  ...odal.view.tsx |      40 |    16.66 |   33.33 |      25 | 30-43             
+ src/store         |   96.36 |      100 |     100 |      96 |                   
+  editor.ts        |     100 |      100 |     100 |     100 |                   
+  emulator.ts      |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  programs.ts      |      92 |      100 |     100 |    91.3 | 42-43,115-116     
+  projects.ts      |     100 |      100 |     100 |     100 |                   
+ ...use-cases/auth |     100 |      100 |     100 |     100 |                   
+  ...r.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...e.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...t.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...h.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...n.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...t.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...p.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...d.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...e.use-case.ts |     100 |      100 |     100 |     100 |                   
+ ...s/dependencies |     100 |      100 |     100 |     100 |                   
+  ...y.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...y.use-case.ts |     100 |      100 |     100 |     100 |                   
+ ...se-cases/files |   97.72 |    89.28 |     100 |     100 |                   
+  ...e.use-case.ts |     100 |     87.5 |     100 |     100 | 54                
+  ...e.use-case.ts |     100 |     87.5 |     100 |     100 | 61                
+  ...e.use-case.ts |   94.11 |    91.66 |     100 |     100 | 64                
+ ...cases/programs |     100 |      100 |     100 |     100 |                   
+  ...m.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...s.use-case.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...m.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...m.use-case.ts |     100 |      100 |     100 |     100 |                   
+ ...cases/projects |     100 |    96.87 |     100 |     100 |                   
+  ...t.use-case.ts |     100 |    92.85 |     100 |     100 | 59                
+  ...t.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...s.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...t.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...s.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...s.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...t.use-case.ts |     100 |      100 |     100 |     100 |                   
+ ...es/shared-code |     100 |      100 |     100 |     100 |                   
+  ...e.use-case.ts |     100 |      100 |     100 |     100 |                   
+ ...e-cases/shares |     100 |      100 |     100 |     100 |                   
+  ...e.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...e.use-case.ts |     100 |      100 |     100 |     100 |                   
+ ...use-cases/tags |     100 |      100 |     100 |     100 |                   
+  ...g.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...s.use-case.ts |     100 |      100 |     100 |     100 |                   
+  ...g.use-case.ts |     100 |      100 |     100 |     100 |                   
+ src/workers       |       0 |        0 |       0 |       0 |                   
+  rasm.worker.ts   |       0 |        0 |       0 |       0 |                   
+-------------------|---------|----------|---------|---------|-------------------
