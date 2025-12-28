@@ -19,7 +19,10 @@ export default defineConfig({
         '**/types/',
         '**/__tests__/',
         '**/test-utils/',
-        'vitest.setup.ts'
+        'vitest.setup.ts',
+        '**/*.css',
+        '**/*.test.ts',
+        '**/*.test.tsx'
       ]
     }
   },

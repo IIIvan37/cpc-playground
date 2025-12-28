@@ -71,6 +71,7 @@ export function EmulatorCanvasView({
         className={`${styles.canvasWrapper} ${hasFocus ? styles.focused : ''}`}
         onFocus={onFocus}
         onBlur={onBlur}
+        data-testid='canvas-wrapper'
       />
     </div>
   )
