@@ -3,7 +3,8 @@ import {
   defaultKeymap,
   history,
   historyKeymap,
-  indentWithTab
+  indentLess,
+  insertTab
 } from '@codemirror/commands'
 import { bracketMatching, indentOnInput } from '@codemirror/language'
 import { linter, lintGutter } from '@codemirror/lint'
@@ -218,7 +219,8 @@ export function useCodeMirror({
         ...defaultKeymap,
         ...historyKeymap,
         ...searchKeymap,
-        indentWithTab
+        { key: 'Tab', run: insertTab },
+        { key: 'Shift-Tab', run: indentLess }
       ]),
       autocompletion(),
       EditorView.updateListener.of((update) => {
