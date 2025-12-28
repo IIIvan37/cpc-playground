@@ -1,4 +1,4 @@
-import { PlayIcon, ResetIcon } from '@radix-ui/react-icons'
+import { DownloadIcon, PlayIcon, ResetIcon } from '@radix-ui/react-icons'
 import type { ReactNode } from 'react'
 import Button from '@/components/ui/button/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -39,6 +39,8 @@ type RunControlsViewProps = Readonly<{
   onInject: () => void
   isInjectAvailable: boolean
   onReset: () => void
+  onExportBinary: () => void
+  hasCompiledOutput: boolean
 }>
 
 export function RunControlsView({
@@ -49,7 +51,9 @@ export function RunControlsView({
   onRun,
   onInject,
   isInjectAvailable,
-  onReset
+  onReset,
+  onExportBinary,
+  hasCompiledOutput
 }: RunControlsViewProps) {
   const canInject = outputFormat === 'dsk' && isInjectAvailable
 
@@ -73,6 +77,16 @@ export function RunControlsView({
           title='Inject DSK without running it'
         >
           <span>Inject</span>
+        </Button>
+      )}
+      {hasCompiledOutput && (
+        <Button
+          variant='secondary'
+          onClick={onExportBinary}
+          title={`Download ${outputFormat.toUpperCase()} file`}
+        >
+          <DownloadIcon />
+          <span>{outputFormat.toUpperCase()}</span>
         </Button>
       )}
       <Button variant='secondary' onClick={onReset} disabled={!isReady}>
@@ -123,6 +137,8 @@ export type ToolbarViewProps = Readonly<{
   onInject: () => void
   isInjectAvailable: boolean
   onReset: () => void
+  onExportBinary: () => void
+  hasCompiledOutput: boolean
 
   // View mode controls
   viewMode: string
@@ -131,6 +147,10 @@ export type ToolbarViewProps = Readonly<{
   // Authentication and project state
   isAuthenticated: boolean
   hasActiveProject: boolean
+
+  // Export project
+  onExportProject: () => void
+  exportingProject: boolean
 
   // Project creation
   onCreateProjectFromCode: () => void
@@ -155,10 +175,14 @@ export function ToolbarView({
   onInject,
   isInjectAvailable,
   onReset,
+  onExportBinary,
+  hasCompiledOutput,
   viewMode,
   onViewModeChange,
   isAuthenticated,
   hasActiveProject,
+  onExportProject,
+  exportingProject,
   onCreateProjectFromCode,
   showCreateProjectDialog,
   newProjectName,
@@ -185,6 +209,19 @@ export function ToolbarView({
           </Button>
         )}
 
+        {hasActiveProject && (
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={onExportProject}
+            disabled={exportingProject}
+            title='Export project with all files as JSON'
+          >
+            <DownloadIcon />
+            {exportingProject ? 'Exporting...' : 'Export'}
+          </Button>
+        )}
+
         <div className={styles.separator} />
 
         <OutputFormatSelectView
@@ -201,6 +238,8 @@ export function ToolbarView({
           onInject={onInject}
           isInjectAvailable={isInjectAvailable}
           onReset={onReset}
+          onExportBinary={onExportBinary}
+          hasCompiledOutput={hasCompiledOutput}
         />
       </Flex>
 

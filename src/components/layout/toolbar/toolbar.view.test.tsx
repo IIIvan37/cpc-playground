@@ -35,7 +35,9 @@ describe('RunControlsView', () => {
     onRun: vi.fn(),
     onInject: vi.fn(),
     isInjectAvailable: true,
-    onReset: vi.fn()
+    onReset: vi.fn(),
+    onExportBinary: vi.fn(),
+    hasCompiledOutput: false
   }
 
   it('renders Run button', () => {
@@ -174,11 +176,15 @@ describe('ToolbarView', () => {
     onInject: vi.fn(),
     isInjectAvailable: true,
     onReset: vi.fn(),
+    onExportBinary: vi.fn(),
+    hasCompiledOutput: false,
     viewMode: 'split',
     onViewModeChange: vi.fn(),
     // New project creation props
     isAuthenticated: true,
     hasActiveProject: false,
+    onExportProject: vi.fn(),
+    exportingProject: false,
     onCreateProjectFromCode: vi.fn(),
     showCreateProjectDialog: false,
     newProjectName: '',

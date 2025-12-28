@@ -7,6 +7,7 @@ import {
   useAuth,
   useCurrentFile,
   useEmulator,
+  useExport,
   useGetProjectWithDependencies,
   useHandleCreateProject,
   useToastActions
@@ -49,9 +50,36 @@ export function Toolbar() {
   const { compile } = useAssembler()
   const { isReady, loadSna, loadDsk, injectDsk, isInjectAvailable, reset } =
     useEmulator()
+  const { exportBinary, exportProject, hasCompiledOutput, exportingProject } =
+    useExport()
   const toast = useToastActions()
   const { handleCreate: createProject, loading: creating } =
     useHandleCreateProject()
+
+  const handleExportBinary = () => {
+    const success = exportBinary(currentProject?.name?.value)
+    if (success) {
+      toast.success(
+        'Binary exported',
+        `${outputFormat.toUpperCase()} file downloaded`
+      )
+    } else {
+      toast.error('No compiled output', 'Compile your project first')
+    }
+  }
+
+  const handleExportProject = async () => {
+    if (!currentProject) return
+    const success = await exportProject(currentProject, user?.id)
+    if (success) {
+      toast.success(
+        'Project exported',
+        'Project files downloaded as ZIP archive'
+      )
+    } else {
+      toast.error('Export failed', 'Failed to export project')
+    }
+  }
 
   const handleCompileAndRun = async () => {
     // Collect files from the current project and its dependencies
@@ -213,10 +241,14 @@ export function Toolbar() {
       onInject={handleCompileAndInject}
       isInjectAvailable={isInjectAvailable()}
       onReset={reset}
+      onExportBinary={handleExportBinary}
+      hasCompiledOutput={hasCompiledOutput}
       viewMode={viewMode}
       onViewModeChange={(v) => setViewMode(v as ViewMode)}
       isAuthenticated={!!user}
       hasActiveProject={!!currentProject}
+      onExportProject={handleExportProject}
+      exportingProject={exportingProject}
       onCreateProjectFromCode={handleCreateProjectFromCode}
       showCreateProjectDialog={showCreateProjectDialog}
       newProjectName={newProjectName}

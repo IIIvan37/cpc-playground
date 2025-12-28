@@ -16,7 +16,8 @@ export {
   useEmulator,
   useSaveThumbnail
 } from './emulator'
-
+// Export functionality
+export { useExport } from './exports'
 // File management
 export {
   useAutoSaveFile,
@@ -25,7 +26,6 @@ export {
   useSetMainFile,
   useUpdateFile
 } from './files'
-
 // Project management
 export {
   projectKeys,
