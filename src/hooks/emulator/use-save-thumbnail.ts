@@ -63,12 +63,19 @@ function captureAndResizeCanvas(): Promise<Blob | null> {
 
 /**
  * Get the public URL for a thumbnail path
+ * @param path - The storage path of the thumbnail
+ * @param updatedAt - Optional date for cache-busting (prevents browser cache issues when thumbnail is updated)
  */
 export function getThumbnailUrl(
-  path: string | null | undefined
+  path: string | null | undefined,
+  updatedAt?: Date
 ): string | null {
   if (!path) return null
   const { data } = supabase.storage.from(THUMBNAIL_BUCKET).getPublicUrl(path)
+  // Add cache-buster if updatedAt is provided
+  if (updatedAt) {
+    return `${data.publicUrl}?t=${updatedAt.getTime()}`
+  }
   return data.publicUrl
 }
 

@@ -145,7 +145,7 @@ export function ExplorePage() {
       sharesCount: (project.userShares ?? []).length,
       updatedAt: project.updatedAt,
       createdAt: project.createdAt,
-      thumbnailUrl: getThumbnailUrl(project.thumbnailPath),
+      thumbnailUrl: getThumbnailUrl(project.thumbnailPath, project.updatedAt),
       onClick: () => handleProjectClick(project),
       onFork: () => handleForkProject(project.id),
       canFork: !!user
