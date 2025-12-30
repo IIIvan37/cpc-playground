@@ -6,7 +6,7 @@ import { useAuth } from '../auth'
 import { useCurrentFile, useCurrentProject } from '../projects'
 import { useUpdateFile } from './use-files'
 
-const DEBOUNCE_MS = 1000 // 1 second debounce
+const DEBOUNCE_MS = 300 // 300ms debounce for responsive auto-save
 
 export function useAutoSaveFile() {
   const { user } = useAuth()
