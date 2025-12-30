@@ -1,4 +1,4 @@
-import { useAtomValue, useSetAtom } from 'jotai'
+import { getDefaultStore, useAtomValue, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
@@ -6,6 +6,8 @@ import {
   useAuth,
   useConfirmDialog,
   useCreateFile,
+  useCurrentFile,
+  useCurrentProject,
   useDeleteFile,
   useFetchDependencyFiles,
   useSetMainFile,
@@ -15,6 +17,10 @@ import {
 import { createLogger } from '@/lib/logger'
 import { codeAtom, currentFileIdAtom } from '@/store'
 import { currentProjectIdAtom, dependencyFilesAtom } from '@/store/projects'
+
+// Store reference for reading codeAtom without subscription
+const store = getDefaultStore()
+
 import { FileBrowserView } from './file-browser.view'
 import { FileDialog } from './file-dialog'
 
@@ -48,6 +54,8 @@ export function FileBrowser() {
   const { fetchDependencyFiles } = useFetchDependencyFiles()
   const toast = useToastActions()
   const { confirm, dialogProps } = useConfirmDialog()
+  const currentFile = useCurrentFile()
+  const { project: currentProject } = useCurrentProject()
 
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [selectedDependencyFileId, setSelectedDependencyFileId] = useState<
@@ -104,27 +112,78 @@ export function FileBrowser() {
   }, [project, fetchDependencyFiles, setDependencyFiles])
 
   const handleSelectFile = useCallback(
-    (fileId: string) => {
+    async (fileId: string) => {
       if (!project?.files) return
       const file = project.files.find((f) => f.id === fileId)
       if (file) {
+        // Save unsaved changes of the current file before switching
+        if (currentFile && currentProject && user) {
+          const currentCode = store.get(codeAtom)
+          if (currentCode !== currentFile.content.value) {
+            try {
+              await updateFile({
+                projectId: currentProject.id,
+                userId: user.id,
+                fileId: currentFile.id,
+                content: currentCode
+              })
+              logger.debug('Saved unsaved changes before switching file', {
+                fileId: currentFile.id
+              })
+            } catch (error) {
+              logger.error('Failed to save file before switching:', error)
+            }
+          }
+        }
+
         setSelectedFileId(file.id)
         setSelectedDependencyFileId(null) // Clear dependency selection
         setCurrentFileId(file.id)
         setCode(file.content?.value ?? '')
       }
     },
-    [project, setCurrentFileId, setCode]
+    [
+      project,
+      setCurrentFileId,
+      setCode,
+      currentFile,
+      currentProject,
+      user,
+      updateFile
+    ]
   )
 
   const handleSelectDependencyFile = useCallback(
-    (file: DependencyFile) => {
+    async (file: DependencyFile) => {
+      // Save unsaved changes of the current file before switching
+      if (currentFile && currentProject && user) {
+        const currentCode = store.get(codeAtom)
+        if (currentCode !== currentFile.content.value) {
+          try {
+            await updateFile({
+              projectId: currentProject.id,
+              userId: user.id,
+              fileId: currentFile.id,
+              content: currentCode
+            })
+            logger.debug(
+              'Saved unsaved changes before switching to dependency',
+              {
+                fileId: currentFile.id
+              }
+            )
+          } catch (error) {
+            logger.error('Failed to save file before switching:', error)
+          }
+        }
+      }
+
       setSelectedFileId(null) // Clear project file selection
       setSelectedDependencyFileId(file.id)
       setCurrentFileId(file.id)
       setCode(file.content)
     },
-    [setCurrentFileId, setCode]
+    [setCurrentFileId, setCode, currentFile, currentProject, user, updateFile]
   )
 
   const handleCreateFile = useCallback(async () => {

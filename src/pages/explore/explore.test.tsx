@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createProject } from '@/domain/entities/project.entity'
 import { createProjectName } from '@/domain/value-objects/project-name.vo'
@@ -89,9 +90,9 @@ describe('ExplorePage', () => {
       })
 
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <ExplorePage />
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       const projectItems = screen.getAllByTestId('project-item')
@@ -153,9 +154,9 @@ describe('ExplorePage', () => {
       })
 
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <ExplorePage />
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       const projectItems = screen.getAllByTestId('project-item')
@@ -187,9 +188,9 @@ describe('ExplorePage', () => {
       })
 
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <ExplorePage />
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       const projectItems = screen.getAllByTestId('project-item')
@@ -205,9 +206,9 @@ describe('ExplorePage', () => {
       })
 
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <ExplorePage />
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
@@ -251,9 +252,9 @@ describe('ExplorePage', () => {
       })
 
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <ExplorePage />
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       const projectItems = screen.getAllByTestId('project-item')
@@ -270,6 +271,193 @@ describe('ExplorePage', () => {
       expect(projectNames.some((text) => text?.includes('Project B'))).toBe(
         true
       )
+    })
+  })
+
+  describe('URL query params', () => {
+    const createTestProjects = () => [
+      createProject({
+        id: '1',
+        userId: 'user1',
+        name: createProjectName('Sprite Library'),
+        description: 'A collection of sprites',
+        visibility: Visibility.PUBLIC,
+        isLibrary: true,
+        tags: ['graphics', 'sprites'],
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01')
+      }),
+      createProject({
+        id: '2',
+        userId: 'user1',
+        name: createProjectName('My Game'),
+        description: 'A simple game',
+        visibility: Visibility.PUBLIC,
+        isLibrary: false,
+        tags: ['game'],
+        createdAt: new Date('2025-02-01'),
+        updatedAt: new Date('2025-02-01')
+      }),
+      createProject({
+        id: '3',
+        userId: 'user1',
+        name: createProjectName('Sound Effects'),
+        description: 'Audio library',
+        visibility: Visibility.PUBLIC,
+        isLibrary: true,
+        tags: ['audio', 'sfx'],
+        createdAt: new Date('2025-03-01'),
+        updatedAt: new Date('2025-03-01')
+      })
+    ]
+
+    it('should initialize search query from URL param', () => {
+      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
+        projects: createTestProjects(),
+        loading: false,
+        error: null
+      })
+
+      render(
+        <MemoryRouter initialEntries={['/explore?q=sprite']}>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      const searchInput = screen.getByPlaceholderText(/search/i)
+      expect(searchInput).toHaveValue('sprite')
+
+      // Should only show projects matching "sprite"
+      const projectItems = screen.getAllByTestId('project-item')
+      expect(projectItems).toHaveLength(1)
+      expect(projectItems[0]).toHaveTextContent('Sprite Library')
+    })
+
+    it('should initialize libraries filter from URL param', () => {
+      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
+        projects: createTestProjects(),
+        loading: false,
+        error: null
+      })
+
+      render(
+        <MemoryRouter initialEntries={['/explore?libs=true']}>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      // Should only show library projects
+      const projectItems = screen.getAllByTestId('project-item')
+      expect(projectItems).toHaveLength(2)
+      expect(
+        projectItems.some((item) =>
+          item.textContent?.includes('Sprite Library')
+        )
+      ).toBe(true)
+      expect(
+        projectItems.some((item) => item.textContent?.includes('Sound Effects'))
+      ).toBe(true)
+    })
+
+    it('should combine search query and libraries filter from URL params', () => {
+      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
+        projects: createTestProjects(),
+        loading: false,
+        error: null
+      })
+
+      render(
+        <MemoryRouter initialEntries={['/explore?q=audio&libs=true']}>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      // Should only show library projects matching "audio"
+      const projectItems = screen.getAllByTestId('project-item')
+      expect(projectItems).toHaveLength(1)
+      expect(projectItems[0]).toHaveTextContent('Sound Effects')
+    })
+
+    it('should update search when typing in search input', async () => {
+      const user = userEvent.setup()
+
+      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
+        projects: createTestProjects(),
+        loading: false,
+        error: null
+      })
+
+      render(
+        <MemoryRouter initialEntries={['/explore']}>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      const searchInput = screen.getByPlaceholderText(/search/i)
+      await user.type(searchInput, 'game')
+
+      expect(searchInput).toHaveValue('game')
+
+      // Should filter projects
+      const projectItems = screen.getAllByTestId('project-item')
+      expect(projectItems).toHaveLength(1)
+      expect(projectItems[0]).toHaveTextContent('My Game')
+    })
+
+    it('should show all projects when no URL params', () => {
+      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
+        projects: createTestProjects(),
+        loading: false,
+        error: null
+      })
+
+      render(
+        <MemoryRouter initialEntries={['/explore']}>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      const projectItems = screen.getAllByTestId('project-item')
+      expect(projectItems).toHaveLength(3)
+    })
+
+    it('should handle empty search query param gracefully', () => {
+      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
+        projects: createTestProjects(),
+        loading: false,
+        error: null
+      })
+
+      render(
+        <MemoryRouter initialEntries={['/explore?q=']}>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      const searchInput = screen.getByPlaceholderText(/search/i)
+      expect(searchInput).toHaveValue('')
+
+      // Should show all projects
+      const projectItems = screen.getAllByTestId('project-item')
+      expect(projectItems).toHaveLength(3)
+    })
+
+    it('should handle libs=false as not filtering', () => {
+      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
+        projects: createTestProjects(),
+        loading: false,
+        error: null
+      })
+
+      render(
+        <MemoryRouter initialEntries={['/explore?libs=false']}>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      // libs=false should not filter to libraries only
+      const projectItems = screen.getAllByTestId('project-item')
+      expect(projectItems).toHaveLength(3)
     })
   })
 })
