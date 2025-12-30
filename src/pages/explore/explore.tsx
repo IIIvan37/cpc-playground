@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Project } from '@/domain/entities/project.entity'
 import { filterProjects } from '@/domain/services'
 import {
@@ -16,13 +16,57 @@ import { ExplorePageView } from './explore-page.view'
  * Displays projects visible to the current user:
  * - Authenticated users: public projects + their own + shared with them
  * - Anonymous users: only public projects
+ *
+ * Supports URL query params for sharing searches:
+ * - ?q=<search> - Search query
+ * - ?libs=true - Show libraries only
  */
 export function ExplorePage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectIsLibrary, setNewProjectIsLibrary] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showLibrariesOnly, setShowLibrariesOnly] = useState(false)
+
+  // Initialize state from URL params
+  const searchQuery = searchParams.get('q') ?? ''
+  const showLibrariesOnly = searchParams.get('libs') === 'true'
+
+  // Update URL when search changes
+  const setSearchQuery = useCallback(
+    (query: string) => {
+      setSearchParams(
+        (prev) => {
+          const newParams = new URLSearchParams(prev)
+          if (query) {
+            newParams.set('q', query)
+          } else {
+            newParams.delete('q')
+          }
+          return newParams
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
+
+  const setShowLibrariesOnly = useCallback(
+    (show: boolean) => {
+      setSearchParams(
+        (prev) => {
+          const newParams = new URLSearchParams(prev)
+          if (show) {
+            newParams.set('libs', 'true')
+          } else {
+            newParams.delete('libs')
+          }
+          return newParams
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
 
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
