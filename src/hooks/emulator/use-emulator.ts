@@ -21,11 +21,29 @@ let lastProcessedResetTrigger = 0
 
 /**
  * Get CPCEC arguments based on URL parameters
+ *
+ * Available options:
+ * - Language: -lf (French), -le (English)
+ * - Overlay: -o (enable), -O (disable)
+ * - Palette: -C0 (mono), -C1 (dark), -C2 (normal), -C3 (light), -C4 (green)
+ * - Scanlines: -c0 (all), -c1 (avg), etc.
  */
 function getCpcecArguments(): string[] {
   const urlParams = new URLSearchParams(globalThis.location?.search || '')
   const lang = urlParams.get('lang')
-  return lang === 'fr' ? ['-lf'] : ['-le']
+
+  const args: string[] = []
+
+  // Language selection
+  args.push(lang === 'fr' ? '-lf' : '-le')
+
+  // Disable overlay by default (cleaner display)
+  args.push('-O')
+
+  // Use dark palette (more realistic CPC colors)
+  args.push('-C1')
+
+  return args
 }
 
 export function useEmulator() {
