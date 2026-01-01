@@ -261,22 +261,22 @@ describe('EmulatorCanvas', () => {
     })
   })
 
-  it('handles Alt key press for CPC COPY when focused', () => {
+  it('handles Control key press for CPC COPY when focused', () => {
     render(<EmulatorCanvas />)
 
     // Focus the emulator first
     const canvasWrapper = screen.getByTestId('canvas-wrapper')
     canvasWrapper.focus()
 
-    // Simulate Alt key press
-    const altEvent = new KeyboardEvent('keydown', {
-      code: 'AltLeft',
-      altKey: true,
+    // Simulate Control key press
+    const ctrlEvent = new KeyboardEvent('keydown', {
+      code: 'ControlLeft',
+      altKey: false,
       shiftKey: false,
-      ctrlKey: false,
+      ctrlKey: true,
       metaKey: false
     })
-    document.dispatchEvent(altEvent)
+    document.dispatchEvent(ctrlEvent)
 
     expect(mockModule._em_key_press).toHaveBeenCalledWith(0x09)
   })
@@ -307,18 +307,18 @@ describe('EmulatorCanvas', () => {
     expect(mockModule._em_press_fn).toHaveBeenCalledWith(0)
   })
 
-  it('handles key releases for Alt and function keys when focused', () => {
+  it('handles key releases for Control and function keys when focused', () => {
     render(<EmulatorCanvas />)
 
     // Focus the emulator first
     const canvasWrapper = screen.getByTestId('canvas-wrapper')
     canvasWrapper.focus()
 
-    // Simulate Alt key release
-    const altReleaseEvent = new KeyboardEvent('keyup', {
-      code: 'AltLeft'
+    // Simulate Control key release
+    const ctrlReleaseEvent = new KeyboardEvent('keyup', {
+      code: 'ControlLeft'
     })
-    document.dispatchEvent(altReleaseEvent)
+    document.dispatchEvent(ctrlReleaseEvent)
 
     expect(mockModule._em_key_release).toHaveBeenCalledWith(0x09)
 

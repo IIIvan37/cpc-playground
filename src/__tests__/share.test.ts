@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import handler, {
-  EXPIRY_DAYS,
+  EXPIRY_MINUTES,
   SHARE_ID_LENGTH,
   type ShareData
 } from '../../netlify/functions/share'
@@ -12,8 +12,19 @@ const mockStore = {
   delete: vi.fn()
 }
 
+const mockRateLimitStore = {
+  get: vi.fn(),
+  setJSON: vi.fn(),
+  delete: vi.fn()
+}
+
 vi.mock('@netlify/blobs', () => ({
-  getStore: vi.fn(() => mockStore)
+  getStore: vi.fn((config: any) => {
+    if (config.name === 'rate-limits') {
+      return mockRateLimitStore
+    }
+    return mockStore
+  })
 }))
 
 // Mock context
@@ -34,6 +45,9 @@ describe('share function', () => {
     mockStore.get.mockResolvedValue(null)
     mockStore.setJSON.mockResolvedValue(undefined)
     mockStore.delete.mockResolvedValue(undefined)
+    mockRateLimitStore.get.mockResolvedValue(null)
+    mockRateLimitStore.setJSON.mockResolvedValue(undefined)
+    mockRateLimitStore.delete.mockResolvedValue(undefined)
   })
 
   describe('constants', () => {
@@ -41,8 +55,8 @@ describe('share function', () => {
       expect(SHARE_ID_LENGTH).toBe(8)
     })
 
-    it('should have correct EXPIRY_DAYS', () => {
-      expect(EXPIRY_DAYS).toBe(7)
+    it('should have correct EXPIRY_MINUTES', () => {
+      expect(EXPIRY_MINUTES).toBe(5)
     })
   })
 
@@ -72,6 +86,8 @@ describe('share function', () => {
       expect(response.status).toBe(201)
       expect(body.id).toBeDefined()
       expect(body.id).toHaveLength(8)
+      // Rate limiting adds one call, actual share storage is another
+      expect(mockRateLimitStore.setJSON).toHaveBeenCalledTimes(1)
       expect(mockStore.setJSON).toHaveBeenCalledTimes(1)
     })
 
@@ -109,7 +125,7 @@ describe('share function', () => {
         expect.objectContaining({
           code,
           createdAt: now,
-          expiresAt: now + EXPIRY_DAYS * 24 * 60 * 60 * 1000
+          expiresAt: now + EXPIRY_MINUTES * 60 * 1000
         })
       )
 

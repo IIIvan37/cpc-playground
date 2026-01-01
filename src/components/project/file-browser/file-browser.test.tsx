@@ -43,6 +43,7 @@ const mockUser: User = {
 // Mock data that will be used by the mock hooks
 let mockProjectForHook: Project | null = null
 let mockIsReadOnlyForHook = false
+const mockCurrentFileForHook: ReturnType<typeof createProjectFile> | null = null
 
 vi.mock('@/hooks', () => ({
   useAuth: () => ({
@@ -51,6 +52,10 @@ vi.mock('@/hooks', () => ({
   useActiveProject: () => ({
     activeProject: mockProjectForHook,
     isReadOnly: mockIsReadOnlyForHook
+  }),
+  useCurrentFile: () => mockCurrentFileForHook,
+  useCurrentProject: () => ({
+    project: mockProjectForHook
   }),
   useConfirmDialog: () => ({
     confirm: mockConfirm,
