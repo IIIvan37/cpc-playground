@@ -4,7 +4,7 @@ import { Select, SelectItem } from '@/components/ui/select/select'
 import styles from './emulator-canvas.module.css'
 
 type EmulatorCanvasViewProps = Readonly<{
-  wrapperRef: RefObject<HTMLButtonElement | null>
+  wrapperRef: RefObject<HTMLDivElement | null>
   containerRef: RefObject<HTMLDivElement | null>
   hasFocus: boolean
   statusText: string
@@ -65,9 +65,10 @@ export function EmulatorCanvasView({
         </div>
       </div>
       {/* Canvas is appended here programmatically to persist across mounts */}
-      <button
+      <div
         ref={wrapperRef}
-        type='button'
+        role='button'
+        tabIndex={0}
         className={`${styles.canvasWrapper} ${hasFocus ? styles.focused : ''}`}
         onFocus={onFocus}
         onBlur={onBlur}

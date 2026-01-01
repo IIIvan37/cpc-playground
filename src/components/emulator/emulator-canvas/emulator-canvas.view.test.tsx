@@ -6,7 +6,7 @@ import { EmulatorCanvasView } from './emulator-canvas.view'
 
 describe('EmulatorCanvasView', () => {
   const defaultProps = {
-    wrapperRef: createRef<HTMLButtonElement>(),
+    wrapperRef: createRef<HTMLDivElement>(),
     containerRef: createRef<HTMLDivElement>(),
     hasFocus: false,
     statusText: '○ Click to type',
@@ -68,11 +68,11 @@ describe('EmulatorCanvasView', () => {
   })
 
   describe('refs', () => {
-    it('attaches wrapperRef to button element', () => {
-      const wrapperRef = createRef<HTMLButtonElement>()
+    it('attaches wrapperRef to div element', () => {
+      const wrapperRef = createRef<HTMLDivElement>()
       render(<EmulatorCanvasView {...defaultProps} wrapperRef={wrapperRef} />)
 
-      expect(wrapperRef.current).toBeInstanceOf(HTMLButtonElement)
+      expect(wrapperRef.current).toBeInstanceOf(HTMLDivElement)
     })
 
     it('attaches containerRef to container element', () => {

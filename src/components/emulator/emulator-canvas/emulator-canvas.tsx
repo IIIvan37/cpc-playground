@@ -31,8 +31,9 @@ let persistentCanvas: HTMLCanvasElement | null = null
 function getOrCreatePersistentCanvas(): HTMLCanvasElement {
   if (!persistentCanvas) {
     persistentCanvas = document.createElement('canvas')
+    persistentCanvas.id = 'canvas' // Required for CPCEC fullscreen support
     persistentCanvas.width = 768
-    persistentCanvas.height = 544
+    persistentCanvas.height = 576 // Uniform with CPCEC
     // Use the CSS module class for proper styling
     persistentCanvas.className = styles.canvas
   }
@@ -74,7 +75,7 @@ function reloadWithLanguage(lang: 'en' | 'fr') {
  * Handles keyboard blocking, CPC keyboard mappings, and emulator initialization
  */
 export function EmulatorCanvas() {
-  const wrapperRef = useRef<HTMLButtonElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { initialize, isReady } = useEmulator()
   const { user } = useAuth()
@@ -100,8 +101,44 @@ export function EmulatorCanvas() {
       initialize(canvas)
     }
 
-    // Cleanup: don't remove canvas from DOM, just let it stay
-    // It will be moved to the new wrapper when component remounts
+    // Handle fullscreen exit - restore canvas and wrapper dimensions, and refocus
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        // S'assure que le canvas est bien attaché au wrapper
+        if (wrapper && canvas.parentElement !== wrapper) {
+          wrapper.appendChild(canvas)
+        }
+        // Exiting fullscreen - restore original dimensions
+        canvas.width = 768
+        canvas.height = 576 // Uniform with CPCEC
+        // Nettoie complètement tous les styles inline du canvas
+        canvas.removeAttribute('style')
+        if (wrapper) {
+          wrapper.removeAttribute('style')
+        }
+        // Force un reflow en lisant une propriété computed
+        void getComputedStyle(canvas).width
+        // Réinitialise le module CPCEC puis donne le focus
+        setTimeout(() => {
+          initialize(canvas)
+          // Redonne le focus clavier au wrapper après l'initialisation, sans scroll
+          if (wrapper?.focus) {
+            wrapper.focus({ preventScroll: true })
+          }
+        }, 200)
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener(
+        'webkitfullscreenchange',
+        handleFullscreenChange
+      )
+    }
   }, [initialize, isReady])
 
   // Handle special CPC keyboard mappings when emulator has focus
@@ -112,13 +149,27 @@ export function EmulatorCanvas() {
       const Module = getCpcecModule() as Record<string, unknown> | null
       if (!Module) return
 
-      // Map Option/Alt key to CPC COPY (0x09)
+      const wrapper = wrapperRef.current
+
+      // Intercept Alt+Enter for fullscreen toggle
+      if (e.altKey && e.code === 'Enter') {
+        e.preventDefault()
+        e.stopPropagation()
+        if (document.fullscreenElement) {
+          document.exitFullscreen()
+        } else if (wrapper) {
+          wrapper.requestFullscreen()
+        }
+        return
+      }
+
+      // Map Control key to CPC COPY (0x09)
       if (
-        e.altKey &&
+        e.ctrlKey &&
         !e.shiftKey &&
-        !e.ctrlKey &&
+        !e.altKey &&
         !e.metaKey &&
-        (e.code === 'AltLeft' || e.code === 'AltRight')
+        (e.code === 'ControlLeft' || e.code === 'ControlRight')
       ) {
         e.preventDefault()
         const press = Module._em_key_press as
@@ -147,8 +198,8 @@ export function EmulatorCanvas() {
       const Module = getCpcecModule() as Record<string, unknown> | null
       if (!Module) return
 
-      // Release CPC COPY when Option/Alt is released
-      if (e.code === 'AltLeft' || e.code === 'AltRight') {
+      // Release CPC COPY when Control is released
+      if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
         const release = Module._em_key_release as
           | ((key: number) => void)
           | undefined

@@ -7,11 +7,29 @@ export const STORE_NAME = 'shared-code'
 export const EXPIRY_DAYS = 7
 export const SHARE_ID_LENGTH = 8
 
-// CORS headers
-export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type'
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'https://cpc-playground.iiivan.org',
+  'https://pixsaur.iiivan.org',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://localhost:4173'
+]
+
+// Get CORS headers based on request origin
+function getCorsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get('origin') || ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin)
+    ? origin
+    : ALLOWED_ORIGINS[0]
+
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true'
+  }
 }
 
 export interface ShareData {
@@ -21,10 +39,14 @@ export interface ShareData {
 }
 
 // Helper to create JSON responses
-function jsonResponse(body: Record<string, unknown>, status: number): Response {
+function jsonResponse(
+  body: Record<string, unknown>,
+  status: number,
+  request: Request
+): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
   })
 }
 
@@ -48,7 +70,7 @@ async function handlePost(request: Request, store: Store): Promise<Response> {
     const { code } = body
 
     if (!code || typeof code !== 'string') {
-      return jsonResponse({ error: 'Missing code' }, 400)
+      return jsonResponse({ error: 'Missing code' }, 400, request)
     }
 
     const id = await generateUniqueId(store)
@@ -59,12 +81,13 @@ async function handlePost(request: Request, store: Store): Promise<Response> {
     }
 
     await store.setJSON(id, data)
-    return jsonResponse({ id }, 201)
+    return jsonResponse({ id }, 201, request)
   } catch (error) {
     console.error('Error creating share:', error)
     return jsonResponse(
       { error: 'Failed to create share', details: String(error) },
-      500
+      500,
+      request
     )
   }
 }
@@ -75,34 +98,35 @@ async function handleGet(request: Request, store: Store): Promise<Response> {
   const id = url.searchParams.get('id')
 
   if (!id) {
-    return jsonResponse({ error: 'Missing id parameter' }, 400)
+    return jsonResponse({ error: 'Missing id parameter' }, 400, request)
   }
 
   try {
     const data = (await store.get(id, { type: 'json' })) as ShareData | null
 
     if (!data) {
-      return jsonResponse({ error: 'Share not found' }, 404)
+      return jsonResponse({ error: 'Share not found' }, 404, request)
     }
 
     if (data.expiresAt && Date.now() > data.expiresAt) {
       await store.delete(id)
-      return jsonResponse({ error: 'Share expired' }, 410)
+      return jsonResponse({ error: 'Share expired' }, 410, request)
     }
 
-    return jsonResponse({ code: data.code }, 200)
+    return jsonResponse({ code: data.code }, 200, request)
   } catch (error) {
     console.error('Error retrieving share:', error)
     return jsonResponse(
       { error: 'Failed to retrieve share', details: String(error) },
-      500
+      500,
+      request
     )
   }
 }
 
 async function handler(request: Request, _context: Context) {
   if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders })
+    return new Response(null, { status: 204, headers: getCorsHeaders(request) })
   }
 
   const store = getStore({ name: STORE_NAME, consistency: 'strong' })
@@ -115,7 +139,7 @@ async function handler(request: Request, _context: Context) {
     return handleGet(request, store)
   }
 
-  return jsonResponse({ error: 'Method not allowed' }, 405)
+  return jsonResponse({ error: 'Method not allowed' }, 405, request)
 }
 
 export default handler
