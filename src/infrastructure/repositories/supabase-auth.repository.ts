@@ -175,7 +175,20 @@ export function createSupabaseAuthRepository(
     onAuthStateChange(callback: AuthStateCallback): Unsubscribe {
       const {
         data: { subscription }
-      } = supabase.auth.onAuthStateChange((_event, session) => {
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        // Handle token refresh failure - treat as signed out
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          logger.warn('Token refresh failed, signing out')
+          callback(null)
+          return
+        }
+
+        // Handle explicit sign out
+        if (event === 'SIGNED_OUT') {
+          callback(null)
+          return
+        }
+
         const user = session?.user ? mapToDomainUser(session.user) : null
         callback(user)
       })

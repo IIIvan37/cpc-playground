@@ -17,6 +17,13 @@ export function useAutoSaveFile() {
   const { updateFile } = useUpdateFile()
 
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  // Track which fileId the current code belongs to
+  const codeFileIdRef = useRef<string | null>(null)
+
+  // Update the code's fileId when file changes
+  useEffect(() => {
+    codeFileIdRef.current = currentFileId
+  }, [currentFileId])
 
   useEffect(() => {
     // Clear any pending timeout
@@ -39,12 +46,26 @@ export function useAutoSaveFile() {
       return
     }
 
+    // SAFETY: Don't save if the currentFileId doesn't match the file's id
+    // This prevents race conditions when switching files
+    if (currentFile.id !== currentFileId) {
+      return
+    }
+
+    // Capture the fileId at the time of scheduling the save
+    const fileIdToSave = currentFileId
+    const projectIdToSave = currentProject.id
+
     // Debounce the save
     timeoutRef.current = setTimeout(() => {
+      // Double-check we're still on the same file before saving
+      if (codeFileIdRef.current !== fileIdToSave) {
+        return
+      }
       updateFile({
-        projectId: currentProject.id,
+        projectId: projectIdToSave,
         userId: user.id,
-        fileId: currentFileId,
+        fileId: fileIdToSave,
         content: code
       })
     }, DEBOUNCE_MS)

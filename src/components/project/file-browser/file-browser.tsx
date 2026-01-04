@@ -80,9 +80,11 @@ export function FileBrowser() {
       if (project.id !== lastProjectIdRef.current) {
         lastProjectIdRef.current = project.id
         const mainFile = project.files.find((f) => f.isMain) || project.files[0]
+        const mainFileContent = mainFile.content?.value
+        if (mainFileContent === undefined) return // Don't set empty content
         setSelectedFileId(mainFile.id)
         setCurrentFileId(mainFile.id)
-        setCode(mainFile.content?.value ?? '')
+        setCode(mainFileContent)
         setSelectedDependencyFileId(null) // Reset dependency selection
       }
     }
@@ -115,32 +117,35 @@ export function FileBrowser() {
     async (fileId: string) => {
       if (!project?.files) return
       const file = project.files.find((f) => f.id === fileId)
-      if (file) {
-        // Save unsaved changes of the current file before switching
-        if (currentFile && currentProject && user) {
-          const currentCode = store.get(codeAtom)
-          if (currentCode !== currentFile.content.value) {
-            try {
-              await updateFile({
-                projectId: currentProject.id,
-                userId: user.id,
-                fileId: currentFile.id,
-                content: currentCode
-              })
-              logger.debug('Saved unsaved changes before switching file', {
-                fileId: currentFile.id
-              })
-            } catch (error) {
-              logger.error('Failed to save file before switching:', error)
-            }
+      const fileContent = file?.content?.value
+      if (!file || fileContent === undefined) return
+
+      // Save unsaved changes of the current file before switching
+      if (currentFile && currentProject && user) {
+        const currentCode = store.get(codeAtom)
+        if (currentCode !== currentFile.content.value) {
+          try {
+            await updateFile({
+              projectId: currentProject.id,
+              userId: user.id,
+              fileId: currentFile.id,
+              content: currentCode
+            })
+            logger.debug('Saved unsaved changes before switching file', {
+              fileId: currentFile.id
+            })
+          } catch (error) {
+            logger.error('Failed to save file before switching:', error)
           }
         }
-
-        setSelectedFileId(file.id)
-        setSelectedDependencyFileId(null) // Clear dependency selection
-        setCurrentFileId(file.id)
-        setCode(file.content?.value ?? '')
       }
+
+      // IMPORTANT: Set fileId BEFORE setting code to prevent race conditions
+      // The auto-save hook checks if currentFileId matches currentFile.id
+      setSelectedFileId(file.id)
+      setSelectedDependencyFileId(null) // Clear dependency selection
+      setCurrentFileId(file.id)
+      setCode(fileContent)
     },
     [
       project,

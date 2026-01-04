@@ -38,11 +38,21 @@ export function useAuth() {
   })
 
   // Sync React Query data with Jotai atom
+  // This ensures localStorage-persisted user is cleared when session is invalid
   useEffect(() => {
     if (currentUser !== undefined) {
       setUser(currentUser)
     }
   }, [currentUser, setUser])
+
+  // Clear stale user from localStorage on initial load if session is invalid
+  useEffect(() => {
+    // If we have a user in localStorage but no valid session, clear it
+    if (!isLoading && user && !currentUser) {
+      setUser(null)
+      queryClient.setQueryData(['auth', 'currentUser'], null)
+    }
+  }, [isLoading, user, currentUser, setUser, queryClient])
 
   // Listen for auth changes and update both React Query cache and atom
   useEffect(() => {

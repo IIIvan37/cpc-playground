@@ -4,7 +4,9 @@ import type { AssemblerType } from '@/domain/services/assembler.interface'
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly
 ; Write your code here and press "Assemble & Run"
-; TIP: Select "DSK" output format to test this example
+;
+; TIP: Select "DSK" output format, then INJECT the disk
+; In BASIC, type: memory &3fff:load"program.bin",&4000:call &4000
 
 org #4000
 
