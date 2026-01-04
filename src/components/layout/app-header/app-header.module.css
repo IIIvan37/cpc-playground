@@ -8,7 +8,7 @@
 
 .headerContent {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--spacing-lg);
 }
 
@@ -31,10 +31,31 @@
   transition: text-shadow 0.2s ease;
 }
 
+.subtitleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .subtitle {
   font-size: var(--font-size-sm);
   color: var(--color-disabled-text);
   margin: 0;
+}
+
+.credits {
+  font-size: var(--font-size-xs);
+  color: var(--color-disabled-text);
+  margin: 0;
+}
+
+.credits a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.credits a:hover {
+  text-decoration: underline;
 }
 
 .iconLink {

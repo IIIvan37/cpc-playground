@@ -59,7 +59,28 @@ export function AppHeaderView({ authSection, authModal }: AppHeaderViewProps) {
         <Link to='/explore' className={styles.titleLink}>
           <h1 className={styles.title}>CPC PLAYGROUND</h1>
         </Link>
-        <p className={styles.subtitle}>Z80 Assembly IDE for Amstrad CPC</p>
+        <div className={styles.subtitleWrapper}>
+          <p className={styles.subtitle}>Z80 Assembly IDE for Amstrad CPC</p>
+          <p className={styles.credits}>
+            Powered by{' '}
+            <a
+              href='http://cngsoft.no-ip.org/cpcec.htm'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              CPCEC
+            </a>{' '}
+            (CNGSoft) &{' '}
+            <a
+              href='https://github.com/EdouardBERGE/rasm'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              RASM
+            </a>{' '}
+            (Roudoudou)
+          </p>
+        </div>
       </div>
 
       <nav className={styles.nav}>

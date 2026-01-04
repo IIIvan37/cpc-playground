@@ -4,6 +4,7 @@ import type { AssemblerType } from '@/domain/services/assembler.interface'
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly
 ; Write your code here and press "Assemble & Run"
+; TIP: Select "DSK" output format to test this example
 
 org #4000
 
