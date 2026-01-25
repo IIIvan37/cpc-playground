@@ -46,6 +46,13 @@ export function useAutoSaveFile() {
       return
     }
 
+    // SAFETY: Don't save empty content if the file has content
+    // This prevents race conditions during project navigation from explore
+    // where code may be cleared temporarily before the file loads
+    if (code === '' && currentFile.content.value !== '') {
+      return
+    }
+
     // SAFETY: Don't save if the currentFileId doesn't match the file's id
     // This prevents race conditions when switching files
     if (currentFile.id !== currentFileId) {

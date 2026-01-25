@@ -17,6 +17,14 @@ let loadedProjectState: {
 } | null = null
 
 /**
+ * Reset the module-level state (for testing only)
+ * @internal
+ */
+export function _resetLoadedProjectStateForTesting() {
+  loadedProjectState = null
+}
+
+/**
  * Hook to load a project from URL query parameter
  * Handles both authenticated users (own projects) and anonymous users (public projects)
  */
@@ -56,9 +64,9 @@ export function useProjectFromUrl() {
       return
     }
 
-    // Clear code immediately when switching to a new project
-    // This prevents the old project's code from flashing briefly
-    setCode('')
+    // NOTE: We intentionally do NOT clear code here with setCode('')
+    // This was causing auto-save to overwrite file content with empty string
+    // The FileBrowser will set the correct content when the project loads
 
     loadedProjectState = { projectId, userId: user?.id }
 
