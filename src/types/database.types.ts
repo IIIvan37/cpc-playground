@@ -173,6 +173,7 @@ export type Database = {
           description: string | null
           id: string
           is_library: boolean
+          is_sticky: boolean
           name: string
           thumbnail_path: string | null
           updated_at: string
@@ -184,6 +185,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_library?: boolean
+          is_sticky?: boolean
           name: string
           thumbnail_path?: string | null
           updated_at?: string
@@ -195,6 +197,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_library?: boolean
+          is_sticky?: boolean
           name?: string
           thumbnail_path?: string | null
           updated_at?: string

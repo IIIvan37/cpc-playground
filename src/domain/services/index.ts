@@ -26,5 +26,6 @@ export {
 export {
   filterProjects,
   type ProjectFilterCriteria,
-  type SearchableProject
+  type SearchableProject,
+  sortProjects
 } from './project-filter.service'

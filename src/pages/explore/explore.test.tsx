@@ -50,10 +50,10 @@ describe('ExplorePage', () => {
   })
 
   describe('Project sorting', () => {
-    it('should pin the oldest project (documentation) at the top', () => {
-      const oldestDate = new Date('2024-01-01T10:00:00Z')
+    it('should pin sticky projects at the top', () => {
       const recentDate1 = new Date('2025-12-20T10:00:00Z')
       const recentDate2 = new Date('2025-12-23T10:00:00Z')
+      const oldestDate = new Date('2024-01-01T10:00:00Z')
 
       const projects = [
         createProject({
@@ -67,9 +67,10 @@ describe('ExplorePage', () => {
         createProject({
           id: '1',
           userId: 'user1',
-          name: createProjectName('Documentation'),
-          description: 'Doc project',
+          name: createProjectName('Getting Started'),
+          description: 'Sticky project',
           visibility: Visibility.PUBLIC,
+          isSticky: true,
           createdAt: oldestDate,
           updatedAt: oldestDate
         }),
@@ -98,8 +99,8 @@ describe('ExplorePage', () => {
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(3)
 
-      // First project should be the documentation (oldest)
-      expect(projectItems[0]).toHaveTextContent('Documentation')
+      // First project should be the sticky one
+      expect(projectItems[0]).toHaveTextContent('Getting Started')
 
       // Next should be the most recent projects in descending order
       expect(projectItems[1]).toHaveTextContent('Recent Project 2')
@@ -140,8 +141,9 @@ describe('ExplorePage', () => {
         createProject({
           id: '0',
           userId: 'user1',
-          name: createProjectName('Documentation'),
+          name: createProjectName('Getting Started'),
           visibility: Visibility.PUBLIC,
+          isSticky: true,
           createdAt: oldestDate,
           updatedAt: oldestDate
         })
@@ -162,8 +164,8 @@ describe('ExplorePage', () => {
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(4)
 
-      // First should be documentation (oldest)
-      expect(projectItems[0]).toHaveTextContent('Documentation')
+      // First should be sticky project
+      expect(projectItems[0]).toHaveTextContent('Getting Started')
 
       // Rest should be sorted by createdAt descending
       expect(projectItems[1]).toHaveTextContent('December Project')
@@ -238,8 +240,9 @@ describe('ExplorePage', () => {
         createProject({
           id: '0',
           userId: 'user1',
-          name: createProjectName('Documentation'),
+          name: createProjectName('Getting Started'),
           visibility: Visibility.PUBLIC,
+          isSticky: true,
           createdAt: oldestDate,
           updatedAt: oldestDate
         })
@@ -260,8 +263,8 @@ describe('ExplorePage', () => {
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(3)
 
-      // First should be documentation (oldest)
-      expect(projectItems[0]).toHaveTextContent('Documentation')
+      // First should be sticky project
+      expect(projectItems[0]).toHaveTextContent('Getting Started')
 
       // Projects A and B can be in any order since they have the same date
       const projectNames = projectItems.map((item) => item.textContent)

@@ -17,6 +17,7 @@ const mockProject: Project = {
   thumbnailPath: null,
   visibility: { value: 'public' } as Project['visibility'],
   isLibrary: false,
+  isSticky: false,
   files: [],
   tags: [],
   dependencies: [],

@@ -4,7 +4,8 @@ import { createProjectName } from '@/domain/value-objects/project-name.vo'
 import { createVisibility } from '@/domain/value-objects/visibility.vo'
 import {
   filterProjects,
-  type SearchableProject
+  type SearchableProject,
+  sortProjects
 } from '../project-filter.service'
 
 describe('filterProjects', () => {
@@ -17,6 +18,7 @@ describe('filterProjects', () => {
     thumbnailPath: null,
     visibility: createVisibility('public'),
     isLibrary: false,
+    isSticky: false,
     files: [],
     tags: ['asm', 'demo'],
     dependencies: [],
@@ -238,5 +240,151 @@ describe('filterProjects', () => {
 
     expect(result).toHaveLength(1)
     expect(result[0].project.id).toBe('1')
+  })
+})
+
+describe('sortProjects', () => {
+  const createMockProject = (overrides: Partial<Project> = {}): Project => ({
+    id: '1',
+    userId: 'user-1',
+    authorUsername: 'testuser',
+    name: createProjectName('Test Project'),
+    description: 'A test description',
+    thumbnailPath: null,
+    visibility: createVisibility('public'),
+    isLibrary: false,
+    isSticky: false,
+    files: [],
+    tags: [],
+    dependencies: [],
+    shares: [],
+    userShares: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides
+  })
+
+  const createSearchableProject = (
+    project: Project,
+    authorName = 'testuser'
+  ): SearchableProject => ({
+    project,
+    authorName
+  })
+
+  it('sorts sticky projects first', () => {
+    const projects = [
+      createSearchableProject(
+        createMockProject({
+          id: '1',
+          isSticky: false,
+          createdAt: new Date('2025-01-01')
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '2',
+          isSticky: true,
+          createdAt: new Date('2024-01-01')
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '3',
+          isSticky: false,
+          createdAt: new Date('2025-06-01')
+        })
+      )
+    ]
+
+    const result = sortProjects(projects)
+
+    expect(result[0].project.id).toBe('2') // Sticky first
+    expect(result[1].project.id).toBe('3') // Then newest
+    expect(result[2].project.id).toBe('1') // Then older
+  })
+
+  it('sorts by creation date when no sticky projects', () => {
+    const projects = [
+      createSearchableProject(
+        createMockProject({
+          id: '1',
+          createdAt: new Date('2025-01-01')
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '2',
+          createdAt: new Date('2025-06-01')
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '3',
+          createdAt: new Date('2024-01-01')
+        })
+      )
+    ]
+
+    const result = sortProjects(projects)
+
+    expect(result[0].project.id).toBe('2') // Newest
+    expect(result[1].project.id).toBe('1')
+    expect(result[2].project.id).toBe('3') // Oldest
+  })
+
+  it('sorts multiple sticky projects by creation date', () => {
+    const projects = [
+      createSearchableProject(
+        createMockProject({
+          id: '1',
+          isSticky: true,
+          createdAt: new Date('2024-01-01')
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '2',
+          isSticky: true,
+          createdAt: new Date('2025-01-01')
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '3',
+          isSticky: false,
+          createdAt: new Date('2025-06-01')
+        })
+      )
+    ]
+
+    const result = sortProjects(projects)
+
+    expect(result[0].project.id).toBe('2') // Sticky + newest
+    expect(result[1].project.id).toBe('1') // Sticky + older
+    expect(result[2].project.id).toBe('3') // Not sticky
+  })
+
+  it('does not mutate the original array', () => {
+    const projects = [
+      createSearchableProject(
+        createMockProject({
+          id: '1',
+          createdAt: new Date('2025-01-01')
+        })
+      ),
+      createSearchableProject(
+        createMockProject({
+          id: '2',
+          createdAt: new Date('2024-01-01')
+        })
+      )
+    ]
+
+    const originalFirst = projects[0].project.id
+
+    sortProjects(projects)
+
+    expect(projects[0].project.id).toBe(originalFirst)
   })
 })

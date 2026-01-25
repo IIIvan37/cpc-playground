@@ -18,6 +18,22 @@ export type SearchableProject = Readonly<{
 }>
 
 /**
+ * Sort projects with sticky projects first, then by creation date (newest first)
+ */
+export function sortProjects<T extends { project: Project }>(
+  projects: readonly T[]
+): readonly T[] {
+  return [...projects].sort((a, b) => {
+    // Sticky projects come first
+    if (a.project.isSticky && !b.project.isSticky) return -1
+    if (!a.project.isSticky && b.project.isSticky) return 1
+
+    // Then sort by creation date (newest first)
+    return b.project.createdAt.getTime() - a.project.createdAt.getTime()
+  })
+}
+
+/**
  * Filter projects by search query
  * Matches against: project name, author name, tags, description
  */

@@ -16,6 +16,7 @@ export type Project = Readonly<{
   thumbnailPath: string | null
   visibility: Visibility
   isLibrary: boolean
+  isSticky: boolean
   files: readonly ProjectFile[]
   tags: readonly string[]
   dependencies: readonly DependencyInfo[]
@@ -58,6 +59,7 @@ export type CreateProjectParams = {
   thumbnailPath?: string | null
   visibility: Visibility
   isLibrary?: boolean
+  isSticky?: boolean
   files?: readonly ProjectFile[]
   tags?: readonly string[]
   dependencies?: readonly DependencyInfo[]
@@ -79,6 +81,7 @@ export function createProject(params: CreateProjectParams): Project {
     thumbnailPath: params.thumbnailPath ?? null,
     visibility: params.visibility,
     isLibrary: params.isLibrary ?? false,
+    isSticky: params.isSticky ?? false,
     files: Object.freeze(params.files ?? []),
     tags: Object.freeze(params.tags ?? []),
     dependencies: Object.freeze(params.dependencies ?? []),

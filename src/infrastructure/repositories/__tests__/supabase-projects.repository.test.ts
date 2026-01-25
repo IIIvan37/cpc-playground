@@ -351,6 +351,7 @@ describe('SupabaseProjectsRepository', () => {
         thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
+        isSticky: false,
         files: [],
         shares: [],
         tags: [],
@@ -382,6 +383,7 @@ describe('SupabaseProjectsRepository', () => {
         thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
+        isSticky: false,
         files: [],
         shares: [],
         tags: [],
@@ -437,6 +439,7 @@ describe('SupabaseProjectsRepository', () => {
         thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
+        isSticky: false,
         files: [
           {
             id: 'file-1',
@@ -489,6 +492,7 @@ describe('SupabaseProjectsRepository', () => {
         thumbnailPath: null,
         visibility: createVisibility('private'),
         isLibrary: false,
+        isSticky: false,
         files: [
           {
             id: 'file-1',

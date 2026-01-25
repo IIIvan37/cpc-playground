@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Project } from '@/domain/entities/project.entity'
-import { filterProjects } from '@/domain/services'
+import { filterProjects, sortProjects } from '@/domain/services'
 import {
   getThumbnailUrl,
   useAuth,
@@ -119,15 +119,16 @@ export function ExplorePage() {
     }
   })
 
-  // Filter projects using domain service
+  // Filter and sort projects using domain services
   const filteredProjects = filterProjects(searchableProjects, {
     query: searchQuery,
     userId: user?.id,
     librariesOnly: showLibrariesOnly
   })
+  const sortedProjects = sortProjects(filteredProjects)
 
   // Map to view props
-  const listProjects = filteredProjects.map(({ project, authorName }) => {
+  const listProjects = sortedProjects.map(({ project, authorName }) => {
     const isOwner = user?.id === project.userId
     return {
       id: project.id,
@@ -152,31 +153,9 @@ export function ExplorePage() {
     }
   })
 
-  // Separate libraries from regular projects
-  const libraryProjects = listProjects
-    .filter((p) => p.isLibrary)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-
-  const regularProjects = listProjects
-    .filter((p) => !p.isLibrary)
-    .sort((a, b) => {
-      // Find the oldest project (documentation) to pin at top
-      const nonLibraryProjects = listProjects.filter((p) => !p.isLibrary)
-      const oldestProject = nonLibraryProjects.reduce<
-        (typeof nonLibraryProjects)[number] | undefined
-      >(
-        (oldest, current) =>
-          !oldest || current.createdAt < oldest.createdAt ? current : oldest,
-        undefined
-      )
-      const oldestId = oldestProject?.id
-
-      // Pin documentation at top
-      if (a.id === oldestId) return -1
-      if (b.id === oldestId) return 1
-
-      return b.createdAt.getTime() - a.createdAt.getTime()
-    })
+  // Separate libraries from regular projects (already sorted)
+  const libraryProjects = listProjects.filter((p) => p.isLibrary)
+  const regularProjects = listProjects.filter((p) => !p.isLibrary)
 
   return (
     <ExplorePageView

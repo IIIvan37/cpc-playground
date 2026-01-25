@@ -127,6 +127,7 @@ function mapToDomainWithEmbeddedRelations(data: ProjectWithRelations): Project {
     thumbnailPath: data.thumbnail_path ?? null,
     visibility: createVisibility(data.visibility),
     isLibrary: data.is_library,
+    isSticky: data.is_sticky ?? false,
     files,
     shares,
     tags,
