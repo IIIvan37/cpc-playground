@@ -24,6 +24,7 @@ export {
   useHandleForkProject
 } from './use-explore-actions'
 export { useFetchVisibleProjects } from './use-fetch-visible-projects'
+export { useInfiniteProjects } from './use-infinite-projects'
 export { useProjectFromUrl } from './use-project-from-url'
 // Project settings operations
 export {

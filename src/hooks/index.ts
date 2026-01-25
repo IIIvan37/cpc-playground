@@ -64,6 +64,8 @@ export {
   useHandleRemoveShare,
   useHandleRemoveTag,
   useHandleSaveProject,
+  // Infinite scroll pagination
+  useInfiniteProjects,
   // File state
   useIsMarkdownFile,
   useMainFile,

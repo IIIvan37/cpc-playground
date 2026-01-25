@@ -1,5 +1,6 @@
 import type { Project, UserShare } from '../entities/project.entity'
 import type { ProjectFile } from '../entities/project-file.entity'
+import type { PaginatedResult, PaginationParams } from '../types/pagination'
 
 /**
  * Tag representation from database
@@ -7,6 +8,14 @@ import type { ProjectFile } from '../entities/project-file.entity'
 export type Tag = {
   id: string
   name: string
+}
+
+/**
+ * Search/filter params for paginated queries
+ */
+export type ProjectSearchParams = PaginationParams & {
+  readonly search?: string
+  readonly librariesOnly?: boolean
 }
 
 /**
@@ -25,6 +34,17 @@ export interface IProjectsRepository {
    * - If userId is undefined (anonymous): only public projects
    */
   findVisible(userId?: string): Promise<readonly Project[]>
+
+  /**
+   * Find visible projects with pagination and search
+   * - If userId is provided: public projects + user's own projects + projects shared with user
+   * - If userId is undefined (anonymous): only public projects
+   * - Supports server-side search and filtering
+   */
+  findVisiblePaginated(
+    userId: string | undefined,
+    params: ProjectSearchParams
+  ): Promise<PaginatedResult<Project>>
 
   /**
    * Find a project by ID

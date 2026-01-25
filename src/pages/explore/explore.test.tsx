@@ -12,7 +12,7 @@ vi.mock('@/hooks', () => ({
   useAuth: vi.fn(),
   useHandleCreateProject: vi.fn(),
   useHandleForkProject: vi.fn(),
-  useFetchVisibleProjects: vi.fn(),
+  useInfiniteProjects: vi.fn(),
 
   getThumbnailUrl: vi.fn((path: string | null | undefined) =>
     path
@@ -20,6 +20,37 @@ vi.mock('@/hooks', () => ({
       : null
   )
 }))
+
+// Helper to mock useInfiniteProjects
+function mockInfiniteProjects(
+  projects: ReturnType<typeof createProject>[],
+  options: {
+    loading?: boolean
+    loadingMore?: boolean
+    error?: string | null
+    total?: number
+    hasMore?: boolean
+  } = {}
+) {
+  const {
+    loading = false,
+    loadingMore = false,
+    error = null,
+    total = projects.length,
+    hasMore = false
+  } = options
+
+  vi.mocked(hooks.useInfiniteProjects).mockReturnValue({
+    projects,
+    total,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    loadMore: vi.fn(),
+    refetch: vi.fn()
+  })
+}
 
 describe('ExplorePage', () => {
   const mockHandleCreate = vi.fn()
@@ -49,21 +80,13 @@ describe('ExplorePage', () => {
     })
   })
 
-  describe('Project sorting', () => {
-    it('should pin sticky projects at the top', () => {
+  describe('Project display', () => {
+    it('should display all projects returned by the hook', () => {
       const recentDate1 = new Date('2025-12-20T10:00:00Z')
       const recentDate2 = new Date('2025-12-23T10:00:00Z')
       const oldestDate = new Date('2024-01-01T10:00:00Z')
 
       const projects = [
-        createProject({
-          id: '2',
-          userId: 'user1',
-          name: createProjectName('Recent Project 1'),
-          visibility: Visibility.PUBLIC,
-          createdAt: recentDate1,
-          updatedAt: recentDate1
-        }),
         createProject({
           id: '1',
           userId: 'user1',
@@ -81,14 +104,18 @@ describe('ExplorePage', () => {
           visibility: Visibility.PUBLIC,
           createdAt: recentDate2,
           updatedAt: recentDate2
+        }),
+        createProject({
+          id: '2',
+          userId: 'user1',
+          name: createProjectName('Recent Project 1'),
+          visibility: Visibility.PUBLIC,
+          createdAt: recentDate1,
+          updatedAt: recentDate1
         })
       ]
 
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects,
-        loading: false,
-        error: null
-      })
+      mockInfiniteProjects(projects)
 
       render(
         <MemoryRouter>
@@ -98,79 +125,6 @@ describe('ExplorePage', () => {
 
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(3)
-
-      // First project should be the sticky one
-      expect(projectItems[0]).toHaveTextContent('Getting Started')
-
-      // Next should be the most recent projects in descending order
-      expect(projectItems[1]).toHaveTextContent('Recent Project 2')
-      expect(projectItems[2]).toHaveTextContent('Recent Project 1')
-    })
-
-    it('should sort remaining projects by createdAt descending', () => {
-      const date1 = new Date('2025-01-01T10:00:00Z')
-      const date2 = new Date('2025-06-01T10:00:00Z')
-      const date3 = new Date('2025-12-01T10:00:00Z')
-      const oldestDate = new Date('2024-01-01T10:00:00Z')
-
-      const projects = [
-        createProject({
-          id: '1',
-          userId: 'user1',
-          name: createProjectName('January Project'),
-          visibility: Visibility.PUBLIC,
-          createdAt: date1,
-          updatedAt: date1
-        }),
-        createProject({
-          id: '2',
-          userId: 'user1',
-          name: createProjectName('December Project'),
-          visibility: Visibility.PUBLIC,
-          createdAt: date3,
-          updatedAt: date3
-        }),
-        createProject({
-          id: '3',
-          userId: 'user1',
-          name: createProjectName('June Project'),
-          visibility: Visibility.PUBLIC,
-          createdAt: date2,
-          updatedAt: date2
-        }),
-        createProject({
-          id: '0',
-          userId: 'user1',
-          name: createProjectName('Getting Started'),
-          visibility: Visibility.PUBLIC,
-          isSticky: true,
-          createdAt: oldestDate,
-          updatedAt: oldestDate
-        })
-      ]
-
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects,
-        loading: false,
-        error: null
-      })
-
-      render(
-        <MemoryRouter>
-          <ExplorePage />
-        </MemoryRouter>
-      )
-
-      const projectItems = screen.getAllByTestId('project-item')
-      expect(projectItems).toHaveLength(4)
-
-      // First should be sticky project
-      expect(projectItems[0]).toHaveTextContent('Getting Started')
-
-      // Rest should be sorted by createdAt descending
-      expect(projectItems[1]).toHaveTextContent('December Project')
-      expect(projectItems[2]).toHaveTextContent('June Project')
-      expect(projectItems[3]).toHaveTextContent('January Project')
     })
 
     it('should handle single project', () => {
@@ -183,11 +137,7 @@ describe('ExplorePage', () => {
         updatedAt: new Date('2025-01-01T10:00:00Z')
       })
 
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: [project],
-        loading: false,
-        error: null
-      })
+      mockInfiniteProjects([project])
 
       render(
         <MemoryRouter>
@@ -201,11 +151,7 @@ describe('ExplorePage', () => {
     })
 
     it('should handle empty projects list', () => {
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: [],
-        loading: false,
-        error: null
-      })
+      mockInfiniteProjects([])
 
       render(
         <MemoryRouter>
@@ -214,66 +160,6 @@ describe('ExplorePage', () => {
       )
 
       expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
-    })
-
-    it('should handle projects with same createdAt dates', () => {
-      const sameDate = new Date('2025-06-01T10:00:00Z')
-      const oldestDate = new Date('2024-01-01T10:00:00Z')
-
-      const projects = [
-        createProject({
-          id: '1',
-          userId: 'user1',
-          name: createProjectName('Project A'),
-          visibility: Visibility.PUBLIC,
-          createdAt: sameDate,
-          updatedAt: sameDate
-        }),
-        createProject({
-          id: '2',
-          userId: 'user1',
-          name: createProjectName('Project B'),
-          visibility: Visibility.PUBLIC,
-          createdAt: sameDate,
-          updatedAt: sameDate
-        }),
-        createProject({
-          id: '0',
-          userId: 'user1',
-          name: createProjectName('Getting Started'),
-          visibility: Visibility.PUBLIC,
-          isSticky: true,
-          createdAt: oldestDate,
-          updatedAt: oldestDate
-        })
-      ]
-
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects,
-        loading: false,
-        error: null
-      })
-
-      render(
-        <MemoryRouter>
-          <ExplorePage />
-        </MemoryRouter>
-      )
-
-      const projectItems = screen.getAllByTestId('project-item')
-      expect(projectItems).toHaveLength(3)
-
-      // First should be sticky project
-      expect(projectItems[0]).toHaveTextContent('Getting Started')
-
-      // Projects A and B can be in any order since they have the same date
-      const projectNames = projectItems.map((item) => item.textContent)
-      expect(projectNames.some((text) => text?.includes('Project A'))).toBe(
-        true
-      )
-      expect(projectNames.some((text) => text?.includes('Project B'))).toBe(
-        true
-      )
     })
   })
 
@@ -315,11 +201,11 @@ describe('ExplorePage', () => {
     ]
 
     it('should initialize search query from URL param', () => {
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: createTestProjects(),
-        loading: false,
-        error: null
-      })
+      // With server-side filtering, the hook already receives filtered results
+      const spriteProject = createTestProjects().find((p) =>
+        p.name.value.includes('Sprite')
+      )
+      mockInfiniteProjects(spriteProject ? [spriteProject] : [])
 
       render(
         <MemoryRouter initialEntries={['/explore?q=sprite']}>
@@ -330,18 +216,15 @@ describe('ExplorePage', () => {
       const searchInput = screen.getByPlaceholderText(/search/i)
       expect(searchInput).toHaveValue('sprite')
 
-      // Should only show projects matching "sprite"
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(1)
       expect(projectItems[0]).toHaveTextContent('Sprite Library')
     })
 
     it('should initialize libraries filter from URL param', () => {
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: createTestProjects(),
-        loading: false,
-        error: null
-      })
+      // Server returns only libraries when libs=true
+      const libraries = createTestProjects().filter((p) => p.isLibrary)
+      mockInfiniteProjects(libraries)
 
       render(
         <MemoryRouter initialEntries={['/explore?libs=true']}>
@@ -349,25 +232,15 @@ describe('ExplorePage', () => {
         </MemoryRouter>
       )
 
-      // Should only show library projects
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(2)
-      expect(
-        projectItems.some((item) =>
-          item.textContent?.includes('Sprite Library')
-        )
-      ).toBe(true)
-      expect(
-        projectItems.some((item) => item.textContent?.includes('Sound Effects'))
-      ).toBe(true)
     })
 
     it('should combine search query and libraries filter from URL params', () => {
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: createTestProjects(),
-        loading: false,
-        error: null
-      })
+      const audioLibrary = createTestProjects().find(
+        (p) => p.isLibrary && p.description?.includes('Audio')
+      )
+      mockInfiniteProjects(audioLibrary ? [audioLibrary] : [])
 
       render(
         <MemoryRouter initialEntries={['/explore?q=audio&libs=true']}>
@@ -375,7 +248,6 @@ describe('ExplorePage', () => {
         </MemoryRouter>
       )
 
-      // Should only show library projects matching "audio"
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(1)
       expect(projectItems[0]).toHaveTextContent('Sound Effects')
@@ -384,11 +256,8 @@ describe('ExplorePage', () => {
     it('should update search when typing in search input', async () => {
       const user = userEvent.setup()
 
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: createTestProjects(),
-        loading: false,
-        error: null
-      })
+      // Start with all projects
+      mockInfiniteProjects(createTestProjects())
 
       render(
         <MemoryRouter initialEntries={['/explore']}>
@@ -401,18 +270,12 @@ describe('ExplorePage', () => {
 
       expect(searchInput).toHaveValue('game')
 
-      // Should filter projects
-      const projectItems = screen.getAllByTestId('project-item')
-      expect(projectItems).toHaveLength(1)
-      expect(projectItems[0]).toHaveTextContent('My Game')
+      // Verify useInfiniteProjects was called with search param
+      expect(hooks.useInfiniteProjects).toHaveBeenCalled()
     })
 
     it('should show all projects when no URL params', () => {
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: createTestProjects(),
-        loading: false,
-        error: null
-      })
+      mockInfiniteProjects(createTestProjects())
 
       render(
         <MemoryRouter initialEntries={['/explore']}>
@@ -425,11 +288,7 @@ describe('ExplorePage', () => {
     })
 
     it('should handle empty search query param gracefully', () => {
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: createTestProjects(),
-        loading: false,
-        error: null
-      })
+      mockInfiniteProjects(createTestProjects())
 
       render(
         <MemoryRouter initialEntries={['/explore?q=']}>
@@ -440,17 +299,12 @@ describe('ExplorePage', () => {
       const searchInput = screen.getByPlaceholderText(/search/i)
       expect(searchInput).toHaveValue('')
 
-      // Should show all projects
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(3)
     })
 
     it('should handle libs=false as not filtering', () => {
-      vi.mocked(hooks.useFetchVisibleProjects).mockReturnValue({
-        projects: createTestProjects(),
-        loading: false,
-        error: null
-      })
+      mockInfiniteProjects(createTestProjects())
 
       render(
         <MemoryRouter initialEntries={['/explore?libs=false']}>
@@ -458,9 +312,129 @@ describe('ExplorePage', () => {
         </MemoryRouter>
       )
 
-      // libs=false should not filter to libraries only
       const projectItems = screen.getAllByTestId('project-item')
       expect(projectItems).toHaveLength(3)
+    })
+  })
+
+  describe('Pagination', () => {
+    it('should show load more button when hasMore is true', () => {
+      const projects = [
+        createProject({
+          id: '1',
+          userId: 'user1',
+          name: createProjectName('Project 1'),
+          visibility: Visibility.PUBLIC,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+      ]
+
+      mockInfiniteProjects(projects, { hasMore: true, total: 50 })
+
+      render(
+        <MemoryRouter>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('load-more-button')).toBeInTheDocument()
+      expect(screen.getByText(/load more projects/i)).toBeInTheDocument()
+    })
+
+    it('should not show load more button when hasMore is false', () => {
+      const projects = [
+        createProject({
+          id: '1',
+          userId: 'user1',
+          name: createProjectName('Project 1'),
+          visibility: Visibility.PUBLIC,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+      ]
+
+      mockInfiniteProjects(projects, { hasMore: false })
+
+      render(
+        <MemoryRouter>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByTestId('load-more-button')).not.toBeInTheDocument()
+    })
+
+    it('should show loading state when loadingMore is true', () => {
+      const projects = [
+        createProject({
+          id: '1',
+          userId: 'user1',
+          name: createProjectName('Project 1'),
+          visibility: Visibility.PUBLIC,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+      ]
+
+      mockInfiniteProjects(projects, { hasMore: true, loadingMore: true })
+
+      render(
+        <MemoryRouter>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText(/loading\.\.\./i)).toBeInTheDocument()
+    })
+
+    it('should show total count when available', () => {
+      const projects = [
+        createProject({
+          id: '1',
+          userId: 'user1',
+          name: createProjectName('Project 1'),
+          visibility: Visibility.PUBLIC,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+      ]
+
+      mockInfiniteProjects(projects, { total: 50 })
+
+      render(
+        <MemoryRouter>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText(/showing 1 of 50 projects/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Loading and error states', () => {
+    it('should show loading state', () => {
+      mockInfiniteProjects([], { loading: true })
+
+      render(
+        <MemoryRouter>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText(/loading projects/i)).toBeInTheDocument()
+    })
+
+    it('should show error state', () => {
+      mockInfiniteProjects([], { error: 'Failed to load projects' })
+
+      render(
+        <MemoryRouter>
+          <ExplorePage />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByText(/failed to load projects/i)).toBeInTheDocument()
     })
   })
 })

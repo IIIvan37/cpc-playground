@@ -226,6 +226,18 @@
   }
 }
 
+.resultsCount {
+  font-size: 0.875rem;
+  color: var(--color-disabled-text);
+  margin-bottom: 1rem;
+}
+
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
 .error {
   background: var(--color-errorBg);
   border: 1px solid var(--color-errorBorder);

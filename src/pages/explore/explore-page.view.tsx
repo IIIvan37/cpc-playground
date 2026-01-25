@@ -12,7 +12,11 @@ export type ExplorePageViewProps = {
   readonly libraryProjects: ReadonlyArray<ProjectItemProps>
   readonly regularProjects: ReadonlyArray<ProjectItemProps>
   readonly loading: boolean
+  readonly loadingMore?: boolean
   readonly error?: string | null
+  readonly total?: number
+  readonly hasMore?: boolean
+  readonly onLoadMore?: () => void
   readonly searchQuery: string
   readonly onSearchChange: (query: string) => void
   readonly showLibrariesOnly: boolean
@@ -35,7 +39,11 @@ export function ExplorePageView({
   libraryProjects,
   regularProjects,
   loading,
+  loadingMore,
   error,
+  total,
+  hasMore,
+  onLoadMore,
   searchQuery,
   onSearchChange,
   showLibrariesOnly,
@@ -63,7 +71,11 @@ export function ExplorePageView({
           libraryProjects={libraryProjects}
           regularProjects={regularProjects}
           loading={loading}
+          loadingMore={loadingMore}
           error={error}
+          total={total}
+          hasMore={hasMore}
+          onLoadMore={onLoadMore}
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
           showLibrariesOnly={showLibrariesOnly}

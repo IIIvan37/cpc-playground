@@ -55,6 +55,7 @@ import type {
   GetProjectsUseCase,
   GetProjectUseCase,
   GetProjectWithDependenciesUseCase,
+  GetVisibleProjectsPaginatedUseCase,
   GetVisibleProjectsUseCase,
   SaveThumbnailUseCase,
   UpdateProjectUseCase
@@ -66,6 +67,7 @@ import {
   createGetProjectsUseCase,
   createGetProjectUseCase,
   createGetProjectWithDependenciesUseCase,
+  createGetVisibleProjectsPaginatedUseCase,
   createGetVisibleProjectsUseCase,
   createSaveThumbnailUseCase,
   createUpdateProjectUseCase
@@ -116,6 +118,7 @@ export type Container = {
   createProject: CreateProjectUseCase
   getProjects: GetProjectsUseCase
   getVisibleProjects: GetVisibleProjectsUseCase
+  getVisibleProjectsPaginated: GetVisibleProjectsPaginatedUseCase
   getProject: GetProjectUseCase
   getProjectWithDependencies: GetProjectWithDependenciesUseCase
   updateProject: UpdateProjectUseCase
@@ -174,6 +177,8 @@ export function createContainer(): Container {
     createProject: createCreateProjectUseCase(projectsRepository),
     getProjects: createGetProjectsUseCase(projectsRepository),
     getVisibleProjects: createGetVisibleProjectsUseCase(projectsRepository),
+    getVisibleProjectsPaginated:
+      createGetVisibleProjectsPaginatedUseCase(projectsRepository),
     getProject: createGetProjectUseCase(
       projectsRepository,
       authorizationService

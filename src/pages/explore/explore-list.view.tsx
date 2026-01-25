@@ -30,7 +30,11 @@ export type ExploreListViewProps = {
   readonly libraryProjects: ReadonlyArray<ProjectItemProps>
   readonly regularProjects: ReadonlyArray<ProjectItemProps>
   readonly loading?: boolean
+  readonly loadingMore?: boolean
   readonly error?: string | null
+  readonly total?: number
+  readonly hasMore?: boolean
+  readonly onLoadMore?: () => void
   readonly searchQuery?: string
   readonly onSearchChange?: (query: string) => void
   readonly showLibrariesOnly?: boolean
@@ -41,48 +45,71 @@ export function ExploreListView({
   libraryProjects,
   regularProjects,
   loading,
+  loadingMore,
   error,
+  total,
+  hasMore,
+  onLoadMore,
   searchQuery = '',
   onSearchChange,
   showLibrariesOnly = false,
   onShowLibrariesOnlyChange
 }: ExploreListViewProps) {
+  const hasProjects = libraryProjects.length > 0 || regularProjects.length > 0
+  const projectCount = libraryProjects.length + regularProjects.length
+
+  // Always render search input to preserve focus during loading
+  const searchSection = (
+    <div className={styles.searchContainer}>
+      {onSearchChange && (
+        <Input
+          type='text'
+          placeholder='Search by name, author, or tag...'
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          data-testid='search-input'
+        />
+      )}
+      {onShowLibrariesOnlyChange && (
+        <Checkbox
+          label='Show libraries only'
+          checked={showLibrariesOnly}
+          onChange={(e) => onShowLibrariesOnlyChange(e.target.checked)}
+        />
+      )}
+    </div>
+  )
+
   if (loading) {
     return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <p>Loading projects...</p>
+      <div className={styles.exploreContent}>
+        {searchSection}
+        <div className={styles.loading}>
+          <div className={styles.spinner} />
+          <p>Loading projects...</p>
+        </div>
       </div>
     )
   }
   if (error) {
-    return <div className={styles.error}>{error}</div>
+    return (
+      <div className={styles.exploreContent}>
+        {searchSection}
+        <div className={styles.error}>{error}</div>
+      </div>
+    )
   }
-
-  const hasProjects = libraryProjects.length > 0 || regularProjects.length > 0
 
   return (
     <div className={styles.exploreContent}>
-      <div className={styles.searchContainer}>
-        {onSearchChange && (
-          <Input
-            type='text'
-            placeholder='Search by name, author, or tag...'
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            data-testid='search-input'
-          />
-        )}
-        {onShowLibrariesOnlyChange && (
-          <Checkbox
-            label='Show libraries only'
-            checked={showLibrariesOnly}
-            onChange={(e) => onShowLibrariesOnlyChange(e.target.checked)}
-          />
-        )}
-      </div>
+      {searchSection}
       {hasProjects ? (
         <div className={styles.sectionsContainer}>
+          {total !== undefined && (
+            <div className={styles.resultsCount}>
+              Showing {projectCount} of {total} project{total !== 1 ? 's' : ''}
+            </div>
+          )}
           {libraryProjects.length > 0 && (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>Libraries</h2>
@@ -103,6 +130,17 @@ export function ExploreListView({
                   <ProjectListItem key={project.id} {...project} />
                 ))}
               </div>
+            </div>
+          )}
+          {hasMore && onLoadMore && (
+            <div className={styles.loadMoreContainer}>
+              <Button
+                onClick={onLoadMore}
+                disabled={loadingMore}
+                data-testid='load-more-button'
+              >
+                {loadingMore ? 'Loading...' : 'Load more projects'}
+              </Button>
             </div>
           )}
         </div>

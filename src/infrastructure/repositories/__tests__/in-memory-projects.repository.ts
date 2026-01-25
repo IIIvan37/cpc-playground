@@ -2,8 +2,10 @@ import type { Project, UserShare } from '@/domain/entities/project.entity'
 import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import type {
   IProjectsRepository,
+  ProjectSearchParams,
   Tag
 } from '@/domain/repositories/projects.repository.interface'
+import type { PaginatedResult } from '@/domain/types/pagination'
 
 /**
  * In-memory implementation of IProjectsRepository for testing purposes.
@@ -73,6 +75,38 @@ export function createInMemoryProjectsRepository(): IProjectsRepository & {
       return visibleProjects.sort(
         (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
       )
+    },
+
+    async findVisiblePaginated(
+      userId: string | undefined,
+      params: ProjectSearchParams
+    ): Promise<PaginatedResult<Project>> {
+      const { limit, offset, search, librariesOnly } = params
+      let visibleProjects = await this.findVisible(userId)
+
+      // Apply search filter
+      if (search) {
+        const lowerSearch = search.toLowerCase()
+        visibleProjects = visibleProjects.filter(
+          (p) =>
+            p.name.value.toLowerCase().includes(lowerSearch) ||
+            p.description?.toLowerCase().includes(lowerSearch)
+        )
+      }
+
+      // Apply libraries filter
+      if (librariesOnly) {
+        visibleProjects = visibleProjects.filter((p) => p.isLibrary)
+      }
+
+      const total = visibleProjects.length
+      const items = visibleProjects.slice(offset, offset + limit)
+
+      return {
+        items,
+        total,
+        hasMore: offset + items.length < total
+      }
     },
 
     async findById(id: string): Promise<Project | null> {

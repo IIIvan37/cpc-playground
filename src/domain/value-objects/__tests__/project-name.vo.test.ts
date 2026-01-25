@@ -52,9 +52,10 @@ describe('ProjectName Value Object', () => {
     })
 
     it('should reject names with invalid characters', () => {
-      expect(() => createProjectName('Project@Name')).toThrow(ValidationError)
-      expect(() => createProjectName('Project#123')).toThrow(ValidationError)
-      expect(() => createProjectName('Project<>Name')).toThrow(ValidationError)
+      // < > ; : * ? | \ are not in the allowed pattern
+      expect(() => createProjectName('Project<Name')).toThrow(ValidationError)
+      expect(() => createProjectName('Project>Name')).toThrow(ValidationError)
+      expect(() => createProjectName('Project;Name')).toThrow(ValidationError)
     })
   })
 

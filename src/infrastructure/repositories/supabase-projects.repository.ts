@@ -5,6 +5,7 @@ import type {
   ProjectShare,
   UserShare
 } from '@/domain/entities/project.entity'
+import type { PaginatedResult } from '@/domain/types/pagination'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('SupabaseProjectsRepository')
@@ -14,6 +15,7 @@ import type { ProjectFile } from '@/domain/entities/project-file.entity'
 import { createProjectFile } from '@/domain/entities/project-file.entity'
 import type {
   IProjectsRepository,
+  ProjectSearchParams,
   Tag
 } from '@/domain/repositories/projects.repository.interface'
 import { createFileContent } from '@/domain/value-objects/file-content.vo'
@@ -326,6 +328,78 @@ export function createSupabaseProjectsRepository(
       return sortProjectsByUpdatedAt(allProjects).map((p) =>
         mapToDomainWithEmbeddedRelations(p)
       )
+    },
+
+    async findVisiblePaginated(
+      userId: string | undefined,
+      params: ProjectSearchParams
+    ): Promise<PaginatedResult<Project>> {
+      const { limit, offset, search, librariesOnly } = params
+
+      // Use RPC function to avoid URL length issues with large datasets
+      // The RPC function handles visibility, filtering, and pagination server-side
+      type RpcResult = {
+        id: string
+        total_count: number
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: rpcData, error: rpcError } = (await (supabase as any).rpc(
+        'get_visible_projects_paginated',
+        {
+          p_user_id: userId || null,
+          p_limit: limit,
+          p_offset: offset,
+          p_search: search || null,
+          p_libraries_only: librariesOnly || false
+        }
+      )) as { data: RpcResult[] | null; error: Error | null }
+
+      if (rpcError) throw rpcError
+
+      if (!rpcData || rpcData.length === 0) {
+        return { items: [], total: 0, hasMore: false }
+      }
+
+      // Get total from first row (all rows have same total_count)
+      const total = Number(rpcData[0].total_count) || 0
+      const projectIds = rpcData.map((p) => p.id)
+
+      // Fetch full project data with relations for the paginated IDs
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: fullData, error: fullError } = (await supabase
+        .from('projects')
+        .select(userId ? PROJECT_SELECT_FULL : PROJECT_SELECT_ANON)
+        .in('id', projectIds)
+        .order('is_sticky', { ascending: false, nullsFirst: false })
+        .order('updated_at', { ascending: false })) as {
+        data: Array<{ id: string } & Record<string, unknown>> | null
+        error: Error | null
+      }
+
+      if (fullError) throw fullError
+
+      // Maintain the order from RPC result
+      const projectMap = new Map((fullData || []).map((p) => [p.id, p]))
+      const orderedData = projectIds
+        .map((id) => projectMap.get(id))
+        .filter(Boolean)
+
+      const items = orderedData.map((p) =>
+        mapToDomainWithEmbeddedRelations(
+          userId
+            ? (p as unknown as ProjectWithRelations)
+            : ({
+                ...(p as object),
+                project_shares: []
+              } as unknown as ProjectWithRelations)
+        )
+      )
+
+      return {
+        items,
+        total,
+        hasMore: offset + items.length < total
+      }
     },
 
     async findById(projectId: string): Promise<Project | null> {
