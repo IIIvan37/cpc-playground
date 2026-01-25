@@ -9,8 +9,8 @@ export type FileContent = {
   readonly _brand: 'FileContent'
 }
 
-// Business rule: content size limit (1MB)
-export const FILE_CONTENT_MAX_SIZE = 1024 * 1024
+// Business rule: content size limit (3MB for imported z80code projects)
+export const FILE_CONTENT_MAX_SIZE = 3 * 1024 * 1024
 
 /**
  * Factory function to create FileContent

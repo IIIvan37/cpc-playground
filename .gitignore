@@ -38,3 +38,6 @@ coverage
 deno.lock
 docs/
 z80code.json
+
+# Import scripts (contain sensitive data)
+scripts/cleanup-z80code.sql
