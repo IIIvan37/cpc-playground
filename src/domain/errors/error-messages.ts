@@ -22,8 +22,7 @@ export const PROJECT_NAME_ERRORS = {
     `Project name must be at least ${minLength} characters long`,
   TOO_LONG: (maxLength: number) =>
     `Project name must be less than ${maxLength} characters long`,
-  INVALID_CHARS:
-    'Project name can only contain letters, numbers, spaces, hyphens, and underscores'
+  INVALID_CHARS: 'Project name contains invalid characters'
 } as const
 
 // ============================================================================

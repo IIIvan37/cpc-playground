@@ -16,7 +16,8 @@ export type ProjectName = Readonly<{
 
 export const PROJECT_NAME_MIN_LENGTH = 3
 export const PROJECT_NAME_MAX_LENGTH = 100
-const VALID_PATTERN = /^[a-zA-Z0-9\s\-_]+$/
+// Allow letters (including accented), numbers, spaces, and common punctuation
+const VALID_PATTERN = /^[\p{L}\p{N}\s\-_'".,()+&#!/]+$/u
 
 export function createProjectName(name: string): ProjectName {
   const trimmed = name.trim()

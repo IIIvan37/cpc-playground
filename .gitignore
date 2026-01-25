@@ -37,3 +37,4 @@ coverage
 .netlify
 deno.lock
 docs/
+z80code.json

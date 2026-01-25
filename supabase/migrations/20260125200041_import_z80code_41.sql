@@ -1,0 +1,9339 @@
+-- Migration: Import z80code projects batch 41
+-- Projects 81 to 82
+-- Generated: 2026-01-25T21:43:30.195408
+
+-- Project 81: fugitif-music (ayc) by tronic
+DO $$
+DECLARE
+  project_uuid uuid := gen_random_uuid();
+  tag_uuid uuid;
+BEGIN
+  INSERT INTO projects (id, user_id, name, description, visibility, is_library, is_sticky, created_at, updated_at)
+  VALUES (
+    project_uuid,
+    'bd6a166d-e0bf-4374-94c3-5222e517d75c'::uuid,
+    'fugitif-music (ayc)',
+    'Imported from z80Code. Author: tronic. version ayc',
+    'public',
+    false,
+    false,
+    '2021-10-09T17:50:47.654000'::timestamptz,
+    '2021-10-09T18:06:12.336000'::timestamptz
+  );
+
+  INSERT INTO project_files (project_id, name, content, is_main, "order")
+  VALUES (
+    project_uuid,
+    'main.asm',
+    '; fugitif music / ayc version.
+; quick test...
+
+
+BUILDSNA
+BANKSET 0
+
+initzic equ #5400
+playzic equ #541e
+
+    org #1000
+	nolist
+	run $
+    
+start
+	DI	
+	LD	HL,#C9FB
+	LD	(#38),HL
+
+    ld bc,#7fc4
+    out (c),c
+    
+	call initzic ; init zic
+    
+    ld bc,#7fc0
+    out (c),c
+
+main
+	ld b,#f5
+sync	
+    in a,(c)
+	rra
+	jr nc,sync
+	halt
+	halt
+	halt
+
+	ld bc,#7f10
+	ld a,#6c
+	out (c),c
+	out (c),a
+
+    ld bc,#7fc4
+    out (c),c
+
+	call playzic ; play zic
+    
+    ld bc,#7fc0
+    out (c),c    
+
+	ld bc,#7f10
+	ld a,#54
+	out (c),c
+	out (c),a
+
+	jp main
+    
+BANK 4
+org #4000
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #ff,#ff,#ff,#ff,#ff,#ff,#ff,#ff
+db #cd,#6e,#58,#cd,#75,#58,#cd,#fc
+db #58,#cd,#fb,#58,#cd,#98,#59,#cd
+db #25,#54,#3a,#3a,#5b,#f5,#cd,#01
+db #56,#f1,#3d,#20,#f8,#c9,#cd,#01
+db #56,#cd,#6b,#54,#c9,#06,#0e,#0e
+db #0d,#af,#c5,#cd,#33,#54,#c1,#0d
+db #10,#f8,#c9,#06,#f4,#ed,#49,#01
+db #c0,#f6,#ed,#49,#ed,#71,#06,#f4
+db #ed,#79,#01,#80,#f6,#ed,#49,#ed
+db #71,#c9,#7e,#fe,#00,#28,#11,#32
+db #00,#00,#ed,#49,#d9,#ed,#71,#44
+db #ed,#79,#45,#ed,#59,#ed,#51,#d9
+db #0c,#13,#7a,#e6,#03,#57,#ed,#53
+db #76,#54,#c9,#11,#80,#c0,#21,#f6
+db #f4,#45,#ed,#51,#d9,#11,#00,#00
+db #6b,#06,#f4,#0e,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#f3,#ed,#73,#20,#56,#3a,#3a
+db #5b,#3d,#dd,#26,#00,#fd,#21,#14
+db #56,#c3,#c4,#56,#2a,#12,#56,#2b
+db #56,#2b,#5e,#ed,#53,#12,#56,#31
+db #00,#00,#fb,#c9,#cc,#56,#21,#00
+db #00,#4d,#16,#00,#3a,#3a,#5b,#5f
+db #b7,#ed,#52,#22,#27,#56,#3d,#d2
+db #c4,#56,#42,#11,#64,#56,#ed,#53
+db #12,#56,#ed,#5b,#5d,#5b,#19,#22
+db #27,#56,#79,#32,#7a,#56,#32,#65
+db #56,#2a,#76,#54,#09,#3a,#3a,#5b
+db #4f,#09,#7c,#e6,#03,#32,#0c,#56
+db #7d,#32,#8d,#56,#3e,#00,#3d,#fa
+db #71,#56,#fd,#21,#76,#56,#c3,#c4
+db #56,#3a,#3a,#5b,#18,#06,#3a,#3a
+db #5b,#06,#00,#90,#2a,#6f,#56,#23
+db #5e,#23,#56,#13,#13,#13,#13,#21
+db #a1,#00,#19,#eb,#36,#00,#23,#eb
+db #ed,#a0,#ed,#a0,#ed,#a0,#ed,#a0
+db #ed,#a0,#fd,#21,#a1,#56,#3d,#18
+db #cd,#2a,#6f,#56,#2b,#56,#2b,#5e
+db #21,#d9,#a9,#19,#38,#0a,#21,#26
+db #56,#ed,#53,#12,#56,#11,#c4,#56
+db #ed,#53,#6f,#56,#ed,#7b,#20,#56
+db #fb,#c9,#cc,#56,#31,#fa,#59,#c3
+db #d7,#57,#d4,#56,#31,#04,#5a,#c3
+db #56,#57,#dc,#56,#31,#0e,#5a,#c3
+db #d7,#57,#e4,#56,#31,#18,#5a,#c3
+db #56,#57,#ec,#56,#31,#22,#5a,#c3
+db #d7,#57,#f4,#56,#31,#2c,#5a,#c3
+db #56,#57,#fc,#56,#31,#36,#5a,#c3
+db #56,#57,#04,#57,#31,#40,#5a,#c3
+db #56,#57,#0c,#57,#31,#4a,#5a,#c3
+db #56,#57,#14,#57,#31,#54,#5a,#c3
+db #56,#57,#1c,#57,#31,#5e,#5a,#c3
+db #56,#57,#24,#57,#31,#68,#5a,#c3
+db #56,#57,#2c,#57,#31,#72,#5a,#c3
+db #56,#57,#26,#56,#31,#7c,#5a,#c3
+db #56,#57,#3c,#57,#31,#86,#5a,#c3
+db #56,#57,#c4,#56,#31,#90,#5a,#c3
+db #56,#57,#08,#7e,#23,#d9,#12,#1c
+db #08,#3d,#d9,#f2,#6f,#57,#e5,#c5
+db #d9,#c5,#e5,#d5,#fd,#e9,#d1,#e1
+db #c1,#04,#05,#28,#0f,#d9,#57,#d9
+db #80,#30,#4c,#08,#7e,#2c,#12,#1c
+db #04,#20,#f9,#08,#d9,#c1,#e1,#cb
+db #21,#20,#04,#4e,#23,#cb,#31,#30
+db #c9,#46,#23,#57,#80,#30,#15,#08
+db #78,#d9,#47,#d9,#7e,#23,#d9,#81
+db #6f,#7e,#2c,#12,#1c,#04,#20,#f9
+db #08,#d9,#18,#db,#08,#7a,#d9,#47
+db #04,#d9,#7e,#23,#e5,#c5,#d9,#81
+db #6f,#7e,#2c,#12,#1c,#10,#fa,#08
+db #47,#04,#c5,#e5,#d5,#fd,#e9,#3c
+db #47,#c5,#d9,#7a,#d9,#47,#04,#7e
+db #12,#2c,#1c,#10,#fa,#e5,#d5,#fd
+db #e9,#08,#7e,#23,#d9,#12,#13,#cb
+db #92,#08,#3d,#d9,#f2,#f4,#57,#e5
+db #c5,#d9,#c5,#e5,#d5,#fd,#e9,#d1
+db #e1,#c1,#04,#05,#28,#13,#d9,#57
+db #d9,#80,#30,#74,#08,#7e,#23,#cb
+db #94,#12,#13,#cb,#92,#04,#20,#f5
+db #08,#d9,#c1,#e1,#cb,#21,#20,#04
+db #4e,#23,#cb,#31,#30,#c3,#46,#23
+db #57,#80,#30,#27,#08,#78,#d9,#47
+db #d9,#7e,#23,#d9,#81,#6f,#7a,#cb
+db #87,#cb,#8f,#d9,#8e,#dd,#84,#e6
+db #fb,#23,#d9,#67,#7e,#23,#cb,#94
+db #12,#13,#cb,#92,#04,#20,#f5,#08
+db #d9,#18,#c9,#08,#7a,#d9,#47,#04
+db #d9,#7e,#23,#d9,#81,#6f,#7a,#cb
+db #87,#cb,#8f,#d9,#8e,#dd,#84,#e6
+db #fb,#23,#e5,#c5,#d9,#67,#7e,#23
+db #cb,#94,#12,#13,#cb,#92,#10,#f6
+db #08,#47,#04,#c5,#e5,#d5,#fd,#e9
+db #3c,#47,#c5,#d9,#7a,#d9,#47,#04
+db #7e,#12,#23,#cb,#94,#13,#cb,#92
+db #10,#f6,#e5,#d5,#fd,#e9,#2a,#5d
+db #5b,#22,#27,#56,#c9,#21,#3d,#5b
+db #16,#40,#d9,#2a,#3b,#5b,#23,#23
+db #e5,#11,#03,#00,#3a,#3a,#5b,#47
+db #0e,#00,#7e,#fe,#01,#28,#0c,#d9
+db #72,#23,#36,#04,#2b,#7a,#c6,#08
+db #57,#d9,#0c,#d9,#23,#23,#d9,#19
+db #10,#e8,#21,#3d,#5b,#16,#40,#06
+db #03,#d9,#e1,#e5,#11,#03,#00,#3a
+db #3a,#5b,#47,#7e,#fe,#04,#28,#18
+db #d9,#78,#3c,#e6,#03,#47,#20,#09
+db #79,#b7,#28,#05,#0d,#7a,#c6,#04
+db #57,#72,#23,#36,#01,#2b,#14,#d9
+db #d9,#23,#23,#d9,#19,#10,#dc,#21
+db #c8,#56,#01,#07,#00,#d9,#e1,#11
+db #03,#00,#3a,#3a,#5b,#47,#7e,#fe
+db #01,#d9,#11,#56,#57,#28,#03,#11
+db #d7,#57,#73,#23,#72,#09,#d9,#19
+db #10,#ec,#c9,#c9,#21,#3d,#5b,#11
+db #7d,#54,#46,#23,#7e,#23,#fe,#01
+db #cc,#7d,#59,#c4,#8a,#59,#06,#0d
+db #c5,#cd,#5a,#59,#46,#23,#7e,#fe
+db #04,#cc,#8a,#59,#28,#15,#2b,#2b
+db #be,#c4,#7d,#59,#20,#0b,#2b,#7e
+db #23,#90,#3c,#cc,#85,#59,#c4,#7d
+db #59,#23,#23,#23,#c1,#10,#d9,#eb
+db #36,#7e,#23,#36,#3c,#23,#36,#28
+db #23,#36,#0f,#23,#36,#3d,#23,#eb
+db #21,#52,#54,#01,#0f,#00,#ed,#b0
+db #1b,#21,#61,#54,#01,#0a,#00,#ed
+db #b0,#c9,#e5,#21,#4a,#54,#ed,#a0
+db #ed,#a0,#42,#0e,#ff,#7b,#ed,#a0
+db #ed,#a0,#ed,#a0,#ed,#a0,#12,#13
+db #78,#12,#13,#21,#52,#54,#01,#0f
+db #00,#ed,#b0,#e1,#c9,#eb,#36,#26
+db #23,#70,#23,#eb,#c9,#3e,#24,#12
+db #13,#c9,#eb,#36,#3e,#23,#70,#23
+db #36,#b2,#23,#36,#67,#23,#eb,#c9
+db #21,#26,#56,#22,#12,#56,#21,#c4
+db #56,#22,#6f,#56,#af,#32,#0c,#56
+db #21,#00,#00,#22,#76,#54,#cd,#bd
+db #59,#21,#fa,#59,#11,#9a,#5a,#01
+db #a0,#00,#ed,#b0,#c9,#21,#3d,#5b
+db #d9,#3a,#3a,#5b,#47,#ed,#5b,#3b
+db #5b,#13,#13,#21,#fa,#59,#c5,#d9
+db #7e,#23,#23,#d9,#36,#00,#23,#77
+db #23,#23,#77,#23,#36,#00,#23,#36
+db #00,#23,#36,#40,#23,#23,#eb,#23
+db #4e,#23,#46,#e5,#09,#44,#4d,#e1
+db #23,#eb,#71,#23,#70,#23,#c1,#10
+db #d5,#c9,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#0e,#5d,#5b,#40,#04,#c4
+db #01,#c8,#04,#c5,#01,#d0,#04,#c6
+db #01,#c7,#01,#cc,#01,#cd,#01,#ce
+db #01,#cf,#01,#d4,#01,#d5,#01,#d6
+db #01,#d7,#01,#d8,#01,#37,#18,#01
+db #2e,#00,#01,#22,#02,#01,#56,#02
+db #01,#ec,#03,#01,#28,#04,#01,#2f
+db #06,#01,#6d,#07,#01,#b7,#07,#01
+db #ed,#08,#01,#15,#0b,#01,#cc,#0c
+db #01,#92,#0e,#01,#c6,#0e,#01,#fa
+db #0e,#ff,#ff,#ff,#ff,#ff,#ff,#00
+db #d5,#00,#00,#c7,#00,#50,#f5,#3a
+db #35,#f4,#46,#3c,#f5,#53,#7f,#43
+db #f4,#5f,#e8,#47,#f3,#5e,#f4,#3a
+db #f3,#45,#e7,#78,#da,#5f,#ff,#e6
+db #e8,#ce,#91,#da,#46,#e8,#04,#e6
+db #41,#db,#29,#d9,#e8,#da,#67,#fd
+db #db,#10,#f4,#cd,#f3,#d8,#e7,#0b
+db #da,#f2,#f3,#7b,#47,#c2,#89,#fd
+db #f4,#57,#e7,#70,#f4,#63,#f3,#f8
+db #da,#3d,#cd,#95,#50,#f4,#5f,#f7
+db #f4,#07,#f3,#5f,#e1,#19,#f9,#7e
+db #59,#f5,#ab,#f3,#78,#fa,#c3,#ff
+db #f9,#9d,#f4,#8c,#e7,#06,#f3,#52
+db #da,#20,#00,#5f,#6c,#5f,#cf,#bc
+db #d5,#f3,#1f,#fa,#78,#64,#ee,#01
+db #6a,#e8,#14,#54,#e8,#2d,#d7,#e7
+db #d5,#f3,#71,#35,#e8,#6c,#50,#f4
+db #85,#f4,#60,#f3,#85,#f7,#f3,#ee
+db #fa,#b7,#f4,#53,#f9,#a4,#59,#f5
+db #d1,#f3,#9e,#fa,#e9,#ff,#f9,#c3
+db #f4,#b2,#f3,#5f,#e8,#b2,#f3,#f6
+db #e7,#46,#f8,#c9,#00,#8c,#f5,#73
+db #8c,#cf,#e2,#f3,#45,#fa,#9e,#64
+db #ee,#27,#6a,#e8,#3a,#77,#54,#e8
+db #53,#e7,#fb,#f3,#97,#35,#da,#92
+db #f3,#14,#ee,#15,#d5,#ed,#d7,#e5
+db #9e,#50,#f4,#06,#28,#f5,#13,#24
+db #f4,#1f,#7f,#22,#a9,#2c,#b3,#b9
+db #f3,#05,#f4,#13,#f3,#1e,#a8,#2c
+db #b2,#83,#ad,#f4,#d2,#50,#f4,#76
+db #32,#f4,#b6,#f4,#df,#1e,#e8,#cf
+db #bd,#e6,#36,#24,#e8,#02,#f3,#f5
+db #f4,#dc,#f3,#0e,#2d,#da,#41,#7d
+db #43,#cf,#68,#f4,#5c,#e7,#02,#d9
+db #be,#e7,#81,#3c,#e8,#ff,#56,#35
+db #e5,#18,#50,#f5,#34,#28,#f4,#40
+db #f4,#da,#22,#ff,#a8,#59,#b3,#e6
+db #f4,#34,#f3,#3f,#f4,#4d,#a7,#58
+db #b3,#b2,#f3,#fe,#b3,#f3,#a2,#32
+db #f5,#e4,#f4,#0c,#28,#1e,#e8,#fd
+db #e6,#63,#7a,#24,#e8,#30,#f4,#24
+db #f3,#09,#f4,#3d,#2d,#da,#6e,#43
+db #f5,#cf,#95,#f3,#88,#e7,#30,#e6
+db #ec,#50,#f4,#07,#3c,#f5,#14,#db
+db #f3,#07,#ed,#b4,#47,#f5,#40,#f9
+db #26,#59,#f5,#53,#f3,#20,#f7,#fa
+db #6b,#f9,#45,#f4,#34,#f4,#14,#3c
+db #e8,#34,#f3,#78,#f3,#9e,#fd,#f3
+db #c3,#00,#07,#6c,#07,#cf,#64,#f3
+db #c7,#fa,#20,#64,#ee,#a9,#5d,#6a
+db #e8,#bc,#54,#e8,#d5,#e7,#7d,#f3
+db #19,#35,#e8,#14,#7f,#50,#f4,#2d
+db #f4,#08,#f3,#2d,#f3,#96,#fa,#5f
+db #f4,#fb,#f9,#4c,#7f,#59,#f5,#79
+db #f3,#46,#fa,#91,#f9,#6b,#f4,#5a
+db #f3,#07,#e8,#5a,#ff,#f3,#9e,#e7
+db #ee,#f8,#71,#00,#34,#73,#34,#cf
+db #8a,#f3,#ed,#fa,#46,#57,#64,#ee
+db #cf,#6a,#e8,#e2,#54,#e8,#fb,#e7
+db #a3,#f3,#3f,#7d,#35,#da,#3a,#f3
+db #bc,#ee,#bd,#ed,#7f,#e5,#46,#50
+db #f4,#ae,#56,#28,#f5,#bb,#24,#f4
+db #c7,#22,#a9,#d4,#f5,#6f,#00,#ff
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #ff,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#ff,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#80,#ca,#00,#00,#ab,#20
+db #00,#6a,#f9,#e1,#77,#f8,#e9,#86
+db #f9,#f2,#ef,#e9,#6b,#8e,#f8,#0b
+db #ef,#03,#b3,#f9,#25,#9f,#84,#2d
+db #f8,#e1,#ff,#f7,#e8,#f8,#14,#f7
+db #f9,#f7,#bb,#f0,#0c,#f7,#d4,#f8
+db #25,#7a,#2c,#ff,#f8,#c4,#f7,#cb
+db #ef,#7c,#f8,#e6,#f7,#dc,#f7,#9e
+db #7b,#ef,#c6,#42,#fe,#f7,#7b,#f8
+db #a7,#f6,#ae,#8c,#91,#e6,#6f,#e7
+db #78,#ef,#28,#b3,#f7,#f8,#4a,#e4
+db #53,#9f,#6e,#b3,#06,#c9,#84,#1d
+db #36,#d0,#b4,#68,#f5,#f8,#d6,#b5
+db #b7,#f7,#a7,#f8,#9f,#d5,#9c,#14
+db #9f,#84,#79,#7d,#6a,#f8,#f6,#f8
+db #0c,#fb,#07,#fc,#0b,#ef,#ff,#8e
+db #f9,#21,#af,#ef,#18,#b3,#f8,#3a
+db #c9,#84,#43,#36,#f6,#b4,#8e,#f8
+db #fc,#fe,#b5,#dd,#f7,#cd,#f8,#c5
+db #e7,#39,#e6,#bc,#e7,#c5,#ef,#75
+db #b3,#bf,#f8,#97,#9f,#9b,#a0,#f7
+db #86,#d7,#0e,#f3,#46,#f4,#2c,#f8
+db #8f,#fa,#fb,#58,#9a,#a0,#b4,#f8
+db #f3,#f7,#e6,#52,#c9,#aa,#37,#d5
+db #ab,#f2,#8e,#0c,#f4,#9d,#1c,#f5
+db #aa,#3f,#cf,#b6,#f2,#29,#af,#f4
+db #f5,#b3,#c2,#02,#8e,#f5,#41,#e5
+db #f5,#f1,#8e,#f6,#76,#be,#f4,#aa
+db #52,#e8,#8d,#f4,#81,#e5,#b1,#e6
+db #e8,#b3,#e6,#86,#b7,#cf,#34,#77
+db #f5,#66,#f3,#59,#8e,#f5,#7f,#99
+db #cd,#b5,#27,#ea,#f3,#71,#f4,#7f
+db #f2,#8a,#c9,#a9,#64,#d5,#f2,#bc
+db #0c,#ae,#f5,#cb,#1c,#f4,#d7,#3f
+db #cf,#e4,#f3,#57,#f3,#22,#b3,#be
+db #c3,#30,#8e,#f4,#6e,#e6,#24,#f1
+db #bc,#f6,#a3,#f3,#d7,#52,#fa,#e8
+db #bb,#f3,#ae,#e6,#e0,#e6,#16,#9d
+db #14,#6a,#f8,#78,#77,#b6,#f9,#81
+db #86,#f8,#89,#ef,#81,#8e,#f9,#a3
+db #ef,#9a,#b3,#bf,#f8,#bc,#c9,#84
+db #c5,#36,#78,#b4,#10,#f8,#7e,#b5
+db #5f,#f7,#4f,#ab,#f8,#47,#d5,#9c
+db #bc,#9f,#84,#21,#6a,#f8,#9e,#f8
+db #b4,#ed,#fb,#af,#fc,#b3,#ef,#a7
+db #8e,#f9,#c9,#ef,#c0,#b3,#f8,#e2
+db #7f,#c9,#84,#eb,#36,#9e,#b4,#36
+db #f8,#a4,#b5,#85,#f7,#75,#f8,#6d
+db #f5,#e7,#e1,#e6,#64,#e7,#6d,#ef
+db #1d,#b3,#f8,#3f,#9f,#9b,#48,#fe
+db #f7,#2e,#d7,#b6,#f3,#ee,#f4,#d4
+db #f8,#37,#fb,#00,#cf,#7d,#00,#ff
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #fb,#00,#00,#00,#00,#00,#00,#00
+db #00,#64,#00,#01,#b6,#9d,#1c,#04
+db #ef,#66,#e7,#00,#65,#9b,#65,#01
+db #b6,#cb,#1d,#33,#66,#14,#00,#92
+db #fc,#00,#92,#00,#92,#00,#92,#00
+db #92,#00,#92,#5c,#92,#7e,#bf,#f5
+db #00,#3f,#f4,#0c,#45,#00,#9a,#d3
+db #e7,#bc,#5e,#3a,#fe,#f4,#59,#24
+db #f5,#f7,#92,#f4,#03,#51,#f7,#92
+db #bc,#f4,#c0,#65,#de,#f5,#cd,#51
+db #c0,#de,#38,#f5,#89,#1c,#f4,#95
+db #ab,#b5,#89,#aa,#9b,#ed,#7e,#f5
+db #53,#3f,#f4,#5f,#a9,#53,#eb,#f3
+db #a9,#b5,#b7,#fe,#1a,#24,#f5,#1d
+db #92,#f4,#29,#a9,#1d,#eb,#f3,#73
+db #b5,#81,#fe,#e4,#bc,#f5,#e7,#de
+db #f4,#f3,#a9,#e7,#cb,#f3,#3d,#b5
+db #4b,#de,#38,#f5,#b0,#1c,#f4,#bc
+db #b5,#b0,#5a,#53,#f4,#14,#aa,#f5
+db #21,#e7,#14,#24,#f4,#46,#92,#af
+db #db,#53,#7e,#f5,#79,#3f,#ce,#85
+db #f4,#79,#f3,#c3,#e7,#ac,#ff,#a9
+db #86,#fe,#40,#ce,#47,#f3,#74,#f4
+db #43,#f3,#8d,#e7,#76,#a9,#50,#af
+db #fe,#0a,#bc,#f5,#0d,#de,#ce,#19
+db #f4,#0d,#f3,#57,#e7,#40,#97,#a9
+db #1a,#de,#38,#f5,#d6,#1c,#ce,#e2
+db #f4,#d6,#f3,#20,#ae,#f4,#09,#53
+db #f4,#3a,#aa,#f5,#47,#f3,#3a,#f4
+db #5f,#24,#af,#cd,#6c,#7e,#e8,#a0
+db #3f,#f4,#b9,#e7,#a0,#ec,#ac,#ae
+db #c6,#ef,#e6,#b9,#f4,#46,#e6,#86
+db #92,#f5,#85,#e6,#6b,#ed,#78,#ad
+db #91,#cb,#e7,#85,#f4,#11,#92,#bc
+db #e8,#37,#de,#f4,#50,#e7,#37,#f5
+db #ec,#43,#ae,#5d,#e6,#50,#f4,#dd
+db #cc,#f4,#02,#66,#e8,#0f,#f5,#e6
+db #02,#f3,#28,#ee,#4e,#f9,#3b,#aa
+db #f5,#68,#d5,#e7,#74,#f5,#e7,#68
+db #f4,#8e,#ec,#b2,#fa,#a1,#7e,#e7
+db #cd,#3f,#f5,#e7,#f9,#e6,#cd,#ed
+db #da,#ad,#f3,#e7,#e7,#f4,#73,#3f
+db #24,#e8,#99,#7e,#92,#f4,#b2,#e7
+db #99,#ec,#a5,#ae,#bf,#e6,#b2,#f4
+db #3f,#bc,#bf,#e7,#64,#de,#f5,#7e
+db #e6,#64,#ed,#71,#ad,#8a,#e7,#7e
+db #f4,#0a,#2f,#de,#cc,#f5,#30,#66
+db #e7,#3c,#e7,#30,#f4,#56,#ec,#7a
+db #af,#fa,#69,#aa,#f4,#95,#d5,#e8
+db #a2,#e6,#95,#f3,#bb,#ee,#e1,#af
+db #f9,#ce,#7e,#f5,#fb,#3f,#f4,#07
+db #a9,#fb,#f3,#51,#b5,#5f,#af,#fe
+db #c2,#24,#f5,#c5,#92,#f4,#d1,#a9
+db #c5,#f3,#1b,#b5,#29,#af,#fe,#8c
+db #bc,#f5,#8f,#de,#f4,#9b,#a9,#8f
+db #f3,#e5,#b5,#f3,#2d,#de,#38,#f5
+db #58,#1c,#f4,#64,#b5,#58,#53,#f4
+db #bc,#6a,#aa,#f5,#c9,#e7,#bc,#24
+db #f4,#ee,#92,#db,#fb,#7e,#bf,#f5
+db #21,#3f,#ce,#2d,#f4,#21,#f3,#6b
+db #e7,#54,#a9,#2e,#fe,#e8,#fe,#ce
+db #ef,#f3,#1c,#f4,#eb,#f3,#35,#e7
+db #1e,#a9,#f8,#fe,#b2,#bc,#be,#f5
+db #b5,#de,#ce,#c1,#f4,#b5,#f3,#ff
+db #e7,#e8,#a9,#c2,#de,#5e,#38,#f5
+db #7e,#1c,#ce,#8a,#f4,#7e,#f3,#c8
+db #f4,#b1,#53,#ba,#f4,#e2,#aa,#f5
+db #ef,#f3,#e2,#f4,#07,#24,#cd,#14
+db #7e,#bf,#e8,#48,#3f,#f4,#61,#e7
+db #48,#ec,#54,#ae,#6e,#e6,#61,#f4
+db #ee,#a0,#e6,#2e,#92,#f7,#2d,#02
+db #bf,#f5,#00,#01,#f4,#0c,#45,#00
+db #9a,#d3,#e7,#bc,#5e,#3a,#fe,#f4
+db #7c,#03,#f5,#f7,#44,#ea,#f3,#a5
+db #f3,#b1,#51,#c0,#01,#02,#ff,#f5
+db #89,#a8,#7c,#9a,#ec,#9c,#89,#f4
+db #9e,#f3,#a9,#b5,#b7,#fe,#1a,#7d
+db #03,#f5,#1d,#9c,#10,#f3,#73,#b5
+db #81,#35,#1b,#02,#f5,#b0,#ff,#a8
+db #a3,#b4,#64,#e7,#5f,#e7,#fb,#ce
+db #53,#f3,#c3,#e7,#ac,#a9,#86,#fe
+db #f2,#44,#cd,#85,#f4,#43,#f3,#8d
+db #e7,#76,#a9,#50,#35,#41,#02,#ff
+db #f5,#d6,#cd,#19,#f4,#d6,#f3,#20
+db #db,#65,#e7,#b0,#cc,#6b,#db,#15
+db #ff,#e6,#14,#ec,#ac,#ae,#c6,#e6
+db #b9,#f4,#46,#e6,#86,#da,#5f,#ed
+db #78,#ff,#ad,#91,#e7,#85,#f3,#45
+db #db,#f8,#d2,#ea,#ae,#5d,#e6,#50
+db #f4,#dd,#7e,#02,#f4,#02,#f3,#dc
+db #da,#f6,#f3,#28,#ee,#4e,#ed,#15
+db #00,#ff,#e7,#74,#e7,#68,#e7,#0f
+db #f3,#93,#da,#47,#e1,#42,#f2,#df
+db #ad,#f3,#df,#e7,#e7,#f3,#ba,#03
+db #e8,#99,#da,#8c,#ec,#a5,#ae,#bf
+db #e6,#b2,#f9,#da,#b3,#ce,#b3,#f9
+db #7d,#ad,#8a,#db,#3f,#01,#02,#f5
+db #30,#fb,#f3,#23,#da,#23,#f4,#56
+db #ec,#7a,#ed,#43,#00,#e8,#a2,#e6
+db #95,#fe,#e6,#3c,#f4,#c3,#db,#56
+db #b5,#07,#f3,#51,#b5,#5f,#fe,#c2
+db #03,#fb,#f5,#c5,#9c,#b8,#f3,#1b
+db #b5,#29,#35,#c3,#02,#f5,#58,#a8
+db #4b,#ff,#b4,#0c,#e7,#07,#e7,#a3
+db #ce,#fb,#f3,#6b,#e7,#54,#a9,#2e
+db #f2,#ec,#fd,#cd,#2d,#f4,#eb,#f3
+db #35,#e7,#1e,#a9,#f8,#35,#e9,#02
+db #f5,#7e,#ff,#cd,#c1,#f4,#7e,#f3
+db #c8,#db,#0d,#e7,#58,#cc,#13,#db
+db #bd,#e6,#bc,#fc,#ec,#54,#ae,#6e
+db #e6,#61,#f4,#ee,#e6,#2e,#f6,#09
+db #00,#ff,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #a2,#00,#5f,#0a,#f4,#5f,#14,#db
+db #6c,#f3,#5f,#00,#9e,#00,#9e,#26
+db #9e,#7f,#01,#f5,#79,#0c,#85,#00
+db #78,#00,#78,#00,#78,#00,#78,#00
+db #78,#f7,#00,#78,#00,#78,#00,#78
+db #65,#78,#14,#db,#14,#26,#3a,#00
+db #13,#dc,#00,#13,#f3,#13,#01,#f5
+db #21,#0c,#2d,#ea,#20,#3b,#aa,#2d
+db #00,#3f,#f4,#d4,#3d,#b5,#e1,#39
+db #f4,#2d,#38,#bf,#aa,#3a,#3a,#e8
+db #91,#e7,#78,#ce,#2d,#f2,#2b,#a9
+db #3a,#c1,#90,#fb,#da,#35,#f3,#f6
+db #a8,#02,#e7,#5b,#e7,#3c,#3b,#f4
+db #56,#db,#68,#7d,#3d,#ce,#f2,#ce
+db #c0,#e7,#3d,#ce,#89,#e6,#6f,#3d
+db #cf,#bc,#df,#cd,#83,#9c,#ed,#3c
+db #00,#52,#b8,#52,#ce,#63,#e6,#cc
+db #a8,#f3,#a7,#a9,#07,#1c,#e8,#5f
+db #1f,#39,#f5,#79,#e6,#52,#ce,#3a
+db #bd,#f4,#b8,#3a,#e8,#dd,#f3,#c3
+db #ce,#39,#f3,#1c,#3d,#00,#79,#9f
+db #b9,#79,#3a,#1e,#f5,#8b,#e6,#71
+db #b6,#b5,#a8,#32,#e7,#14,#c6,#e6
+db #14,#e8,#85,#1d,#3d,#39,#e8,#a0
+db #e6,#07,#3c,#cf,#f5,#d3,#db,#fc
+db #3b,#3b,#db,#df,#c0,#c5,#c6,#a0
+db #d6,#0f,#ff,#fe,#04,#cd,#05,#f4
+db #39,#9f,#44,#d5,#0c,#cd,#d1,#cd
+db #69,#b5,#b6,#ef,#cc,#82,#f4,#1c
+db #c0,#27,#39,#e8,#cd,#da,#02,#db
+db #8d,#fe,#66,#ff,#e6,#67,#b5,#68
+db #c6,#cc,#d5,#3b,#cc,#32,#f3,#65
+db #a1,#73,#d5,#37,#ff,#fe,#fd,#cd
+db #fe,#cf,#97,#fe,#c7,#b5,#e4,#cd
+db #16,#f3,#48,#c1,#56,#3b,#3b,#39
+db #f5,#fb,#c2,#bb,#e6,#44,#3a,#e8
+db #5f,#b5,#14,#3f,#3c,#3d,#00,#fb
+db #b9,#fb,#ce,#0b,#e6,#74,#a8,#9b
+db #a9,#af,#4f,#1c,#e8,#07,#1f,#39
+db #f5,#21,#e6,#fa,#ce,#e2,#f4,#60
+db #7b,#3a,#e8,#85,#f3,#6b,#ce,#e1
+db #f3,#c4,#3d,#00,#21,#b9,#21,#3f
+db #3a,#1e,#f5,#33,#e6,#19,#b6,#5d
+db #a8,#da,#e7,#bc,#e6,#bc,#8d,#e8
+db #2d,#1d,#3d,#39,#e8,#48,#e6,#af
+db #3c,#f5,#7b,#9c,#db,#a4,#3b,#3b
+db #db,#87,#c0,#6d,#dc,#48,#00,#c0
+db #00,#00,#c7,#00,#0c,#0c,#0b,#0b
+db #0a,#0a,#01,#09,#09,#08,#08,#07
+db #07,#0d,#f4,#3a,#ff,#90,#3a,#fe
+db #bf,#f5,#c4,#f1,#9e,#fd,#d1,#fd
+db #d3,#fd,#d5,#fd,#d7,#97,#fd,#d9
+db #07,#06,#fe,#ef,#05,#fe,#f2,#fe
+db #38,#f4,#c4,#f7,#83,#46,#f3,#67
+db #e5,#f7,#ea,#df,#04,#f3,#f6,#f0
+db #cf,#86,#06,#df,#e4,#c0,#ea,#a8
+db #00,#ed,#70,#fe,#8b,#fe,#91,#fe
+db #97,#b5,#3d,#ef,#e4,#d4,#f4,#a5
+db #ea,#f0,#04,#fd,#13,#fa,#13,#fa
+db #16,#fa,#19,#e7,#fa,#1c,#fa,#1f
+db #fc,#22,#00,#00,#f4,#bc,#e7,#a2
+db #e5,#5f,#ff,#fb,#9d,#df,#85,#f4
+db #7a,#fb,#a6,#df,#a4,#cf,#d2,#00
+db #52,#6c,#52,#fc,#f1,#97,#fd,#b1
+db #fd,#b3,#fd,#b5,#fd,#b7,#fd,#b9
+db #07,#06,#bf,#fe,#cf,#05,#fe,#d2
+db #d9,#8a,#f9,#59,#ef,#be,#b2,#71
+db #ea,#49,#7f,#00,#fd,#0e,#f7,#7b
+db #cc,#2d,#fb,#fc,#df,#ab,#ed,#f0
+db #e1,#cc,#ff,#cf,#f8,#00,#78,#6c
+db #78,#f1,#bd,#fd,#d7,#fd,#d9,#fd
+db #db,#fd,#dd,#97,#fd,#df,#07,#06
+db #fe,#f5,#05,#fe,#f8,#d9,#b0,#f9
+db #7f,#e7,#ef,#e4,#b2,#97,#ea,#6f
+db #00,#00,#fd,#34,#ea,#a2,#e8,#e3
+db #7f,#04,#ce,#b9,#fe,#9e,#d8,#6c
+db #f3,#2d,#fd,#ee,#f4,#3d,#fd,#f1
+db #ff,#f4,#4c,#fd,#f4,#f4,#5b,#fe
+db #28,#e6,#9f,#fd,#1f,#ea,#ed,#ce
+db #84,#bd,#fe,#04,#00,#e5,#13,#f3
+db #d4,#aa,#2e,#e8,#b7,#04,#ce,#50
+db #ff,#fe,#d0,#e4,#de,#e6,#e1,#eb
+db #85,#e7,#cf,#ca,#9c,#f4,#1e,#fc
+db #42,#ff,#fd,#ec,#fa,#ec,#fa,#ef
+db #fa,#f2,#fa,#f5,#fc,#f8,#fe,#9b
+db #cc,#0f,#ff,#f2,#c5,#dd,#44,#fa
+db #bf,#ed,#d2,#e7,#e8,#ce,#e6,#fe
+db #66,#d7,#67,#ff,#f3,#5b,#fa,#ad
+db #f7,#6e,#fa,#b3,#f7,#7d,#fa,#b9
+db #f7,#8c,#fe,#55,#df,#e6,#cc,#e8
+db #19,#04,#ce,#b2,#fe,#32,#e4,#40
+db #f4,#02,#aa,#5c,#f7,#fd,#18,#ea
+db #e6,#ce,#7d,#fe,#fd,#00,#e5,#0c
+db #e6,#0e,#eb,#b3,#7f,#04,#e7,#fd
+db #cb,#ca,#f3,#4b,#fc,#70,#fd,#19
+db #fa,#19,#fa,#1c,#ee,#fa,#1f,#fa
+db #22,#fc,#25,#00,#cb,#3c,#f3,#f3
+db #dd,#72,#00,#ff,#fa,#ec,#fa,#00
+db #cc,#95,#fe,#30,#fe,#34,#de,#2c
+db #f4,#22,#fb,#4e,#ff,#df,#4c,#cf
+db #7a,#00,#fa,#6c,#fa,#f1,#3f,#fd
+db #59,#fd,#5b,#fd,#5d,#cb,#fd,#5f
+db #fd,#61,#07,#06,#fe,#77,#05,#fe
+db #7a,#d9,#32,#f7,#f9,#01,#ef,#66
+db #b2,#19,#ea,#f1,#00,#fd,#b6,#f7
+db #23,#cc,#d5,#ff,#fb,#a4,#df,#53
+db #ed,#98,#e1,#74,#cf,#a0,#00,#20
+db #6c,#20,#f1,#65,#f9,#fd,#7f,#fd
+db #81,#fd,#83,#fd,#85,#fd,#87,#07
+db #06,#fe,#9d,#7e,#05,#fe,#a0,#d9
+db #58,#f9,#27,#ef,#8c,#b2,#3f,#ea
+db #17,#00,#77,#00,#fd,#dc,#ea,#4a
+db #e8,#8b,#04,#ce,#61,#fe,#46,#d8
+db #14,#ff,#f3,#d5,#fd,#96,#f4,#e5
+db #fd,#99,#f4,#f4,#fd,#9c,#f4,#03
+db #fe,#d0,#e0,#e6,#47,#fd,#c7,#f8
+db #95,#08,#80,#20,#00,#0c,#0c,#0b
+db #0b,#0a,#0a,#09,#3f,#09,#0d,#f8
+db #e1,#c2,#e1,#f3,#2f,#fe,#27,#f3
+db #3e,#fe,#29,#f5,#f3,#4d,#fe,#2b
+db #f3,#5c,#f1,#d2,#07,#f2,#79,#06
+db #f8,#88,#ff,#e7,#c8,#b9,#e9,#f8
+db #e0,#9f,#30,#e6,#90,#ba,#b3,#f7
+db #a9,#9f,#f9,#ff,#e7,#5b,#ce,#3c
+db #e4,#9e,#9f,#c3,#e6,#23,#e4,#6f
+db #cd,#11,#00,#8b,#fd,#00,#8b,#bf
+db #54,#93,#cd,#ec,#96,#af,#b2,#f9
+db #67,#06,#f8,#6f,#5f,#00,#9d,#15
+db #06,#f1,#b5,#f6,#eb,#ec,#03,#c5
+db #f9,#00,#7b,#ff,#bb,#7b,#ce,#89
+db #93,#f3,#ef,#bc,#cb,#a3,#cd,#5e
+db #af,#d8,#f9,#f2,#4f,#06,#f7,#fa
+db #00,#00,#fd,#97,#f6,#ab,#f4,#c7
+db #f4,#e5,#af,#fa,#fe,#05,#fb,#31
+db #04,#f7,#97,#fc,#23,#f4,#39,#e7
+db #38,#eb,#f8,#05,#a3,#a6,#fe,#04
+db #00,#cf,#07,#04,#db,#45,#f3,#10
+db #ef,#f9,#d1,#bb,#72,#e6,#1d,#00
+db #e4,#10,#d1,#d4,#fc,#b6,#fa,#c0
+db #ff,#fa,#cc,#fa,#d8,#fd,#e4,#fc
+db #9c,#ce,#b9,#e7,#a0,#ea,#37,#fe
+db #9b,#bf,#e8,#e9,#04,#f0,#aa,#eb
+db #6b,#da,#02,#f8,#01,#f7,#d3,#fa
+db #ad,#ff,#f7,#e2,#fa,#b3,#f7,#f1
+db #fa,#b9,#f7,#00,#fa,#bf,#f7,#0f
+db #fa,#c5,#ff,#f7,#1e,#fb,#28,#fc
+db #2c,#fe,#66,#fc,#67,#de,#aa,#fb
+db #58,#fd,#a3,#ff,#fc,#7d,#f0,#80
+db #f6,#68,#e7,#66,#f9,#33,#a3,#d4
+db #fd,#30,#fd,#8b,#ff,#d1,#36,#da
+db #72,#f3,#8c,#f9,#ff,#bc,#9f,#e6
+db #4a,#fe,#c8,#e5,#3e,#bd,#d1,#02
+db #04,#fa,#e7,#fa,#f3,#fa,#ff,#fa
+db #0b,#04,#fd,#ca,#ef,#ce,#e6,#e7
+db #cd,#e9,#64,#00,#fd,#87,#ea,#18
+db #f0,#d7,#ea,#19,#bf,#db,#30,#00
+db #f9,#2f,#f7,#00,#fa,#da,#f7,#0f
+db #fa,#e0,#f7,#1e,#ff,#fa,#e6,#f7
+db #2d,#fa,#ec,#f7,#3c,#fa,#f2,#f7
+db #4b,#fb,#55,#fb,#59,#ff,#f1,#37
+db #f6,#6d,#f7,#ae,#f8,#79,#c2,#78
+db #00,#fd,#bb,#fd,#ce,#0b,#f5,#93
+db #75,#ec,#3e,#af,#5a,#f9,#0f,#06
+db #f8,#17,#00,#9d,#bd,#7f,#06,#f1
+db #5d,#f6,#93,#ec,#ab,#c5,#a1,#00
+db #23,#bb,#23,#ce,#31,#fd,#93,#9b
+db #ef,#64,#cb,#4b,#cd,#06,#af,#80
+db #f9,#9a,#06,#f7,#a2,#3e,#00,#00
+db #fd,#3f,#f6,#53,#f4,#6f,#f4,#8d
+db #fa,#a6,#05,#bf,#fb,#d9,#04,#f7
+db #3f,#fc,#cb,#f4,#e1,#e7,#e0,#f8
+db #ad,#e3,#4e,#0d,#00,#0d,#0c,#0c
+db #0b,#0b,#0a,#0a,#09,#0f,#09,#08
+db #08,#0e,#f4,#00,#45,#00,#fe,#d0
+db #aa,#d5,#66,#00,#6a,#3e,#ce,#aa
+db #00,#00,#45,#3a,#f3,#99,#00,#ff
+db #44,#03,#f3,#b3,#9c,#18,#9b,#24
+db #00,#88,#00,#88,#a2,#88,#51,#e7
+db #c0,#fe,#58,#fe,#5c,#07,#06,#05
+db #04,#03,#02,#1f,#01,#00,#00,#fc
+db #58,#fd,#5d,#fd,#5f,#fd,#61,#f2
+db #3a,#ff,#fe,#7c,#fd,#6e,#fa,#86
+db #f3,#5f,#fe,#79,#fd,#7a,#fd,#7c
+db #fd,#7e,#f5,#fd,#80,#fd,#82,#fe
+db #95,#fe,#b1,#06,#fe,#b4,#05,#e7
+db #53,#ff,#e6,#3a,#fb,#8d,#f9,#85
+db #f4,#c4,#fd,#dd,#ea,#a1,#f3,#dd
+db #f1,#f7,#ff,#f6,#1f,#f1,#d0,#00
+db #87,#7b,#87,#8e,#0d,#e8,#2f,#e7
+db #bd,#fc,#72,#cf,#fd,#0c,#fd,#12
+db #04,#04,#f3,#21,#fa,#85,#f9,#85
+db #f1,#2d,#ff,#f5,#e4,#f2,#3a,#f9
+db #b4,#fb,#c7,#fd,#08,#f7,#d5,#f1
+db #ac,#e6,#e1,#ff,#e8,#bb,#e7,#47
+db #f2,#d3,#cf,#08,#e5,#52,#f5,#fb
+db #f9,#3e,#e7,#85,#ff,#eb,#b1,#e6
+db #a6,#f4,#6d,#e9,#2e,#e4,#a4,#e9
+db #ed,#e5,#1d,#f4,#c6,#ff,#f4,#05
+db #de,#b1,#e1,#4b,#f2,#37,#e9,#f9
+db #cd,#9d,#e5,#5d,#da,#de,#df,#d4
+db #3d,#ef,#17,#09,#e7,#68,#eb,#28
+db #da,#a9,#d4,#63,#f3,#db,#ff,#e6
+db #0e,#da,#8f,#f5,#4f,#cc,#81,#da
+db #74,#f4,#28,#fa,#6d,#e6,#b2,#ff
+db #eb,#df,#e7,#d4,#f3,#9a,#e9,#5b
+db #cd,#ff,#e5,#4b,#f5,#f4,#f4,#32
+db #7f,#09,#de,#df,#e2,#79,#f2,#64
+db #e9,#27,#fe,#a3,#cf,#cc,#e5,#8a
+db #ff,#da,#0b,#d3,#6a,#ef,#44,#e6
+db #95,#ec,#56,#e0,#d6,#e7,#25,#c3
+db #09,#cf,#a8,#07,#f4,#ab,#00,#00
+db #00,#fb,#6d,#fb,#51,#8f,#fe,#00
+db #80,#fe,#04,#07,#06,#05,#04,#03
+db #02,#01,#3f,#00,#00,#fc,#00,#fd
+db #05,#fd,#07,#fd,#09,#f2,#e2,#fe
+db #24,#ff,#fd,#16,#fa,#2e,#f3,#07
+db #fe,#21,#fd,#22,#fd,#24,#fd,#26
+db #fd,#28,#eb,#fd,#2a,#fe,#3d,#fe
+db #59,#06,#fe,#5c,#05,#e7,#fb,#e6
+db #e2,#ff,#fb,#35,#f9,#2d,#f4,#6c
+db #fd,#85,#ea,#49,#f3,#85,#f1,#9f
+db #f6,#c7,#ff,#f1,#78,#00,#2f,#7b
+db #2f,#8e,#b5,#e8,#d7,#e7,#65,#fc
+db #1a,#fd,#b4,#9f,#fd,#ba,#04,#04
+db #f3,#c9,#fa,#2d,#f9,#2d,#f1,#d5
+db #f5,#8c,#ff,#f2,#e2,#f9,#5c,#fb
+db #6f,#fd,#b0,#f7,#7d,#f1,#54,#e6
+db #89,#e8,#63,#f0,#e7,#ef,#f2,#7b
+db #cf,#b0,#e9,#fa,#00,#ff,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#ff,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#ff
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #80,#ca,#00,#00,#ff,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#ff,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#ff,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#80
+db #ca,#00,#00,#ff,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#ff,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#ff,#00,#00
+db #00,#00,#00,#00,#00,#00,#00,#00
+db #00,#00,#00,#00,#00,#00,#80,#ca
+db #00,#00,#00
+',
+    true,
+    0
+  );
+
+  -- Add z80code tag
+  SELECT id INTO tag_uuid FROM tags WHERE name = 'z80code';
+  IF tag_uuid IS NOT NULL THEN
+    INSERT INTO project_tags (project_id, tag_id) VALUES (project_uuid, tag_uuid);
+  END IF;
+
+  -- Add category tag: version-ayc
+  SELECT id INTO tag_uuid FROM tags WHERE name = 'version-ayc';
+  IF tag_uuid IS NOT NULL THEN
+    INSERT INTO project_tags (project_id, tag_id) VALUES (project_uuid, tag_uuid);
+  END IF;
+END $$;
+
+-- Project 82: arkos-tracker -  aky player by siko
+DO $$
+DECLARE
+  project_uuid uuid := gen_random_uuid();
+  tag_uuid uuid;
+BEGIN
+  INSERT INTO projects (id, user_id, name, description, visibility, is_library, is_sticky, created_at, updated_at)
+  VALUES (
+    project_uuid,
+    'bd6a166d-e0bf-4374-94c3-5222e517d75c'::uuid,
+    'arkos-tracker -  aky player',
+    'Imported from z80Code. Author: siko. Music from ''Still Scrolling''',
+    'public',
+    false,
+    false,
+    '2021-10-09T14:38:26.827000'::timestamptz,
+    '2021-10-09T14:42:51.349000'::timestamptz
+  );
+
+  INSERT INTO project_files (project_id, name, content, is_main, "order")
+  VALUES (
+    project_uuid,
+    'main.asm',
+    '        ;AKY Player Test for AMSTRAD CPC.                
+        ;Music from ''Still Scrolling''  intro (2018)
+
+        di
+        ld hl,#c9fb
+        ld (#38),hl
+        ld sp,#38
+
+        ;Initializes the music.
+        ld hl,Music
+        xor a                                   ;Subsong 0.
+        call PLY_AKY_Init
+
+        ;Puts some markers to see the CPU.
+        ld a,255
+        ld hl,#c000 + 5 * #50 
+        ld (hl),a
+        ld hl,#c000 + 6 * #50
+        ld (hl),a
+        ld hl,#c000 + 7 * #50
+        ld (hl),a
+        ld hl,#c000 + 8 * #50
+        ld (hl),a
+        ld hl,#c000 + 9 * #50
+        ld (hl),a
+		
+        ld bc,#7f03
+        out (c),c
+        ld a,#4c
+        out (c),a
+
+Sync:   ld b,#f5
+        in a,(c)
+        rra
+        jr nc,Sync + 2
+
+        ei
+        nop
+        halt
+        halt
+
+       
+        di
+
+        ld b,90
+        djnz $
+
+        ld bc,#7f10
+        out (c),c
+        ld a,#4b
+        out (c),a
+
+	    ;Plays the music.
+        call PLY_AKY_Play
+
+        ld bc,#7f10
+        out (c),c
+        ld a,#54
+        out (c),a
+
+        jr Sync
+
+Music:
+       ; Song Untitled, in AKY version 1.0, generated by Arkos Tracker 2.
+
+still_Subsong0
+still_Subsong0DisarkGenerateExternalLabel
+
+; Header
+still_Subsong0DisarkByteRegionStart0
+	db 128	; Format version: 0 and endianness: little-endian.
+	db 3	; How many channels are encoded.
+; Frequency of the PSG index 0: 1000000Hz.
+	db 64, 66, 15, 0
+still_Subsong0DisarkByteRegionEnd0
+
+still_Subsong0_Linker
+still_Subsong0DisarkPointerRegionStart1
+; Pattern 0
+still_Subsong0_LinkerLoop	; Loops here.
+still_Subsong0DisarkWordForceNonReference2
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_3
+	dw still_Subsong0_Track_1
+	dw still_Subsong0_Track_2
+
+; Pattern 1
+still_Subsong0DisarkWordForceNonReference3
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_3
+	dw still_Subsong0_Track_4
+	dw still_Subsong0_Track_5
+
+; Pattern 2
+still_Subsong0DisarkWordForceNonReference4
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_6
+	dw still_Subsong0_Track_7
+	dw still_Subsong0_Track_8
+
+; Pattern 3
+still_Subsong0DisarkWordForceNonReference5
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_36
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_48
+
+; Pattern 4
+still_Subsong0DisarkWordForceNonReference6
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_51
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_47
+
+; Pattern 5
+still_Subsong0DisarkWordForceNonReference7
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_15
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_48
+
+; Pattern 6
+still_Subsong0DisarkWordForceNonReference8
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_57
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_47
+
+; Pattern 7
+still_Subsong0DisarkWordForceNonReference9
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_27
+	dw still_Subsong0_Track_22
+	dw still_Subsong0_Track_47
+
+; Pattern 8
+still_Subsong0DisarkWordForceNonReference10
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_27
+	dw still_Subsong0_Track_25
+	dw still_Subsong0_Track_47
+
+; Pattern 9
+still_Subsong0DisarkWordForceNonReference11
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_27
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_47
+
+; Pattern 10
+still_Subsong0DisarkWordForceNonReference12
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_36
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_32
+
+; Pattern 11
+still_Subsong0DisarkWordForceNonReference13
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_51
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_35
+
+; Pattern 12
+still_Subsong0DisarkWordForceNonReference14
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_36
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_50
+
+; Pattern 13
+still_Subsong0DisarkWordForceNonReference15
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_51
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_53
+
+; Pattern 14
+still_Subsong0DisarkWordForceNonReference16
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_45
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_47
+
+; Pattern 15
+still_Subsong0DisarkWordForceNonReference17
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_45
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_47
+
+; Pattern 16
+still_Subsong0DisarkWordForceNonReference18
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_48
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_50
+
+; Pattern 17
+still_Subsong0DisarkWordForceNonReference19
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_51
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_53
+
+; Pattern 18
+still_Subsong0DisarkWordForceNonReference20
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_57
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_59
+
+; Pattern 19
+still_Subsong0DisarkWordForceNonReference21
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_57
+	dw still_Subsong0_Track_58
+	dw still_Subsong0_Track_59
+
+; Pattern 20
+still_Subsong0DisarkWordForceNonReference22
+	dw 384	; Duration in frames.
+	dw still_Subsong0_Track_60
+	dw still_Subsong0_Track_61
+	dw still_Subsong0_Track_62
+
+still_Subsong0DisarkWordForceNonReference23
+	dw 0	; Loops (duration = 0).
+	dw still_Subsong0_LinkerLoop
+still_Subsong0DisarkPointerRegionEnd1
+
+; The tracks.
+still_Subsong0_Track_1
+still_Subsong0DisarkByteRegionStart24
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd24
+still_Subsong0DisarkPointerRegionStart25
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd25
+
+still_Subsong0DisarkByteRegionStart26
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd26
+still_Subsong0DisarkPointerRegionStart27
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd27
+
+still_Subsong0DisarkByteRegionStart28
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd28
+still_Subsong0DisarkPointerRegionStart29
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd29
+
+still_Subsong0DisarkByteRegionStart30
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd30
+still_Subsong0DisarkPointerRegionStart31
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd31
+
+still_Subsong0DisarkByteRegionStart32
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd32
+still_Subsong0DisarkPointerRegionStart33
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd33
+
+still_Subsong0DisarkByteRegionStart34
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd34
+still_Subsong0DisarkPointerRegionStart35
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd35
+
+still_Subsong0DisarkByteRegionStart36
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd36
+still_Subsong0DisarkPointerRegionStart37
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd37
+
+still_Subsong0DisarkByteRegionStart38
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd38
+still_Subsong0DisarkPointerRegionStart39
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd39
+
+still_Subsong0DisarkByteRegionStart40
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd40
+still_Subsong0DisarkPointerRegionStart41
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd41
+
+still_Subsong0DisarkByteRegionStart42
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd42
+still_Subsong0DisarkPointerRegionStart43
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd43
+
+still_Subsong0DisarkByteRegionStart44
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd44
+still_Subsong0DisarkPointerRegionStart45
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd45
+
+still_Subsong0DisarkByteRegionStart46
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd46
+still_Subsong0DisarkPointerRegionStart47
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd47
+
+still_Subsong0DisarkByteRegionStart48
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd48
+still_Subsong0DisarkPointerRegionStart49
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd49
+
+still_Subsong0DisarkByteRegionStart50
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd50
+still_Subsong0DisarkPointerRegionStart51
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd51
+
+still_Subsong0DisarkByteRegionStart52
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd52
+still_Subsong0DisarkPointerRegionStart53
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd53
+
+still_Subsong0DisarkByteRegionStart54
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd54
+still_Subsong0DisarkPointerRegionStart55
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd55
+
+still_Subsong0DisarkByteRegionStart56
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd56
+still_Subsong0DisarkPointerRegionStart57
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd57
+
+still_Subsong0DisarkByteRegionStart58
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd58
+still_Subsong0DisarkPointerRegionStart59
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd59
+
+still_Subsong0DisarkByteRegionStart60
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd60
+still_Subsong0DisarkPointerRegionStart61
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd61
+
+still_Subsong0DisarkByteRegionStart62
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd62
+still_Subsong0DisarkPointerRegionStart63
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd63
+
+still_Subsong0DisarkByteRegionStart64
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd64
+still_Subsong0DisarkPointerRegionStart65
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd65
+
+still_Subsong0DisarkByteRegionStart66
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd66
+still_Subsong0DisarkPointerRegionStart67
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd67
+
+still_Subsong0_Track_2
+still_Subsong0DisarkByteRegionStart68
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd68
+still_Subsong0DisarkPointerRegionStart69
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd69
+
+still_Subsong0DisarkByteRegionStart70
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd70
+still_Subsong0DisarkPointerRegionStart71
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd71
+
+still_Subsong0DisarkByteRegionStart72
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd72
+still_Subsong0DisarkPointerRegionStart73
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd73
+
+still_Subsong0DisarkByteRegionStart74
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd74
+still_Subsong0DisarkPointerRegionStart75
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd75
+
+still_Subsong0DisarkByteRegionStart76
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd76
+still_Subsong0DisarkPointerRegionStart77
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd77
+
+still_Subsong0DisarkByteRegionStart78
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd78
+still_Subsong0DisarkPointerRegionStart79
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd79
+
+still_Subsong0DisarkByteRegionStart80
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd80
+still_Subsong0DisarkPointerRegionStart81
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd81
+
+still_Subsong0DisarkByteRegionStart82
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd82
+still_Subsong0DisarkPointerRegionStart83
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd83
+
+still_Subsong0DisarkByteRegionStart84
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd84
+still_Subsong0DisarkPointerRegionStart85
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd85
+
+still_Subsong0DisarkByteRegionStart86
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd86
+still_Subsong0DisarkPointerRegionStart87
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd87
+
+still_Subsong0DisarkByteRegionStart88
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd88
+still_Subsong0DisarkPointerRegionStart89
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd89
+
+still_Subsong0DisarkByteRegionStart90
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd90
+still_Subsong0DisarkPointerRegionStart91
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd91
+
+still_Subsong0DisarkByteRegionStart92
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd92
+still_Subsong0DisarkPointerRegionStart93
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd93
+
+still_Subsong0DisarkByteRegionStart94
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd94
+still_Subsong0DisarkPointerRegionStart95
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd95
+
+still_Subsong0DisarkByteRegionStart96
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd96
+still_Subsong0DisarkPointerRegionStart97
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd97
+
+still_Subsong0DisarkByteRegionStart98
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd98
+still_Subsong0DisarkPointerRegionStart99
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd99
+
+still_Subsong0DisarkByteRegionStart100
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd100
+still_Subsong0DisarkPointerRegionStart101
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd101
+
+still_Subsong0DisarkByteRegionStart102
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd102
+still_Subsong0DisarkPointerRegionStart103
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd103
+
+still_Subsong0DisarkByteRegionStart104
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd104
+still_Subsong0DisarkPointerRegionStart105
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd105
+
+still_Subsong0DisarkByteRegionStart106
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd106
+still_Subsong0DisarkPointerRegionStart107
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd107
+
+still_Subsong0DisarkByteRegionStart108
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd108
+still_Subsong0DisarkPointerRegionStart109
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd109
+
+still_Subsong0DisarkByteRegionStart110
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd110
+still_Subsong0DisarkPointerRegionStart111
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd111
+
+still_Subsong0_Track_3
+still_Subsong0DisarkByteRegionStart112
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd112
+still_Subsong0DisarkPointerRegionStart113
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd113
+
+still_Subsong0DisarkByteRegionStart114
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd114
+still_Subsong0DisarkPointerRegionStart115
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd115
+
+still_Subsong0DisarkByteRegionStart116
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd116
+still_Subsong0DisarkPointerRegionStart117
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd117
+
+still_Subsong0DisarkByteRegionStart118
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd118
+still_Subsong0DisarkPointerRegionStart119
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd119
+
+still_Subsong0DisarkByteRegionStart120
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd120
+still_Subsong0DisarkPointerRegionStart121
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd121
+
+still_Subsong0DisarkByteRegionStart122
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd122
+still_Subsong0DisarkPointerRegionStart123
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd123
+
+still_Subsong0DisarkByteRegionStart124
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd124
+still_Subsong0DisarkPointerRegionStart125
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd125
+
+still_Subsong0DisarkByteRegionStart126
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd126
+still_Subsong0DisarkPointerRegionStart127
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd127
+
+still_Subsong0DisarkByteRegionStart128
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd128
+still_Subsong0DisarkPointerRegionStart129
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd129
+
+still_Subsong0DisarkByteRegionStart130
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd130
+still_Subsong0DisarkPointerRegionStart131
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd131
+
+still_Subsong0DisarkByteRegionStart132
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd132
+still_Subsong0DisarkPointerRegionStart133
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd133
+
+still_Subsong0DisarkByteRegionStart134
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd134
+still_Subsong0DisarkPointerRegionStart135
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd135
+
+still_Subsong0DisarkByteRegionStart136
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd136
+still_Subsong0DisarkPointerRegionStart137
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd137
+
+still_Subsong0DisarkByteRegionStart138
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd138
+still_Subsong0DisarkPointerRegionStart139
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd139
+
+still_Subsong0DisarkByteRegionStart140
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd140
+still_Subsong0DisarkPointerRegionStart141
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd141
+
+still_Subsong0DisarkByteRegionStart142
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd142
+still_Subsong0DisarkPointerRegionStart143
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd143
+
+still_Subsong0DisarkByteRegionStart144
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd144
+still_Subsong0DisarkPointerRegionStart145
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd145
+
+still_Subsong0DisarkByteRegionStart146
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd146
+still_Subsong0DisarkPointerRegionStart147
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd147
+
+still_Subsong0DisarkByteRegionStart148
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd148
+still_Subsong0DisarkPointerRegionStart149
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd149
+
+still_Subsong0DisarkByteRegionStart150
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd150
+still_Subsong0DisarkPointerRegionStart151
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd151
+
+still_Subsong0DisarkByteRegionStart152
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd152
+still_Subsong0DisarkPointerRegionStart153
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd153
+
+still_Subsong0DisarkByteRegionStart154
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd154
+still_Subsong0DisarkPointerRegionStart155
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd155
+
+still_Subsong0_Track_4
+still_Subsong0DisarkByteRegionStart156
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd156
+still_Subsong0DisarkPointerRegionStart157
+	dw still_Subsong0_RegisterBlock_69
+still_Subsong0DisarkPointerRegionEnd157
+
+still_Subsong0DisarkByteRegionStart158
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd158
+still_Subsong0DisarkPointerRegionStart159
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd159
+
+still_Subsong0DisarkByteRegionStart160
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd160
+still_Subsong0DisarkPointerRegionStart161
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd161
+
+still_Subsong0DisarkByteRegionStart162
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd162
+still_Subsong0DisarkPointerRegionStart163
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd163
+
+still_Subsong0DisarkByteRegionStart164
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd164
+still_Subsong0DisarkPointerRegionStart165
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd165
+
+still_Subsong0DisarkByteRegionStart166
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd166
+still_Subsong0DisarkPointerRegionStart167
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd167
+
+still_Subsong0DisarkByteRegionStart168
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd168
+still_Subsong0DisarkPointerRegionStart169
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd169
+
+still_Subsong0DisarkByteRegionStart170
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd170
+still_Subsong0DisarkPointerRegionStart171
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd171
+
+still_Subsong0DisarkByteRegionStart172
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd172
+still_Subsong0DisarkPointerRegionStart173
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd173
+
+still_Subsong0DisarkByteRegionStart174
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd174
+still_Subsong0DisarkPointerRegionStart175
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd175
+
+still_Subsong0DisarkByteRegionStart176
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd176
+still_Subsong0DisarkPointerRegionStart177
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd177
+
+still_Subsong0DisarkByteRegionStart178
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd178
+still_Subsong0DisarkPointerRegionStart179
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd179
+
+still_Subsong0DisarkByteRegionStart180
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd180
+still_Subsong0DisarkPointerRegionStart181
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd181
+
+still_Subsong0DisarkByteRegionStart182
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd182
+still_Subsong0DisarkPointerRegionStart183
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd183
+
+still_Subsong0DisarkByteRegionStart184
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd184
+still_Subsong0DisarkPointerRegionStart185
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd185
+
+still_Subsong0DisarkByteRegionStart186
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd186
+still_Subsong0DisarkPointerRegionStart187
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd187
+
+still_Subsong0DisarkByteRegionStart188
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd188
+still_Subsong0DisarkPointerRegionStart189
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd189
+
+still_Subsong0DisarkByteRegionStart190
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd190
+still_Subsong0DisarkPointerRegionStart191
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd191
+
+still_Subsong0DisarkByteRegionStart192
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd192
+still_Subsong0DisarkPointerRegionStart193
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd193
+
+still_Subsong0DisarkByteRegionStart194
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd194
+still_Subsong0DisarkPointerRegionStart195
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd195
+
+still_Subsong0DisarkByteRegionStart196
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd196
+still_Subsong0DisarkPointerRegionStart197
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd197
+
+still_Subsong0DisarkByteRegionStart198
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd198
+still_Subsong0DisarkPointerRegionStart199
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd199
+
+still_Subsong0_Track_5
+still_Subsong0DisarkByteRegionStart200
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd200
+still_Subsong0DisarkPointerRegionStart201
+	dw still_Subsong0_RegisterBlock_92
+still_Subsong0DisarkPointerRegionEnd201
+
+still_Subsong0DisarkByteRegionStart202
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd202
+still_Subsong0DisarkPointerRegionStart203
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd203
+
+still_Subsong0DisarkByteRegionStart204
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd204
+still_Subsong0DisarkPointerRegionStart205
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd205
+
+still_Subsong0DisarkByteRegionStart206
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd206
+still_Subsong0DisarkPointerRegionStart207
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd207
+
+still_Subsong0DisarkByteRegionStart208
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd208
+still_Subsong0DisarkPointerRegionStart209
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd209
+
+still_Subsong0DisarkByteRegionStart210
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd210
+still_Subsong0DisarkPointerRegionStart211
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd211
+
+still_Subsong0DisarkByteRegionStart212
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd212
+still_Subsong0DisarkPointerRegionStart213
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd213
+
+still_Subsong0DisarkByteRegionStart214
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd214
+still_Subsong0DisarkPointerRegionStart215
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd215
+
+still_Subsong0DisarkByteRegionStart216
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd216
+still_Subsong0DisarkPointerRegionStart217
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd217
+
+still_Subsong0DisarkByteRegionStart218
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd218
+still_Subsong0DisarkPointerRegionStart219
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd219
+
+still_Subsong0DisarkByteRegionStart220
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd220
+still_Subsong0DisarkPointerRegionStart221
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd221
+
+still_Subsong0DisarkByteRegionStart222
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd222
+still_Subsong0DisarkPointerRegionStart223
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd223
+
+still_Subsong0DisarkByteRegionStart224
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd224
+still_Subsong0DisarkPointerRegionStart225
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd225
+
+still_Subsong0DisarkByteRegionStart226
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd226
+still_Subsong0DisarkPointerRegionStart227
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd227
+
+still_Subsong0DisarkByteRegionStart228
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd228
+still_Subsong0DisarkPointerRegionStart229
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd229
+
+still_Subsong0DisarkByteRegionStart230
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd230
+still_Subsong0DisarkPointerRegionStart231
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd231
+
+still_Subsong0DisarkByteRegionStart232
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd232
+still_Subsong0DisarkPointerRegionStart233
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd233
+
+still_Subsong0DisarkByteRegionStart234
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd234
+still_Subsong0DisarkPointerRegionStart235
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd235
+
+still_Subsong0DisarkByteRegionStart236
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd236
+still_Subsong0DisarkPointerRegionStart237
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd237
+
+still_Subsong0DisarkByteRegionStart238
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd238
+still_Subsong0DisarkPointerRegionStart239
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd239
+
+still_Subsong0DisarkByteRegionStart240
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd240
+still_Subsong0DisarkPointerRegionStart241
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd241
+
+still_Subsong0DisarkByteRegionStart242
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd242
+still_Subsong0DisarkPointerRegionStart243
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd243
+
+still_Subsong0_Track_6
+still_Subsong0DisarkByteRegionStart244
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd244
+still_Subsong0DisarkPointerRegionStart245
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd245
+
+still_Subsong0DisarkByteRegionStart246
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd246
+still_Subsong0DisarkPointerRegionStart247
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd247
+
+still_Subsong0DisarkByteRegionStart248
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd248
+still_Subsong0DisarkPointerRegionStart249
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd249
+
+still_Subsong0DisarkByteRegionStart250
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd250
+still_Subsong0DisarkPointerRegionStart251
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd251
+
+still_Subsong0DisarkByteRegionStart252
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd252
+still_Subsong0DisarkPointerRegionStart253
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd253
+
+still_Subsong0DisarkByteRegionStart254
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd254
+still_Subsong0DisarkPointerRegionStart255
+	dw still_Subsong0_RegisterBlock_120
+still_Subsong0DisarkPointerRegionEnd255
+
+still_Subsong0DisarkByteRegionStart256
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd256
+still_Subsong0DisarkPointerRegionStart257
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd257
+
+still_Subsong0DisarkByteRegionStart258
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd258
+still_Subsong0DisarkPointerRegionStart259
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd259
+
+still_Subsong0DisarkByteRegionStart260
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd260
+still_Subsong0DisarkPointerRegionStart261
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd261
+
+still_Subsong0DisarkByteRegionStart262
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd262
+still_Subsong0DisarkPointerRegionStart263
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd263
+
+still_Subsong0DisarkByteRegionStart264
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd264
+still_Subsong0DisarkPointerRegionStart265
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd265
+
+still_Subsong0DisarkByteRegionStart266
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd266
+still_Subsong0DisarkPointerRegionStart267
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd267
+
+still_Subsong0DisarkByteRegionStart268
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd268
+still_Subsong0DisarkPointerRegionStart269
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd269
+
+still_Subsong0DisarkByteRegionStart270
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd270
+still_Subsong0DisarkPointerRegionStart271
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd271
+
+still_Subsong0DisarkByteRegionStart272
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd272
+still_Subsong0DisarkPointerRegionStart273
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd273
+
+still_Subsong0DisarkByteRegionStart274
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd274
+still_Subsong0DisarkPointerRegionStart275
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd275
+
+still_Subsong0DisarkByteRegionStart276
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd276
+still_Subsong0DisarkPointerRegionStart277
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd277
+
+still_Subsong0DisarkByteRegionStart278
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd278
+still_Subsong0DisarkPointerRegionStart279
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd279
+
+still_Subsong0DisarkByteRegionStart280
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd280
+still_Subsong0DisarkPointerRegionStart281
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd281
+
+still_Subsong0DisarkByteRegionStart282
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd282
+still_Subsong0DisarkPointerRegionStart283
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd283
+
+still_Subsong0DisarkByteRegionStart284
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd284
+still_Subsong0DisarkPointerRegionStart285
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd285
+
+still_Subsong0DisarkByteRegionStart286
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd286
+still_Subsong0DisarkPointerRegionStart287
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd287
+
+still_Subsong0DisarkByteRegionStart288
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd288
+still_Subsong0DisarkPointerRegionStart289
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd289
+
+still_Subsong0DisarkByteRegionStart290
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd290
+still_Subsong0DisarkPointerRegionStart291
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd291
+
+still_Subsong0_Track_7
+still_Subsong0DisarkByteRegionStart292
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd292
+still_Subsong0DisarkPointerRegionStart293
+	dw still_Subsong0_RegisterBlock_120
+still_Subsong0DisarkPointerRegionEnd293
+
+still_Subsong0DisarkByteRegionStart294
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd294
+still_Subsong0DisarkPointerRegionStart295
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd295
+
+still_Subsong0DisarkByteRegionStart296
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd296
+still_Subsong0DisarkPointerRegionStart297
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd297
+
+still_Subsong0DisarkByteRegionStart298
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd298
+still_Subsong0DisarkPointerRegionStart299
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd299
+
+still_Subsong0DisarkByteRegionStart300
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd300
+still_Subsong0DisarkPointerRegionStart301
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd301
+
+still_Subsong0DisarkByteRegionStart302
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd302
+still_Subsong0DisarkPointerRegionStart303
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd303
+
+still_Subsong0DisarkByteRegionStart304
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd304
+still_Subsong0DisarkPointerRegionStart305
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd305
+
+still_Subsong0DisarkByteRegionStart306
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd306
+still_Subsong0DisarkPointerRegionStart307
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd307
+
+still_Subsong0DisarkByteRegionStart308
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd308
+still_Subsong0DisarkPointerRegionStart309
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd309
+
+still_Subsong0DisarkByteRegionStart310
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd310
+still_Subsong0DisarkPointerRegionStart311
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd311
+
+still_Subsong0DisarkByteRegionStart312
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd312
+still_Subsong0DisarkPointerRegionStart313
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd313
+
+still_Subsong0DisarkByteRegionStart314
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd314
+still_Subsong0DisarkPointerRegionStart315
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd315
+
+still_Subsong0DisarkByteRegionStart316
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd316
+still_Subsong0DisarkPointerRegionStart317
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd317
+
+still_Subsong0DisarkByteRegionStart318
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd318
+still_Subsong0DisarkPointerRegionStart319
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd319
+
+still_Subsong0DisarkByteRegionStart320
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd320
+still_Subsong0DisarkPointerRegionStart321
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd321
+
+still_Subsong0DisarkByteRegionStart322
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd322
+still_Subsong0DisarkPointerRegionStart323
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd323
+
+still_Subsong0DisarkByteRegionStart324
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd324
+still_Subsong0DisarkPointerRegionStart325
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd325
+
+still_Subsong0DisarkByteRegionStart326
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd326
+still_Subsong0DisarkPointerRegionStart327
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd327
+
+still_Subsong0DisarkByteRegionStart328
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd328
+still_Subsong0DisarkPointerRegionStart329
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd329
+
+still_Subsong0DisarkByteRegionStart330
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd330
+still_Subsong0DisarkPointerRegionStart331
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd331
+
+still_Subsong0DisarkByteRegionStart332
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd332
+still_Subsong0DisarkPointerRegionStart333
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd333
+
+still_Subsong0DisarkByteRegionStart334
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd334
+still_Subsong0DisarkPointerRegionStart335
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd335
+
+still_Subsong0DisarkByteRegionStart336
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd336
+still_Subsong0DisarkPointerRegionStart337
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd337
+
+still_Subsong0DisarkByteRegionStart338
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd338
+still_Subsong0DisarkPointerRegionStart339
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd339
+
+still_Subsong0DisarkByteRegionStart340
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd340
+still_Subsong0DisarkPointerRegionStart341
+	dw still_Subsong0_RegisterBlock_164
+still_Subsong0DisarkPointerRegionEnd341
+
+still_Subsong0DisarkByteRegionStart342
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd342
+still_Subsong0DisarkPointerRegionStart343
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd343
+
+still_Subsong0DisarkByteRegionStart344
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd344
+still_Subsong0DisarkPointerRegionStart345
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd345
+
+still_Subsong0DisarkByteRegionStart346
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd346
+still_Subsong0DisarkPointerRegionStart347
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd347
+
+still_Subsong0DisarkByteRegionStart348
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd348
+still_Subsong0DisarkPointerRegionStart349
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd349
+
+still_Subsong0DisarkByteRegionStart350
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd350
+still_Subsong0DisarkPointerRegionStart351
+	dw still_Subsong0_RegisterBlock_120
+still_Subsong0DisarkPointerRegionEnd351
+
+still_Subsong0_Track_8
+still_Subsong0DisarkByteRegionStart352
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd352
+still_Subsong0DisarkPointerRegionStart353
+	dw still_Subsong0_RegisterBlock_122
+still_Subsong0DisarkPointerRegionEnd353
+
+still_Subsong0DisarkByteRegionStart354
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd354
+still_Subsong0DisarkPointerRegionStart355
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd355
+
+still_Subsong0DisarkByteRegionStart356
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd356
+still_Subsong0DisarkPointerRegionStart357
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd357
+
+still_Subsong0DisarkByteRegionStart358
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd358
+still_Subsong0DisarkPointerRegionStart359
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd359
+
+still_Subsong0DisarkByteRegionStart360
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd360
+still_Subsong0DisarkPointerRegionStart361
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd361
+
+still_Subsong0DisarkByteRegionStart362
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd362
+still_Subsong0DisarkPointerRegionStart363
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd363
+
+still_Subsong0DisarkByteRegionStart364
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd364
+still_Subsong0DisarkPointerRegionStart365
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd365
+
+still_Subsong0DisarkByteRegionStart366
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd366
+still_Subsong0DisarkPointerRegionStart367
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd367
+
+still_Subsong0DisarkByteRegionStart368
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd368
+still_Subsong0DisarkPointerRegionStart369
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd369
+
+still_Subsong0DisarkByteRegionStart370
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd370
+still_Subsong0DisarkPointerRegionStart371
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd371
+
+still_Subsong0DisarkByteRegionStart372
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd372
+still_Subsong0DisarkPointerRegionStart373
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd373
+
+still_Subsong0DisarkByteRegionStart374
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd374
+still_Subsong0DisarkPointerRegionStart375
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd375
+
+still_Subsong0DisarkByteRegionStart376
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd376
+still_Subsong0DisarkPointerRegionStart377
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd377
+
+still_Subsong0DisarkByteRegionStart378
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd378
+still_Subsong0DisarkPointerRegionStart379
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd379
+
+still_Subsong0DisarkByteRegionStart380
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd380
+still_Subsong0DisarkPointerRegionStart381
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd381
+
+still_Subsong0DisarkByteRegionStart382
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd382
+still_Subsong0DisarkPointerRegionStart383
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd383
+
+still_Subsong0DisarkByteRegionStart384
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd384
+still_Subsong0DisarkPointerRegionStart385
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd385
+
+still_Subsong0DisarkByteRegionStart386
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd386
+still_Subsong0DisarkPointerRegionStart387
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd387
+
+still_Subsong0DisarkByteRegionStart388
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd388
+still_Subsong0DisarkPointerRegionStart389
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd389
+
+still_Subsong0DisarkByteRegionStart390
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd390
+still_Subsong0DisarkPointerRegionStart391
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd391
+
+still_Subsong0DisarkByteRegionStart392
+	db 30	; Duration.
+still_Subsong0DisarkByteRegionEnd392
+still_Subsong0DisarkPointerRegionStart393
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd393
+
+still_Subsong0_Track_15
+still_Subsong0DisarkByteRegionStart394
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd394
+still_Subsong0DisarkPointerRegionStart395
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd395
+
+still_Subsong0DisarkByteRegionStart396
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd396
+still_Subsong0DisarkPointerRegionStart397
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd397
+
+still_Subsong0DisarkByteRegionStart398
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd398
+still_Subsong0DisarkPointerRegionStart399
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd399
+
+still_Subsong0DisarkByteRegionStart400
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd400
+still_Subsong0DisarkPointerRegionStart401
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd401
+
+still_Subsong0DisarkByteRegionStart402
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd402
+still_Subsong0DisarkPointerRegionStart403
+	dw still_Subsong0_RegisterBlock_197
+still_Subsong0DisarkPointerRegionEnd403
+
+still_Subsong0DisarkByteRegionStart404
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd404
+still_Subsong0DisarkPointerRegionStart405
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd405
+
+still_Subsong0DisarkByteRegionStart406
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd406
+still_Subsong0DisarkPointerRegionStart407
+	dw still_Subsong0_RegisterBlock_290
+still_Subsong0DisarkPointerRegionEnd407
+
+still_Subsong0DisarkByteRegionStart408
+	db 60	; Duration.
+still_Subsong0DisarkByteRegionEnd408
+still_Subsong0DisarkPointerRegionStart409
+	dw still_Subsong0_RegisterBlock_200
+still_Subsong0DisarkPointerRegionEnd409
+
+still_Subsong0DisarkByteRegionStart410
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd410
+still_Subsong0DisarkPointerRegionStart411
+	dw still_Subsong0_RegisterBlock_291
+still_Subsong0DisarkPointerRegionEnd411
+
+still_Subsong0DisarkByteRegionStart412
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd412
+still_Subsong0DisarkPointerRegionStart413
+	dw still_Subsong0_RegisterBlock_291
+still_Subsong0DisarkPointerRegionEnd413
+
+still_Subsong0DisarkByteRegionStart414
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd414
+still_Subsong0DisarkPointerRegionStart415
+	dw still_Subsong0_RegisterBlock_291
+still_Subsong0DisarkPointerRegionEnd415
+
+still_Subsong0DisarkByteRegionStart416
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd416
+still_Subsong0DisarkPointerRegionStart417
+	dw still_Subsong0_RegisterBlock_291
+still_Subsong0DisarkPointerRegionEnd417
+
+still_Subsong0DisarkByteRegionStart418
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd418
+still_Subsong0DisarkPointerRegionStart419
+	dw still_Subsong0_RegisterBlock_292
+still_Subsong0DisarkPointerRegionEnd419
+
+still_Subsong0DisarkByteRegionStart420
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd420
+still_Subsong0DisarkPointerRegionStart421
+	dw still_Subsong0_RegisterBlock_291
+still_Subsong0DisarkPointerRegionEnd421
+
+still_Subsong0DisarkByteRegionStart422
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd422
+still_Subsong0DisarkPointerRegionStart423
+	dw still_Subsong0_RegisterBlock_292
+still_Subsong0DisarkPointerRegionEnd423
+
+still_Subsong0DisarkByteRegionStart424
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd424
+still_Subsong0DisarkPointerRegionStart425
+	dw still_Subsong0_RegisterBlock_292
+still_Subsong0DisarkPointerRegionEnd425
+
+still_Subsong0DisarkByteRegionStart426
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd426
+still_Subsong0DisarkPointerRegionStart427
+	dw still_Subsong0_RegisterBlock_209
+still_Subsong0DisarkPointerRegionEnd427
+
+still_Subsong0DisarkByteRegionStart428
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd428
+still_Subsong0DisarkPointerRegionStart429
+	dw still_Subsong0_RegisterBlock_290
+still_Subsong0DisarkPointerRegionEnd429
+
+still_Subsong0_Track_22
+still_Subsong0DisarkByteRegionStart430
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd430
+still_Subsong0DisarkPointerRegionStart431
+	dw still_Subsong0_RegisterBlock_212
+still_Subsong0DisarkPointerRegionEnd431
+
+still_Subsong0DisarkByteRegionStart432
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd432
+still_Subsong0DisarkPointerRegionStart433
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd433
+
+still_Subsong0DisarkByteRegionStart434
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd434
+still_Subsong0DisarkPointerRegionStart435
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd435
+
+still_Subsong0DisarkByteRegionStart436
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd436
+still_Subsong0DisarkPointerRegionStart437
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd437
+
+still_Subsong0DisarkByteRegionStart438
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd438
+still_Subsong0DisarkPointerRegionStart439
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd439
+
+still_Subsong0DisarkByteRegionStart440
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd440
+still_Subsong0DisarkPointerRegionStart441
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd441
+
+still_Subsong0DisarkByteRegionStart442
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd442
+still_Subsong0DisarkPointerRegionStart443
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd443
+
+still_Subsong0DisarkByteRegionStart444
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd444
+still_Subsong0DisarkPointerRegionStart445
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd445
+
+still_Subsong0DisarkByteRegionStart446
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd446
+still_Subsong0DisarkPointerRegionStart447
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd447
+
+still_Subsong0DisarkByteRegionStart448
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd448
+still_Subsong0DisarkPointerRegionStart449
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd449
+
+still_Subsong0DisarkByteRegionStart450
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd450
+still_Subsong0DisarkPointerRegionStart451
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd451
+
+still_Subsong0DisarkByteRegionStart452
+	db 144	; Duration.
+still_Subsong0DisarkByteRegionEnd452
+still_Subsong0DisarkPointerRegionStart453
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd453
+
+still_Subsong0DisarkByteRegionStart454
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd454
+still_Subsong0DisarkPointerRegionStart455
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd455
+
+still_Subsong0_Track_25
+still_Subsong0DisarkByteRegionStart456
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd456
+still_Subsong0DisarkPointerRegionStart457
+	dw still_Subsong0_RegisterBlock_226
+still_Subsong0DisarkPointerRegionEnd457
+
+still_Subsong0DisarkByteRegionStart458
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd458
+still_Subsong0DisarkPointerRegionStart459
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd459
+
+still_Subsong0DisarkByteRegionStart460
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd460
+still_Subsong0DisarkPointerRegionStart461
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd461
+
+still_Subsong0DisarkByteRegionStart462
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd462
+still_Subsong0DisarkPointerRegionStart463
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd463
+
+still_Subsong0DisarkByteRegionStart464
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd464
+still_Subsong0DisarkPointerRegionStart465
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd465
+
+still_Subsong0DisarkByteRegionStart466
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd466
+still_Subsong0DisarkPointerRegionStart467
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd467
+
+still_Subsong0DisarkByteRegionStart468
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd468
+still_Subsong0DisarkPointerRegionStart469
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd469
+
+still_Subsong0DisarkByteRegionStart470
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd470
+still_Subsong0DisarkPointerRegionStart471
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd471
+
+still_Subsong0DisarkByteRegionStart472
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd472
+still_Subsong0DisarkPointerRegionStart473
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd473
+
+still_Subsong0DisarkByteRegionStart474
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd474
+still_Subsong0DisarkPointerRegionStart475
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd475
+
+still_Subsong0DisarkByteRegionStart476
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd476
+still_Subsong0DisarkPointerRegionStart477
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd477
+
+still_Subsong0DisarkByteRegionStart478
+	db 144	; Duration.
+still_Subsong0DisarkByteRegionEnd478
+still_Subsong0DisarkPointerRegionStart479
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd479
+
+still_Subsong0DisarkByteRegionStart480
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd480
+still_Subsong0DisarkPointerRegionStart481
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd481
+
+still_Subsong0_Track_27
+still_Subsong0DisarkByteRegionStart482
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd482
+still_Subsong0DisarkPointerRegionStart483
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd483
+
+still_Subsong0DisarkByteRegionStart484
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd484
+still_Subsong0DisarkPointerRegionStart485
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd485
+
+still_Subsong0DisarkByteRegionStart486
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd486
+still_Subsong0DisarkPointerRegionStart487
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd487
+
+still_Subsong0DisarkByteRegionStart488
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd488
+still_Subsong0DisarkPointerRegionStart489
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd489
+
+still_Subsong0DisarkByteRegionStart490
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd490
+still_Subsong0DisarkPointerRegionStart491
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd491
+
+still_Subsong0DisarkByteRegionStart492
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd492
+still_Subsong0DisarkPointerRegionStart493
+	dw still_Subsong0_RegisterBlock_213
+still_Subsong0DisarkPointerRegionEnd493
+
+still_Subsong0DisarkByteRegionStart494
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd494
+still_Subsong0DisarkPointerRegionStart495
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd495
+
+still_Subsong0DisarkByteRegionStart496
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd496
+still_Subsong0DisarkPointerRegionStart497
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd497
+
+still_Subsong0DisarkByteRegionStart498
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd498
+still_Subsong0DisarkPointerRegionStart499
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd499
+
+still_Subsong0DisarkByteRegionStart500
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd500
+still_Subsong0DisarkPointerRegionStart501
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd501
+
+still_Subsong0DisarkByteRegionStart502
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd502
+still_Subsong0DisarkPointerRegionStart503
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd503
+
+still_Subsong0DisarkByteRegionStart504
+	db 144	; Duration.
+still_Subsong0DisarkByteRegionEnd504
+still_Subsong0DisarkPointerRegionStart505
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd505
+
+still_Subsong0DisarkByteRegionStart506
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd506
+still_Subsong0DisarkPointerRegionStart507
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd507
+
+still_Subsong0_Track_32
+still_Subsong0DisarkByteRegionStart508
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd508
+still_Subsong0DisarkPointerRegionStart509
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd509
+
+still_Subsong0DisarkByteRegionStart510
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd510
+still_Subsong0DisarkPointerRegionStart511
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd511
+
+still_Subsong0DisarkByteRegionStart512
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd512
+still_Subsong0DisarkPointerRegionStart513
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd513
+
+still_Subsong0DisarkByteRegionStart514
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd514
+still_Subsong0DisarkPointerRegionStart515
+	dw still_Subsong0_RegisterBlock_257
+still_Subsong0DisarkPointerRegionEnd515
+
+still_Subsong0DisarkByteRegionStart516
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd516
+still_Subsong0DisarkPointerRegionStart517
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd517
+
+still_Subsong0DisarkByteRegionStart518
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd518
+still_Subsong0DisarkPointerRegionStart519
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd519
+
+still_Subsong0DisarkByteRegionStart520
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd520
+still_Subsong0DisarkPointerRegionStart521
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd521
+
+still_Subsong0DisarkByteRegionStart522
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd522
+still_Subsong0DisarkPointerRegionStart523
+	dw still_Subsong0_RegisterBlock_257
+still_Subsong0DisarkPointerRegionEnd523
+
+still_Subsong0DisarkByteRegionStart524
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd524
+still_Subsong0DisarkPointerRegionStart525
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd525
+
+still_Subsong0DisarkByteRegionStart526
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd526
+still_Subsong0DisarkPointerRegionStart527
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd527
+
+still_Subsong0DisarkByteRegionStart528
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd528
+still_Subsong0DisarkPointerRegionStart529
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd529
+
+still_Subsong0DisarkByteRegionStart530
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd530
+still_Subsong0DisarkPointerRegionStart531
+	dw still_Subsong0_RegisterBlock_257
+still_Subsong0DisarkPointerRegionEnd531
+
+still_Subsong0DisarkByteRegionStart532
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd532
+still_Subsong0DisarkPointerRegionStart533
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd533
+
+still_Subsong0DisarkByteRegionStart534
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd534
+still_Subsong0DisarkPointerRegionStart535
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd535
+
+still_Subsong0DisarkByteRegionStart536
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd536
+still_Subsong0DisarkPointerRegionStart537
+	dw still_Subsong0_RegisterBlock_268
+still_Subsong0DisarkPointerRegionEnd537
+
+still_Subsong0DisarkByteRegionStart538
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd538
+still_Subsong0DisarkPointerRegionStart539
+	dw still_Subsong0_RegisterBlock_257
+still_Subsong0DisarkPointerRegionEnd539
+
+still_Subsong0DisarkByteRegionStart540
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd540
+still_Subsong0DisarkPointerRegionStart541
+	dw still_Subsong0_RegisterBlock_270
+still_Subsong0DisarkPointerRegionEnd541
+
+still_Subsong0_Track_35
+still_Subsong0DisarkByteRegionStart542
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd542
+still_Subsong0DisarkPointerRegionStart543
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd543
+
+still_Subsong0DisarkByteRegionStart544
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd544
+still_Subsong0DisarkPointerRegionStart545
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd545
+
+still_Subsong0DisarkByteRegionStart546
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd546
+still_Subsong0DisarkPointerRegionStart547
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd547
+
+still_Subsong0DisarkByteRegionStart548
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd548
+still_Subsong0DisarkPointerRegionStart549
+	dw still_Subsong0_RegisterBlock_257
+still_Subsong0DisarkPointerRegionEnd549
+
+still_Subsong0DisarkByteRegionStart550
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd550
+still_Subsong0DisarkPointerRegionStart551
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd551
+
+still_Subsong0DisarkByteRegionStart552
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd552
+still_Subsong0DisarkPointerRegionStart553
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd553
+
+still_Subsong0DisarkByteRegionStart554
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd554
+still_Subsong0DisarkPointerRegionStart555
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd555
+
+still_Subsong0DisarkByteRegionStart556
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd556
+still_Subsong0DisarkPointerRegionStart557
+	dw still_Subsong0_RegisterBlock_257
+still_Subsong0DisarkPointerRegionEnd557
+
+still_Subsong0DisarkByteRegionStart558
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd558
+still_Subsong0DisarkPointerRegionStart559
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd559
+
+still_Subsong0DisarkByteRegionStart560
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd560
+still_Subsong0DisarkPointerRegionStart561
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd561
+
+still_Subsong0DisarkByteRegionStart562
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd562
+still_Subsong0DisarkPointerRegionStart563
+	dw still_Subsong0_RegisterBlock_282
+still_Subsong0DisarkPointerRegionEnd563
+
+still_Subsong0DisarkByteRegionStart564
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd564
+still_Subsong0DisarkPointerRegionStart565
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd565
+
+still_Subsong0DisarkByteRegionStart566
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd566
+still_Subsong0DisarkPointerRegionStart567
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd567
+
+still_Subsong0DisarkByteRegionStart568
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd568
+still_Subsong0DisarkPointerRegionStart569
+	dw still_Subsong0_RegisterBlock_285
+still_Subsong0DisarkPointerRegionEnd569
+
+still_Subsong0DisarkByteRegionStart570
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd570
+still_Subsong0DisarkPointerRegionStart571
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd571
+
+still_Subsong0DisarkByteRegionStart572
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd572
+still_Subsong0DisarkPointerRegionStart573
+	dw still_Subsong0_RegisterBlock_257
+still_Subsong0DisarkPointerRegionEnd573
+
+still_Subsong0_Track_36
+still_Subsong0DisarkByteRegionStart574
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd574
+still_Subsong0DisarkPointerRegionStart575
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd575
+
+still_Subsong0DisarkByteRegionStart576
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd576
+still_Subsong0DisarkPointerRegionStart577
+	dw still_Subsong0_RegisterBlock_290
+still_Subsong0DisarkPointerRegionEnd577
+
+still_Subsong0DisarkByteRegionStart578
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd578
+still_Subsong0DisarkPointerRegionStart579
+	dw still_Subsong0_RegisterBlock_291
+still_Subsong0DisarkPointerRegionEnd579
+
+still_Subsong0DisarkByteRegionStart580
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd580
+still_Subsong0DisarkPointerRegionStart581
+	dw still_Subsong0_RegisterBlock_292
+still_Subsong0DisarkPointerRegionEnd581
+
+still_Subsong0_Track_45
+still_Subsong0DisarkByteRegionStart582
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd582
+still_Subsong0DisarkPointerRegionStart583
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd583
+
+still_Subsong0DisarkByteRegionStart584
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd584
+still_Subsong0DisarkPointerRegionStart585
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd585
+
+still_Subsong0DisarkByteRegionStart586
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd586
+still_Subsong0DisarkPointerRegionStart587
+	dw still_Subsong0_RegisterBlock_296
+still_Subsong0DisarkPointerRegionEnd587
+
+still_Subsong0DisarkByteRegionStart588
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd588
+still_Subsong0DisarkPointerRegionStart589
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd589
+
+still_Subsong0DisarkByteRegionStart590
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd590
+still_Subsong0DisarkPointerRegionStart591
+	dw still_Subsong0_RegisterBlock_254
+still_Subsong0DisarkPointerRegionEnd591
+
+still_Subsong0DisarkByteRegionStart592
+	db 36	; Duration.
+still_Subsong0DisarkByteRegionEnd592
+still_Subsong0DisarkPointerRegionStart593
+	dw still_Subsong0_RegisterBlock_296
+still_Subsong0DisarkPointerRegionEnd593
+
+still_Subsong0DisarkByteRegionStart594
+	db 144	; Duration.
+still_Subsong0DisarkByteRegionEnd594
+still_Subsong0DisarkPointerRegionStart595
+	dw still_Subsong0_RegisterBlock_300
+still_Subsong0DisarkPointerRegionEnd595
+
+still_Subsong0DisarkByteRegionStart596
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd596
+still_Subsong0DisarkPointerRegionStart597
+	dw still_Subsong0_RegisterBlock_224
+still_Subsong0DisarkPointerRegionEnd597
+
+still_Subsong0_Track_47
+still_Subsong0DisarkByteRegionStart598
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd598
+still_Subsong0DisarkPointerRegionStart599
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd599
+
+still_Subsong0DisarkByteRegionStart600
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd600
+still_Subsong0DisarkPointerRegionStart601
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd601
+
+still_Subsong0DisarkByteRegionStart602
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd602
+still_Subsong0DisarkPointerRegionStart603
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd603
+
+still_Subsong0DisarkByteRegionStart604
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd604
+still_Subsong0DisarkPointerRegionStart605
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd605
+
+still_Subsong0DisarkByteRegionStart606
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd606
+still_Subsong0DisarkPointerRegionStart607
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd607
+
+still_Subsong0DisarkByteRegionStart608
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd608
+still_Subsong0DisarkPointerRegionStart609
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd609
+
+still_Subsong0DisarkByteRegionStart610
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd610
+still_Subsong0DisarkPointerRegionStart611
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd611
+
+still_Subsong0DisarkByteRegionStart612
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd612
+still_Subsong0DisarkPointerRegionStart613
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd613
+
+still_Subsong0DisarkByteRegionStart614
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd614
+still_Subsong0DisarkPointerRegionStart615
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd615
+
+still_Subsong0DisarkByteRegionStart616
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd616
+still_Subsong0DisarkPointerRegionStart617
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd617
+
+still_Subsong0DisarkByteRegionStart618
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd618
+still_Subsong0DisarkPointerRegionStart619
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd619
+
+still_Subsong0DisarkByteRegionStart620
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd620
+still_Subsong0DisarkPointerRegionStart621
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd621
+
+still_Subsong0DisarkByteRegionStart622
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd622
+still_Subsong0DisarkPointerRegionStart623
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd623
+
+still_Subsong0DisarkByteRegionStart624
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd624
+still_Subsong0DisarkPointerRegionStart625
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd625
+
+still_Subsong0DisarkByteRegionStart626
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd626
+still_Subsong0DisarkPointerRegionStart627
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd627
+
+still_Subsong0DisarkByteRegionStart628
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd628
+still_Subsong0DisarkPointerRegionStart629
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd629
+
+still_Subsong0DisarkByteRegionStart630
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd630
+still_Subsong0DisarkPointerRegionStart631
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd631
+
+still_Subsong0DisarkByteRegionStart632
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd632
+still_Subsong0DisarkPointerRegionStart633
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd633
+
+still_Subsong0DisarkByteRegionStart634
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd634
+still_Subsong0DisarkPointerRegionStart635
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd635
+
+still_Subsong0DisarkByteRegionStart636
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd636
+still_Subsong0DisarkPointerRegionStart637
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd637
+
+still_Subsong0DisarkByteRegionStart638
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd638
+still_Subsong0DisarkPointerRegionStart639
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd639
+
+still_Subsong0DisarkByteRegionStart640
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd640
+still_Subsong0DisarkPointerRegionStart641
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd641
+
+still_Subsong0DisarkByteRegionStart642
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd642
+still_Subsong0DisarkPointerRegionStart643
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd643
+
+still_Subsong0DisarkByteRegionStart644
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd644
+still_Subsong0DisarkPointerRegionStart645
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd645
+
+still_Subsong0DisarkByteRegionStart646
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd646
+still_Subsong0DisarkPointerRegionStart647
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd647
+
+still_Subsong0DisarkByteRegionStart648
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd648
+still_Subsong0DisarkPointerRegionStart649
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd649
+
+still_Subsong0DisarkByteRegionStart650
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd650
+still_Subsong0DisarkPointerRegionStart651
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd651
+
+still_Subsong0DisarkByteRegionStart652
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd652
+still_Subsong0DisarkPointerRegionStart653
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd653
+
+still_Subsong0DisarkByteRegionStart654
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd654
+still_Subsong0DisarkPointerRegionStart655
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd655
+
+still_Subsong0DisarkByteRegionStart656
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd656
+still_Subsong0DisarkPointerRegionStart657
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd657
+
+still_Subsong0DisarkByteRegionStart658
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd658
+still_Subsong0DisarkPointerRegionStart659
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd659
+
+still_Subsong0DisarkByteRegionStart660
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd660
+still_Subsong0DisarkPointerRegionStart661
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd661
+
+still_Subsong0DisarkByteRegionStart662
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd662
+still_Subsong0DisarkPointerRegionStart663
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd663
+
+still_Subsong0DisarkByteRegionStart664
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd664
+still_Subsong0DisarkPointerRegionStart665
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd665
+
+still_Subsong0DisarkByteRegionStart666
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd666
+still_Subsong0DisarkPointerRegionStart667
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd667
+
+still_Subsong0DisarkByteRegionStart668
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd668
+still_Subsong0DisarkPointerRegionStart669
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd669
+
+still_Subsong0DisarkByteRegionStart670
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd670
+still_Subsong0DisarkPointerRegionStart671
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd671
+
+still_Subsong0DisarkByteRegionStart672
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd672
+still_Subsong0DisarkPointerRegionStart673
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd673
+
+still_Subsong0DisarkByteRegionStart674
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd674
+still_Subsong0DisarkPointerRegionStart675
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd675
+
+still_Subsong0DisarkByteRegionStart676
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd676
+still_Subsong0DisarkPointerRegionStart677
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd677
+
+still_Subsong0DisarkByteRegionStart678
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd678
+still_Subsong0DisarkPointerRegionStart679
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd679
+
+still_Subsong0DisarkByteRegionStart680
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd680
+still_Subsong0DisarkPointerRegionStart681
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd681
+
+still_Subsong0DisarkByteRegionStart682
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd682
+still_Subsong0DisarkPointerRegionStart683
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd683
+
+still_Subsong0DisarkByteRegionStart684
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd684
+still_Subsong0DisarkPointerRegionStart685
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd685
+
+still_Subsong0DisarkByteRegionStart686
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd686
+still_Subsong0DisarkPointerRegionStart687
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd687
+
+still_Subsong0DisarkByteRegionStart688
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd688
+still_Subsong0DisarkPointerRegionStart689
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd689
+
+still_Subsong0DisarkByteRegionStart690
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd690
+still_Subsong0DisarkPointerRegionStart691
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd691
+
+still_Subsong0DisarkByteRegionStart692
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd692
+still_Subsong0DisarkPointerRegionStart693
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd693
+
+still_Subsong0DisarkByteRegionStart694
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd694
+still_Subsong0DisarkPointerRegionStart695
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd695
+
+still_Subsong0DisarkByteRegionStart696
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd696
+still_Subsong0DisarkPointerRegionStart697
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd697
+
+still_Subsong0DisarkByteRegionStart698
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd698
+still_Subsong0DisarkPointerRegionStart699
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd699
+
+still_Subsong0DisarkByteRegionStart700
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd700
+still_Subsong0DisarkPointerRegionStart701
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd701
+
+still_Subsong0DisarkByteRegionStart702
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd702
+still_Subsong0DisarkPointerRegionStart703
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd703
+
+still_Subsong0DisarkByteRegionStart704
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd704
+still_Subsong0DisarkPointerRegionStart705
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd705
+
+still_Subsong0DisarkByteRegionStart706
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd706
+still_Subsong0DisarkPointerRegionStart707
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd707
+
+still_Subsong0DisarkByteRegionStart708
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd708
+still_Subsong0DisarkPointerRegionStart709
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd709
+
+still_Subsong0DisarkByteRegionStart710
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd710
+still_Subsong0DisarkPointerRegionStart711
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd711
+
+still_Subsong0DisarkByteRegionStart712
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd712
+still_Subsong0DisarkPointerRegionStart713
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd713
+
+still_Subsong0DisarkByteRegionStart714
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd714
+still_Subsong0DisarkPointerRegionStart715
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd715
+
+still_Subsong0DisarkByteRegionStart716
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd716
+still_Subsong0DisarkPointerRegionStart717
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd717
+
+still_Subsong0DisarkByteRegionStart718
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd718
+still_Subsong0DisarkPointerRegionStart719
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd719
+
+still_Subsong0DisarkByteRegionStart720
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd720
+still_Subsong0DisarkPointerRegionStart721
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd721
+
+still_Subsong0DisarkByteRegionStart722
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd722
+still_Subsong0DisarkPointerRegionStart723
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd723
+
+still_Subsong0DisarkByteRegionStart724
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd724
+still_Subsong0DisarkPointerRegionStart725
+	dw still_Subsong0_RegisterBlock_128
+still_Subsong0DisarkPointerRegionEnd725
+
+still_Subsong0_Track_48
+still_Subsong0DisarkByteRegionStart726
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd726
+still_Subsong0DisarkPointerRegionStart727
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd727
+
+still_Subsong0DisarkByteRegionStart728
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd728
+still_Subsong0DisarkPointerRegionStart729
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd729
+
+still_Subsong0DisarkByteRegionStart730
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd730
+still_Subsong0DisarkPointerRegionStart731
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd731
+
+still_Subsong0DisarkByteRegionStart732
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd732
+still_Subsong0DisarkPointerRegionStart733
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd733
+
+still_Subsong0DisarkByteRegionStart734
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd734
+still_Subsong0DisarkPointerRegionStart735
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd735
+
+still_Subsong0DisarkByteRegionStart736
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd736
+still_Subsong0DisarkPointerRegionStart737
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd737
+
+still_Subsong0DisarkByteRegionStart738
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd738
+still_Subsong0DisarkPointerRegionStart739
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd739
+
+still_Subsong0DisarkByteRegionStart740
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd740
+still_Subsong0DisarkPointerRegionStart741
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd741
+
+still_Subsong0DisarkByteRegionStart742
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd742
+still_Subsong0DisarkPointerRegionStart743
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd743
+
+still_Subsong0DisarkByteRegionStart744
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd744
+still_Subsong0DisarkPointerRegionStart745
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd745
+
+still_Subsong0DisarkByteRegionStart746
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd746
+still_Subsong0DisarkPointerRegionStart747
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd747
+
+still_Subsong0DisarkByteRegionStart748
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd748
+still_Subsong0DisarkPointerRegionStart749
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd749
+
+still_Subsong0DisarkByteRegionStart750
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd750
+still_Subsong0DisarkPointerRegionStart751
+	dw still_Subsong0_RegisterBlock_46
+still_Subsong0DisarkPointerRegionEnd751
+
+still_Subsong0DisarkByteRegionStart752
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd752
+still_Subsong0DisarkPointerRegionStart753
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd753
+
+still_Subsong0DisarkByteRegionStart754
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd754
+still_Subsong0DisarkPointerRegionStart755
+	dw still_Subsong0_RegisterBlock_191
+still_Subsong0DisarkPointerRegionEnd755
+
+still_Subsong0DisarkByteRegionStart756
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd756
+still_Subsong0DisarkPointerRegionStart757
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd757
+
+still_Subsong0DisarkByteRegionStart758
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd758
+still_Subsong0DisarkPointerRegionStart759
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd759
+
+still_Subsong0DisarkByteRegionStart760
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd760
+still_Subsong0DisarkPointerRegionStart761
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd761
+
+still_Subsong0DisarkByteRegionStart762
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd762
+still_Subsong0DisarkPointerRegionStart763
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd763
+
+still_Subsong0DisarkByteRegionStart764
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd764
+still_Subsong0DisarkPointerRegionStart765
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd765
+
+still_Subsong0DisarkByteRegionStart766
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd766
+still_Subsong0DisarkPointerRegionStart767
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd767
+
+still_Subsong0DisarkByteRegionStart768
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd768
+still_Subsong0DisarkPointerRegionStart769
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd769
+
+still_Subsong0DisarkByteRegionStart770
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd770
+still_Subsong0DisarkPointerRegionStart771
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd771
+
+still_Subsong0DisarkByteRegionStart772
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd772
+still_Subsong0DisarkPointerRegionStart773
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd773
+
+still_Subsong0DisarkByteRegionStart774
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd774
+still_Subsong0DisarkPointerRegionStart775
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd775
+
+still_Subsong0DisarkByteRegionStart776
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd776
+still_Subsong0DisarkPointerRegionStart777
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd777
+
+still_Subsong0DisarkByteRegionStart778
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd778
+still_Subsong0DisarkPointerRegionStart779
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd779
+
+still_Subsong0DisarkByteRegionStart780
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd780
+still_Subsong0DisarkPointerRegionStart781
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd781
+
+still_Subsong0DisarkByteRegionStart782
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd782
+still_Subsong0DisarkPointerRegionStart783
+	dw still_Subsong0_RegisterBlock_29
+still_Subsong0DisarkPointerRegionEnd783
+
+still_Subsong0DisarkByteRegionStart784
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd784
+still_Subsong0DisarkPointerRegionStart785
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd785
+
+still_Subsong0DisarkByteRegionStart786
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd786
+still_Subsong0DisarkPointerRegionStart787
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd787
+
+still_Subsong0DisarkByteRegionStart788
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd788
+still_Subsong0DisarkPointerRegionStart789
+	dw still_Subsong0_RegisterBlock_6
+still_Subsong0DisarkPointerRegionEnd789
+
+still_Subsong0DisarkByteRegionStart790
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd790
+still_Subsong0DisarkPointerRegionStart791
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd791
+
+still_Subsong0DisarkByteRegionStart792
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd792
+still_Subsong0DisarkPointerRegionStart793
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd793
+
+still_Subsong0DisarkByteRegionStart794
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd794
+still_Subsong0DisarkPointerRegionStart795
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd795
+
+still_Subsong0DisarkByteRegionStart796
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd796
+still_Subsong0DisarkPointerRegionStart797
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd797
+
+still_Subsong0DisarkByteRegionStart798
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd798
+still_Subsong0DisarkPointerRegionStart799
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd799
+
+still_Subsong0DisarkByteRegionStart800
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd800
+still_Subsong0DisarkPointerRegionStart801
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd801
+
+still_Subsong0DisarkByteRegionStart802
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd802
+still_Subsong0DisarkPointerRegionStart803
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd803
+
+still_Subsong0DisarkByteRegionStart804
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd804
+still_Subsong0DisarkPointerRegionStart805
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd805
+
+still_Subsong0DisarkByteRegionStart806
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd806
+still_Subsong0DisarkPointerRegionStart807
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd807
+
+still_Subsong0DisarkByteRegionStart808
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd808
+still_Subsong0DisarkPointerRegionStart809
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd809
+
+still_Subsong0DisarkByteRegionStart810
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd810
+still_Subsong0DisarkPointerRegionStart811
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd811
+
+still_Subsong0DisarkByteRegionStart812
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd812
+still_Subsong0DisarkPointerRegionStart813
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd813
+
+still_Subsong0DisarkByteRegionStart814
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd814
+still_Subsong0DisarkPointerRegionStart815
+	dw still_Subsong0_RegisterBlock_11
+still_Subsong0DisarkPointerRegionEnd815
+
+still_Subsong0DisarkByteRegionStart816
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd816
+still_Subsong0DisarkPointerRegionStart817
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd817
+
+still_Subsong0DisarkByteRegionStart818
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd818
+still_Subsong0DisarkPointerRegionStart819
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd819
+
+still_Subsong0DisarkByteRegionStart820
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd820
+still_Subsong0DisarkPointerRegionStart821
+	dw still_Subsong0_RegisterBlock_16
+still_Subsong0DisarkPointerRegionEnd821
+
+still_Subsong0DisarkByteRegionStart822
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd822
+still_Subsong0DisarkPointerRegionStart823
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd823
+
+still_Subsong0DisarkByteRegionStart824
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd824
+still_Subsong0DisarkPointerRegionStart825
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd825
+
+still_Subsong0DisarkByteRegionStart826
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd826
+still_Subsong0DisarkPointerRegionStart827
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd827
+
+still_Subsong0DisarkByteRegionStart828
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd828
+still_Subsong0DisarkPointerRegionStart829
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd829
+
+still_Subsong0DisarkByteRegionStart830
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd830
+still_Subsong0DisarkPointerRegionStart831
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd831
+
+still_Subsong0DisarkByteRegionStart832
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd832
+still_Subsong0DisarkPointerRegionStart833
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd833
+
+still_Subsong0DisarkByteRegionStart834
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd834
+still_Subsong0DisarkPointerRegionStart835
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd835
+
+still_Subsong0DisarkByteRegionStart836
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd836
+still_Subsong0DisarkPointerRegionStart837
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd837
+
+still_Subsong0DisarkByteRegionStart838
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd838
+still_Subsong0DisarkPointerRegionStart839
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd839
+
+still_Subsong0DisarkByteRegionStart840
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd840
+still_Subsong0DisarkPointerRegionStart841
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd841
+
+still_Subsong0DisarkByteRegionStart842
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd842
+still_Subsong0DisarkPointerRegionStart843
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd843
+
+still_Subsong0DisarkByteRegionStart844
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd844
+still_Subsong0DisarkPointerRegionStart845
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd845
+
+still_Subsong0DisarkByteRegionStart846
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd846
+still_Subsong0DisarkPointerRegionStart847
+	dw still_Subsong0_RegisterBlock_222
+still_Subsong0DisarkPointerRegionEnd847
+
+still_Subsong0DisarkByteRegionStart848
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd848
+still_Subsong0DisarkPointerRegionStart849
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd849
+
+still_Subsong0DisarkByteRegionStart850
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd850
+still_Subsong0DisarkPointerRegionStart851
+	dw still_Subsong0_RegisterBlock_17
+still_Subsong0DisarkPointerRegionEnd851
+
+still_Subsong0DisarkByteRegionStart852
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd852
+still_Subsong0DisarkPointerRegionStart853
+	dw still_Subsong0_RegisterBlock_40
+still_Subsong0DisarkPointerRegionEnd853
+
+still_Subsong0_Track_50
+still_Subsong0DisarkByteRegionStart854
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd854
+still_Subsong0DisarkPointerRegionStart855
+	dw still_Subsong0_RegisterBlock_433
+still_Subsong0DisarkPointerRegionEnd855
+
+still_Subsong0DisarkByteRegionStart856
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd856
+still_Subsong0DisarkPointerRegionStart857
+	dw still_Subsong0_RegisterBlock_434
+still_Subsong0DisarkPointerRegionEnd857
+
+still_Subsong0DisarkByteRegionStart858
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd858
+still_Subsong0DisarkPointerRegionStart859
+	dw still_Subsong0_RegisterBlock_435
+still_Subsong0DisarkPointerRegionEnd859
+
+still_Subsong0DisarkByteRegionStart860
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd860
+still_Subsong0DisarkPointerRegionStart861
+	dw still_Subsong0_RegisterBlock_434
+still_Subsong0DisarkPointerRegionEnd861
+
+still_Subsong0_Track_51
+still_Subsong0DisarkByteRegionStart862
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd862
+still_Subsong0DisarkPointerRegionStart863
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd863
+
+still_Subsong0DisarkByteRegionStart864
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd864
+still_Subsong0DisarkPointerRegionStart865
+	dw still_Subsong0_RegisterBlock_290
+still_Subsong0DisarkPointerRegionEnd865
+
+still_Subsong0DisarkByteRegionStart866
+	db 192	; Duration.
+still_Subsong0DisarkByteRegionEnd866
+still_Subsong0DisarkPointerRegionStart867
+	dw still_Subsong0_RegisterBlock_440
+still_Subsong0DisarkPointerRegionEnd867
+
+still_Subsong0_Track_53
+still_Subsong0DisarkByteRegionStart868
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd868
+still_Subsong0DisarkPointerRegionStart869
+	dw still_Subsong0_RegisterBlock_433
+still_Subsong0DisarkPointerRegionEnd869
+
+still_Subsong0DisarkByteRegionStart870
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd870
+still_Subsong0DisarkPointerRegionStart871
+	dw still_Subsong0_RegisterBlock_434
+still_Subsong0DisarkPointerRegionEnd871
+
+still_Subsong0DisarkByteRegionStart872
+	db 192	; Duration.
+still_Subsong0DisarkByteRegionEnd872
+still_Subsong0DisarkPointerRegionStart873
+	dw still_Subsong0_RegisterBlock_444
+still_Subsong0DisarkPointerRegionEnd873
+
+still_Subsong0_Track_57
+still_Subsong0DisarkByteRegionStart874
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd874
+still_Subsong0DisarkPointerRegionStart875
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd875
+
+still_Subsong0DisarkByteRegionStart876
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd876
+still_Subsong0DisarkPointerRegionStart877
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd877
+
+still_Subsong0DisarkByteRegionStart878
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd878
+still_Subsong0DisarkPointerRegionStart879
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd879
+
+still_Subsong0DisarkByteRegionStart880
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd880
+still_Subsong0DisarkPointerRegionStart881
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd881
+
+still_Subsong0DisarkByteRegionStart882
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd882
+still_Subsong0DisarkPointerRegionStart883
+	dw still_Subsong0_RegisterBlock_197
+still_Subsong0DisarkPointerRegionEnd883
+
+still_Subsong0DisarkByteRegionStart884
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd884
+still_Subsong0DisarkPointerRegionStart885
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd885
+
+still_Subsong0DisarkByteRegionStart886
+	db 48	; Duration.
+still_Subsong0DisarkByteRegionEnd886
+still_Subsong0DisarkPointerRegionStart887
+	dw still_Subsong0_RegisterBlock_290
+still_Subsong0DisarkPointerRegionEnd887
+
+still_Subsong0DisarkByteRegionStart888
+	db 60	; Duration.
+still_Subsong0DisarkByteRegionEnd888
+still_Subsong0DisarkPointerRegionStart889
+	dw still_Subsong0_RegisterBlock_200
+still_Subsong0DisarkPointerRegionEnd889
+
+still_Subsong0DisarkByteRegionStart890
+	db 192	; Duration.
+still_Subsong0DisarkByteRegionEnd890
+still_Subsong0DisarkPointerRegionStart891
+	dw still_Subsong0_RegisterBlock_440
+still_Subsong0DisarkPointerRegionEnd891
+
+still_Subsong0_Track_58
+still_Subsong0DisarkByteRegionStart892
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd892
+still_Subsong0DisarkPointerRegionStart893
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd893
+
+still_Subsong0DisarkByteRegionStart894
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd894
+still_Subsong0DisarkPointerRegionStart895
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd895
+
+still_Subsong0DisarkByteRegionStart896
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd896
+still_Subsong0DisarkPointerRegionStart897
+	dw still_Subsong0_RegisterBlock_458
+still_Subsong0DisarkPointerRegionEnd897
+
+still_Subsong0DisarkByteRegionStart898
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd898
+still_Subsong0DisarkPointerRegionStart899
+	dw still_Subsong0_RegisterBlock_458
+still_Subsong0DisarkPointerRegionEnd899
+
+still_Subsong0DisarkByteRegionStart900
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd900
+still_Subsong0DisarkPointerRegionStart901
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd901
+
+still_Subsong0DisarkByteRegionStart902
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd902
+still_Subsong0DisarkPointerRegionStart903
+	dw still_Subsong0_RegisterBlock_538
+still_Subsong0DisarkPointerRegionEnd903
+
+still_Subsong0DisarkByteRegionStart904
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd904
+still_Subsong0DisarkPointerRegionStart905
+	dw still_Subsong0_RegisterBlock_458
+still_Subsong0DisarkPointerRegionEnd905
+
+still_Subsong0DisarkByteRegionStart906
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd906
+still_Subsong0DisarkPointerRegionStart907
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd907
+
+still_Subsong0DisarkByteRegionStart908
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd908
+still_Subsong0DisarkPointerRegionStart909
+	dw still_Subsong0_RegisterBlock_458
+still_Subsong0DisarkPointerRegionEnd909
+
+still_Subsong0DisarkByteRegionStart910
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd910
+still_Subsong0DisarkPointerRegionStart911
+	dw still_Subsong0_RegisterBlock_458
+still_Subsong0DisarkPointerRegionEnd911
+
+still_Subsong0DisarkByteRegionStart912
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd912
+still_Subsong0DisarkPointerRegionStart913
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd913
+
+still_Subsong0DisarkByteRegionStart914
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd914
+still_Subsong0DisarkPointerRegionStart915
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd915
+
+still_Subsong0DisarkByteRegionStart916
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd916
+still_Subsong0DisarkPointerRegionStart917
+	dw still_Subsong0_RegisterBlock_468
+still_Subsong0DisarkPointerRegionEnd917
+
+still_Subsong0DisarkByteRegionStart918
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd918
+still_Subsong0DisarkPointerRegionStart919
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd919
+
+still_Subsong0DisarkByteRegionStart920
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd920
+still_Subsong0DisarkPointerRegionStart921
+	dw still_Subsong0_RegisterBlock_468
+still_Subsong0DisarkPointerRegionEnd921
+
+still_Subsong0DisarkByteRegionStart922
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd922
+still_Subsong0DisarkPointerRegionStart923
+	dw still_Subsong0_RegisterBlock_468
+still_Subsong0DisarkPointerRegionEnd923
+
+still_Subsong0DisarkByteRegionStart924
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd924
+still_Subsong0DisarkPointerRegionStart925
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd925
+
+still_Subsong0DisarkByteRegionStart926
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd926
+still_Subsong0DisarkPointerRegionStart927
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd927
+
+still_Subsong0DisarkByteRegionStart928
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd928
+still_Subsong0DisarkPointerRegionStart929
+	dw still_Subsong0_RegisterBlock_474
+still_Subsong0DisarkPointerRegionEnd929
+
+still_Subsong0DisarkByteRegionStart930
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd930
+still_Subsong0DisarkPointerRegionStart931
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd931
+
+still_Subsong0DisarkByteRegionStart932
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd932
+still_Subsong0DisarkPointerRegionStart933
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd933
+
+still_Subsong0DisarkByteRegionStart934
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd934
+still_Subsong0DisarkPointerRegionStart935
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd935
+
+still_Subsong0DisarkByteRegionStart936
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd936
+still_Subsong0DisarkPointerRegionStart937
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd937
+
+still_Subsong0DisarkByteRegionStart938
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd938
+still_Subsong0DisarkPointerRegionStart939
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd939
+
+still_Subsong0DisarkByteRegionStart940
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd940
+still_Subsong0DisarkPointerRegionStart941
+	dw still_Subsong0_RegisterBlock_474
+still_Subsong0DisarkPointerRegionEnd941
+
+still_Subsong0DisarkByteRegionStart942
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd942
+still_Subsong0DisarkPointerRegionStart943
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd943
+
+still_Subsong0DisarkByteRegionStart944
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd944
+still_Subsong0DisarkPointerRegionStart945
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd945
+
+still_Subsong0DisarkByteRegionStart946
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd946
+still_Subsong0DisarkPointerRegionStart947
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd947
+
+still_Subsong0DisarkByteRegionStart948
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd948
+still_Subsong0DisarkPointerRegionStart949
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd949
+
+still_Subsong0DisarkByteRegionStart950
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd950
+still_Subsong0DisarkPointerRegionStart951
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd951
+
+still_Subsong0DisarkByteRegionStart952
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd952
+still_Subsong0DisarkPointerRegionStart953
+	dw still_Subsong0_RegisterBlock_474
+still_Subsong0DisarkPointerRegionEnd953
+
+still_Subsong0DisarkByteRegionStart954
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd954
+still_Subsong0DisarkPointerRegionStart955
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd955
+
+still_Subsong0DisarkByteRegionStart956
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd956
+still_Subsong0DisarkPointerRegionStart957
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd957
+
+still_Subsong0DisarkByteRegionStart958
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd958
+still_Subsong0DisarkPointerRegionStart959
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd959
+
+still_Subsong0DisarkByteRegionStart960
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd960
+still_Subsong0DisarkPointerRegionStart961
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd961
+
+still_Subsong0DisarkByteRegionStart962
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd962
+still_Subsong0DisarkPointerRegionStart963
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd963
+
+still_Subsong0DisarkByteRegionStart964
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd964
+still_Subsong0DisarkPointerRegionStart965
+	dw still_Subsong0_RegisterBlock_474
+still_Subsong0DisarkPointerRegionEnd965
+
+still_Subsong0DisarkByteRegionStart966
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd966
+still_Subsong0DisarkPointerRegionStart967
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd967
+
+still_Subsong0DisarkByteRegionStart968
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd968
+still_Subsong0DisarkPointerRegionStart969
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd969
+
+still_Subsong0DisarkByteRegionStart970
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd970
+still_Subsong0DisarkPointerRegionStart971
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd971
+
+still_Subsong0DisarkByteRegionStart972
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd972
+still_Subsong0DisarkPointerRegionStart973
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd973
+
+still_Subsong0DisarkByteRegionStart974
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd974
+still_Subsong0DisarkPointerRegionStart975
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd975
+
+still_Subsong0DisarkByteRegionStart976
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd976
+still_Subsong0DisarkPointerRegionStart977
+	dw still_Subsong0_RegisterBlock_474
+still_Subsong0DisarkPointerRegionEnd977
+
+still_Subsong0DisarkByteRegionStart978
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd978
+still_Subsong0DisarkPointerRegionStart979
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd979
+
+still_Subsong0DisarkByteRegionStart980
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd980
+still_Subsong0DisarkPointerRegionStart981
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd981
+
+still_Subsong0DisarkByteRegionStart982
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd982
+still_Subsong0DisarkPointerRegionStart983
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd983
+
+still_Subsong0DisarkByteRegionStart984
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd984
+still_Subsong0DisarkPointerRegionStart985
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd985
+
+still_Subsong0DisarkByteRegionStart986
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd986
+still_Subsong0DisarkPointerRegionStart987
+	dw still_Subsong0_RegisterBlock_467
+still_Subsong0DisarkPointerRegionEnd987
+
+still_Subsong0_Track_59
+still_Subsong0DisarkByteRegionStart988
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd988
+still_Subsong0DisarkPointerRegionStart989
+	dw still_Subsong0_RegisterBlock_505
+still_Subsong0DisarkPointerRegionEnd989
+
+still_Subsong0DisarkByteRegionStart990
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd990
+still_Subsong0DisarkPointerRegionStart991
+	dw still_Subsong0_RegisterBlock_506
+still_Subsong0DisarkPointerRegionEnd991
+
+still_Subsong0DisarkByteRegionStart992
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd992
+still_Subsong0DisarkPointerRegionStart993
+	dw still_Subsong0_RegisterBlock_507
+still_Subsong0DisarkPointerRegionEnd993
+
+still_Subsong0DisarkByteRegionStart994
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd994
+still_Subsong0DisarkPointerRegionStart995
+	dw still_Subsong0_RegisterBlock_508
+still_Subsong0DisarkPointerRegionEnd995
+
+still_Subsong0DisarkByteRegionStart996
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd996
+still_Subsong0DisarkPointerRegionStart997
+	dw still_Subsong0_RegisterBlock_506
+still_Subsong0DisarkPointerRegionEnd997
+
+still_Subsong0DisarkByteRegionStart998
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd998
+still_Subsong0DisarkPointerRegionStart999
+	dw still_Subsong0_RegisterBlock_513
+still_Subsong0DisarkPointerRegionEnd999
+
+still_Subsong0DisarkByteRegionStart1000
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd1000
+still_Subsong0DisarkPointerRegionStart1001
+	dw still_Subsong0_RegisterBlock_508
+still_Subsong0DisarkPointerRegionEnd1001
+
+still_Subsong0DisarkByteRegionStart1002
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd1002
+still_Subsong0DisarkPointerRegionStart1003
+	dw still_Subsong0_RegisterBlock_512
+still_Subsong0DisarkPointerRegionEnd1003
+
+still_Subsong0DisarkByteRegionStart1004
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd1004
+still_Subsong0DisarkPointerRegionStart1005
+	dw still_Subsong0_RegisterBlock_513
+still_Subsong0DisarkPointerRegionEnd1005
+
+still_Subsong0DisarkByteRegionStart1006
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd1006
+still_Subsong0DisarkPointerRegionStart1007
+	dw still_Subsong0_RegisterBlock_514
+still_Subsong0DisarkPointerRegionEnd1007
+
+still_Subsong0DisarkByteRegionStart1008
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd1008
+still_Subsong0DisarkPointerRegionStart1009
+	dw still_Subsong0_RegisterBlock_515
+still_Subsong0DisarkPointerRegionEnd1009
+
+still_Subsong0DisarkByteRegionStart1010
+	db 84	; Duration.
+still_Subsong0DisarkByteRegionEnd1010
+still_Subsong0DisarkPointerRegionStart1011
+	dw still_Subsong0_RegisterBlock_519
+still_Subsong0DisarkPointerRegionEnd1011
+
+still_Subsong0DisarkByteRegionStart1012
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1012
+still_Subsong0DisarkPointerRegionStart1013
+	dw still_Subsong0_RegisterBlock_519
+still_Subsong0DisarkPointerRegionEnd1013
+
+still_Subsong0DisarkByteRegionStart1014
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1014
+still_Subsong0DisarkPointerRegionStart1015
+	dw still_Subsong0_RegisterBlock_518
+still_Subsong0DisarkPointerRegionEnd1015
+
+still_Subsong0DisarkByteRegionStart1016
+	db 96	; Duration.
+still_Subsong0DisarkByteRegionEnd1016
+still_Subsong0DisarkPointerRegionStart1017
+	dw still_Subsong0_RegisterBlock_519
+still_Subsong0DisarkPointerRegionEnd1017
+
+still_Subsong0_Track_60
+still_Subsong0DisarkByteRegionStart1018
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1018
+still_Subsong0DisarkPointerRegionStart1019
+	dw still_Subsong0_RegisterBlock_546
+still_Subsong0DisarkPointerRegionEnd1019
+
+still_Subsong0DisarkByteRegionStart1020
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1020
+still_Subsong0DisarkPointerRegionStart1021
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd1021
+
+still_Subsong0DisarkByteRegionStart1022
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1022
+still_Subsong0DisarkPointerRegionStart1023
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1023
+
+still_Subsong0DisarkByteRegionStart1024
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1024
+still_Subsong0DisarkPointerRegionStart1025
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1025
+
+still_Subsong0DisarkByteRegionStart1026
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1026
+still_Subsong0DisarkPointerRegionStart1027
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd1027
+
+still_Subsong0DisarkByteRegionStart1028
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1028
+still_Subsong0DisarkPointerRegionStart1029
+	dw still_Subsong0_RegisterBlock_538
+still_Subsong0DisarkPointerRegionEnd1029
+
+still_Subsong0DisarkByteRegionStart1030
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1030
+still_Subsong0DisarkPointerRegionStart1031
+	dw still_Subsong0_RegisterBlock_546
+still_Subsong0DisarkPointerRegionEnd1031
+
+still_Subsong0DisarkByteRegionStart1032
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1032
+still_Subsong0DisarkPointerRegionStart1033
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd1033
+
+still_Subsong0DisarkByteRegionStart1034
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1034
+still_Subsong0DisarkPointerRegionStart1035
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1035
+
+still_Subsong0DisarkByteRegionStart1036
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1036
+still_Subsong0DisarkPointerRegionStart1037
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1037
+
+still_Subsong0DisarkByteRegionStart1038
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1038
+still_Subsong0DisarkPointerRegionStart1039
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd1039
+
+still_Subsong0DisarkByteRegionStart1040
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1040
+still_Subsong0DisarkPointerRegionStart1041
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1041
+
+still_Subsong0DisarkByteRegionStart1042
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1042
+still_Subsong0DisarkPointerRegionStart1043
+	dw still_Subsong0_RegisterBlock_546
+still_Subsong0DisarkPointerRegionEnd1043
+
+still_Subsong0DisarkByteRegionStart1044
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1044
+still_Subsong0DisarkPointerRegionStart1045
+	dw still_Subsong0_RegisterBlock_457
+still_Subsong0DisarkPointerRegionEnd1045
+
+still_Subsong0DisarkByteRegionStart1046
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1046
+still_Subsong0DisarkPointerRegionStart1047
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1047
+
+still_Subsong0DisarkByteRegionStart1048
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1048
+still_Subsong0DisarkPointerRegionStart1049
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1049
+
+still_Subsong0DisarkByteRegionStart1050
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1050
+still_Subsong0DisarkPointerRegionStart1051
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd1051
+
+still_Subsong0DisarkByteRegionStart1052
+	db 24	; Duration.
+still_Subsong0DisarkByteRegionEnd1052
+still_Subsong0DisarkPointerRegionStart1053
+	dw still_Subsong0_RegisterBlock_538
+still_Subsong0DisarkPointerRegionEnd1053
+
+still_Subsong0DisarkByteRegionStart1054
+	db 228	; Duration.
+still_Subsong0DisarkByteRegionEnd1054
+still_Subsong0DisarkPointerRegionStart1055
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd1055
+
+still_Subsong0_Track_61
+still_Subsong0DisarkByteRegionStart1056
+	db 138	; Duration.
+still_Subsong0DisarkByteRegionEnd1056
+still_Subsong0DisarkPointerRegionStart1057
+	dw still_Subsong0_RegisterBlock_541
+still_Subsong0DisarkPointerRegionEnd1057
+
+still_Subsong0DisarkByteRegionStart1058
+	db 18	; Duration.
+still_Subsong0DisarkByteRegionEnd1058
+still_Subsong0DisarkPointerRegionStart1059
+	dw still_Subsong0_RegisterBlock_542
+still_Subsong0DisarkPointerRegionEnd1059
+
+still_Subsong0DisarkByteRegionStart1060
+	db 228	; Duration.
+still_Subsong0DisarkByteRegionEnd1060
+still_Subsong0DisarkPointerRegionStart1061
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd1061
+
+still_Subsong0_Track_62
+still_Subsong0DisarkByteRegionStart1062
+	db 132	; Duration.
+still_Subsong0DisarkByteRegionEnd1062
+still_Subsong0DisarkPointerRegionStart1063
+	dw still_Subsong0_RegisterBlock_545
+still_Subsong0DisarkPointerRegionEnd1063
+
+still_Subsong0DisarkByteRegionStart1064
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1064
+still_Subsong0DisarkPointerRegionStart1065
+	dw still_Subsong0_RegisterBlock_546
+still_Subsong0DisarkPointerRegionEnd1065
+
+still_Subsong0DisarkByteRegionStart1066
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1066
+still_Subsong0DisarkPointerRegionStart1067
+	dw still_Subsong0_RegisterBlock_547
+still_Subsong0DisarkPointerRegionEnd1067
+
+still_Subsong0DisarkByteRegionStart1068
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1068
+still_Subsong0DisarkPointerRegionStart1069
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd1069
+
+still_Subsong0DisarkByteRegionStart1070
+	db 198	; Duration.
+still_Subsong0DisarkByteRegionEnd1070
+still_Subsong0DisarkPointerRegionStart1071
+	dw still_Subsong0_RegisterBlock_539
+still_Subsong0DisarkPointerRegionEnd1071
+
+still_Subsong0DisarkByteRegionStart1072
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1072
+still_Subsong0DisarkPointerRegionStart1073
+	dw still_Subsong0_RegisterBlock_550
+still_Subsong0DisarkPointerRegionEnd1073
+
+still_Subsong0DisarkByteRegionStart1074
+	db 6	; Duration.
+still_Subsong0DisarkByteRegionEnd1074
+still_Subsong0DisarkPointerRegionStart1075
+	dw still_Subsong0_RegisterBlock_551
+still_Subsong0DisarkPointerRegionEnd1075
+
+still_Subsong0DisarkByteRegionStart1076
+	db 12	; Duration.
+still_Subsong0DisarkByteRegionEnd1076
+still_Subsong0DisarkPointerRegionStart1077
+	dw still_Subsong0_RegisterBlock_552
+still_Subsong0DisarkPointerRegionEnd1077
+
+
+; The RegisterBlocks.
+still_Subsong0DisarkByteRegionStart1078
+still_Subsong0_RegisterBlock_539
+	db 0	; Initial State: no software, no hardware.
+
+still_Subsong0_RegisterBlock_539_Loop
+	db 4	; Non-initial State, no software no hardware.
+
+	db 8	; Loop to index 1.
+still_Subsong0DisarkPointerRegionStart1079
+	dw still_Subsong0_RegisterBlock_539_Loop
+still_Subsong0DisarkPointerRegionEnd1079
+
+
+still_Subsong0_RegisterBlock_440
+	db 167	; Initial State : software and hardware. Retrig.
+	db 12, 1	; Software period.
+	db 17, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 34	; Hardware period, LSB.
+	db 24	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_440_Loop
+	db 55	; Non-initial State, software and hardware.
+	db 17	; Hardware period, LSB.
+	db 12	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 34	; Hardware period, LSB.
+	db 24	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1080
+	dw still_Subsong0_RegisterBlock_440_Loop
+still_Subsong0DisarkPointerRegionEnd1080
+
+
+still_Subsong0_RegisterBlock_444
+	db 73	; Initial State: software only.
+	db 134, 0	; Software period.
+
+	db 93	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 134	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 134	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_444_Loop
+	db 105	; Non-initial State, software only.
+	db 134	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 8	; Loop to index 9.
+still_Subsong0DisarkPointerRegionStart1081
+	dw still_Subsong0_RegisterBlock_444_Loop
+still_Subsong0DisarkPointerRegionEnd1081
+
+
+still_Subsong0_RegisterBlock_223
+	db 0	; Initial State: no software, no hardware.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1082
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1082
+
+still_Subsong0_RegisterBlock_300
+	db 131	; Initial State : software and hardware.
+	db 71, 0	; Software period.
+	db 9, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+
+	db 237	; Non-initial State, software only.
+	db 28	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 237	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_300_Loop
+	db 105	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 233	; Non-initial State, software only.
+	db 28	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 233	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 8	; Loop to index 11.
+still_Subsong0DisarkPointerRegionStart1083
+	dw still_Subsong0_RegisterBlock_300_Loop
+still_Subsong0DisarkPointerRegionEnd1083
+
+
+still_Subsong0_RegisterBlock_541
+	db 167	; Initial State : software and hardware. Retrig.
+	db 28, 1	; Software period.
+	db 18, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 36	; Hardware period, LSB.
+	db 56	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_541_Loop
+	db 55	; Non-initial State, software and hardware.
+	db 18	; Hardware period, LSB.
+	db 28	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 36	; Hardware period, LSB.
+	db 56	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1084
+	dw still_Subsong0_RegisterBlock_541_Loop
+still_Subsong0DisarkPointerRegionEnd1084
+
+
+still_Subsong0_RegisterBlock_545
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 112, 4	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 56	; New LSB for software period.
+	db 2	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+	db 49	; Non-initial State, software only.
+
+	db 45	; Non-initial State, software only.
+
+	db 41	; Non-initial State, software only.
+
+	db 37	; Non-initial State, software only.
+
+	db 33	; Non-initial State, software only.
+
+	db 29	; Non-initial State, software only.
+
+	db 25	; Non-initial State, software only.
+
+	db 21	; Non-initial State, software only.
+
+	db 17	; Non-initial State, software only.
+
+	db 13	; Non-initial State, software only.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1085
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1085
+
+still_Subsong0_RegisterBlock_289
+	db 167	; Initial State : software and hardware. Retrig.
+	db 28, 1	; Software period.
+	db 18, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1086
+	dw still_Subsong0_RegisterBlock_541 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1086
+
+still_Subsong0_RegisterBlock_290
+	db 167	; Initial State : software and hardware. Retrig.
+	db 253, 0	; Software period.
+	db 16, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 32	; Hardware period, LSB.
+	db 250	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_290_Loop
+	db 55	; Non-initial State, software and hardware.
+	db 16	; Hardware period, LSB.
+	db 253	; Software period, LSB.
+	db 0	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 32	; Hardware period, LSB.
+	db 250	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1087
+	dw still_Subsong0_RegisterBlock_290_Loop
+still_Subsong0DisarkPointerRegionEnd1087
+
+
+still_Subsong0_RegisterBlock_291
+	db 167	; Initial State : software and hardware. Retrig.
+	db 190, 0	; Software period.
+	db 12, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 24	; Hardware period, LSB.
+	db 123	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_291_Loop
+	db 55	; Non-initial State, software and hardware.
+	db 12	; Hardware period, LSB.
+	db 190	; Software period, LSB.
+	db 0	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 24	; Hardware period, LSB.
+	db 123	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1088
+	dw still_Subsong0_RegisterBlock_291_Loop
+still_Subsong0DisarkPointerRegionEnd1088
+
+
+still_Subsong0_RegisterBlock_292
+	db 167	; Initial State : software and hardware. Retrig.
+	db 213, 0	; Software period.
+	db 13, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 27	; Hardware period, LSB.
+	db 170	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_292_Loop
+	db 55	; Non-initial State, software and hardware.
+	db 13	; Hardware period, LSB.
+	db 213	; Software period, LSB.
+	db 0	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 27	; Hardware period, LSB.
+	db 170	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1089
+	dw still_Subsong0_RegisterBlock_292_Loop
+still_Subsong0DisarkPointerRegionEnd1089
+
+
+still_Subsong0_RegisterBlock_433
+	db 49	; Initial State: software only.
+	db 142, 0	; Software period.
+
+	db 93	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_433_Loop
+	db 105	; Non-initial State, software only.
+	db 142	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 8	; Loop to index 9.
+still_Subsong0DisarkPointerRegionStart1090
+	dw still_Subsong0_RegisterBlock_433_Loop
+still_Subsong0DisarkPointerRegionEnd1090
+
+
+still_Subsong0_RegisterBlock_434
+	db 49	; Initial State: software only.
+	db 127, 0	; Software period.
+
+	db 93	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_434_Loop
+	db 105	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+	db 8	; Loop to index 9.
+still_Subsong0DisarkPointerRegionStart1091
+	dw still_Subsong0_RegisterBlock_434_Loop
+still_Subsong0DisarkPointerRegionEnd1091
+
+
+still_Subsong0_RegisterBlock_435
+	db 73	; Initial State: software only.
+	db 239, 0	; Software period.
+
+	db 93	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_435_Loop
+	db 105	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 8	; Loop to index 9.
+still_Subsong0DisarkPointerRegionStart1092
+	dw still_Subsong0_RegisterBlock_435_Loop
+still_Subsong0DisarkPointerRegionEnd1092
+
+
+still_Subsong0_RegisterBlock_519
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 213, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1093
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1093
+
+still_Subsong0_RegisterBlock_516
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 213, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1094
+	dw still_Subsong0_RegisterBlock_519 + 4	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1094
+
+still_Subsong0_RegisterBlock_200
+	db 167	; Initial State : software and hardware. Retrig.
+	db 123, 1	; Software period.
+	db 24, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 47	; Hardware period, LSB.
+	db 246	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_200_Loop
+	db 55	; Non-initial State, software and hardware.
+	db 24	; Hardware period, LSB.
+	db 123	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 47	; Hardware period, LSB.
+	db 246	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1095
+	dw still_Subsong0_RegisterBlock_200_Loop
+still_Subsong0DisarkPointerRegionEnd1095
+
+
+still_Subsong0_RegisterBlock_199
+	db 167	; Initial State : software and hardware. Retrig.
+	db 253, 0	; Software period.
+	db 16, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1096
+	dw still_Subsong0_RegisterBlock_290 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1096
+
+still_Subsong0_RegisterBlock_224
+	db 131	; Initial State : software and hardware.
+	db 80, 0	; Software period.
+	db 10, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 159	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 159	; New LSB for software period.
+
+	db 237	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 237	; Non-initial State, software only.
+	db 159	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 159	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_224_Loop
+	db 105	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 233	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 233	; Non-initial State, software only.
+	db 159	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 159	; New LSB for software period.
+
+	db 8	; Loop to index 13.
+still_Subsong0DisarkPointerRegionStart1097
+	dw still_Subsong0_RegisterBlock_224_Loop
+still_Subsong0DisarkPointerRegionEnd1097
+
+
+still_Subsong0_RegisterBlock_294
+	db 131	; Initial State : software and hardware.
+	db 71, 0	; Software period.
+	db 9, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1098
+	dw still_Subsong0_RegisterBlock_300 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1098
+
+still_Subsong0_RegisterBlock_208
+	db 167	; Initial State : software and hardware. Retrig.
+	db 213, 0	; Software period.
+	db 13, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1099
+	dw still_Subsong0_RegisterBlock_292 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1099
+
+still_Subsong0_RegisterBlock_256
+	db 131	; Initial State : software and hardware.
+	db 71, 0	; Software period.
+	db 9, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1100
+	dw still_Subsong0_RegisterBlock_300 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1100
+
+still_Subsong0_RegisterBlock_285
+	db 131	; Initial State : software and hardware.
+	db 89, 0	; Software period.
+	db 11, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 179	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 179	; New LSB for software period.
+
+	db 237	; Non-initial State, software only.
+	db 102	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 237	; Non-initial State, software only.
+	db 179	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 179	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 233	; Non-initial State, software only.
+	db 102	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+still_Subsong0_RegisterBlock_285_Loop
+	db 233	; Non-initial State, software only.
+	db 179	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 179	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 233	; Non-initial State, software only.
+	db 102	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 8	; Loop to index 15.
+still_Subsong0DisarkPointerRegionStart1101
+	dw still_Subsong0_RegisterBlock_285_Loop
+still_Subsong0DisarkPointerRegionEnd1101
+
+
+still_Subsong0_RegisterBlock_296
+	db 131	; Initial State : software and hardware.
+	db 60, 0	; Software period.
+	db 8, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_296_Loop
+	db 105	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 8	; Loop to index 15.
+still_Subsong0DisarkPointerRegionStart1102
+	dw still_Subsong0_RegisterBlock_296_Loop
+still_Subsong0DisarkPointerRegionEnd1102
+
+
+still_Subsong0_RegisterBlock_191
+	db 89	; Initial State: software only.
+	db 142, 0	; Software period.
+
+	db 45	; Non-initial State, software only.
+
+	db 45	; Non-initial State, software only.
+
+	db 45	; Non-initial State, software only.
+
+	db 45	; Non-initial State, software only.
+
+	db 45	; Non-initial State, software only.
+
+still_Subsong0_RegisterBlock_191_Loop
+	db 21	; Non-initial State, software only.
+
+	db 21	; Non-initial State, software only.
+
+	db 21	; Non-initial State, software only.
+
+	db 21	; Non-initial State, software only.
+
+	db 21	; Non-initial State, software only.
+
+	db 21	; Non-initial State, software only.
+
+	db 29	; Non-initial State, software only.
+
+	db 29	; Non-initial State, software only.
+
+	db 29	; Non-initial State, software only.
+
+	db 29	; Non-initial State, software only.
+
+	db 29	; Non-initial State, software only.
+
+	db 29	; Non-initial State, software only.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1103
+	dw still_Subsong0_RegisterBlock_191_Loop
+still_Subsong0DisarkPointerRegionEnd1103
+
+
+still_Subsong0_RegisterBlock_193
+	db 167	; Initial State : software and hardware. Retrig.
+	db 28, 1	; Software period.
+	db 18, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1104
+	dw still_Subsong0_RegisterBlock_541 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1104
+
+still_Subsong0_RegisterBlock_201
+	db 167	; Initial State : software and hardware. Retrig.
+	db 190, 0	; Software period.
+	db 12, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1105
+	dw still_Subsong0_RegisterBlock_291 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1105
+
+still_Subsong0_RegisterBlock_207
+	db 167	; Initial State : software and hardware. Retrig.
+	db 213, 0	; Software period.
+	db 13, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1106
+	dw still_Subsong0_RegisterBlock_292 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1106
+
+still_Subsong0_RegisterBlock_209
+	db 167	; Initial State : software and hardware. Retrig.
+	db 239, 0	; Software period.
+	db 15, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 30	; Hardware period, LSB.
+	db 222	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_209_Loop
+	db 55	; Non-initial State, software and hardware.
+	db 15	; Hardware period, LSB.
+	db 239	; Software period, LSB.
+	db 0	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 30	; Hardware period, LSB.
+	db 222	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 8	; Loop to index 6.
+still_Subsong0DisarkPointerRegionStart1107
+	dw still_Subsong0_RegisterBlock_209_Loop
+still_Subsong0DisarkPointerRegionEnd1107
+
+
+still_Subsong0_RegisterBlock_222
+	db 89	; Initial State: software only.
+	db 127, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1108
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1108
+
+still_Subsong0_RegisterBlock_254
+	db 131	; Initial State : software and hardware.
+	db 63, 0	; Software period.
+	db 8, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 253	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_254_Loop
+	db 105	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 253	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 127	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 8	; Loop to index 10.
+still_Subsong0DisarkPointerRegionStart1109
+	dw still_Subsong0_RegisterBlock_254_Loop
+still_Subsong0DisarkPointerRegionEnd1109
+
+
+still_Subsong0_RegisterBlock_257
+	db 131	; Initial State : software and hardware.
+	db 95, 0	; Software period.
+	db 12, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+
+	db 237	; Non-initial State, software only.
+	db 123	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 237	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_257_Loop
+	db 105	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 233	; Non-initial State, software only.
+	db 123	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 233	; Non-initial State, software only.
+	db 190	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 8	; Loop to index 10.
+still_Subsong0DisarkPointerRegionStart1110
+	dw still_Subsong0_RegisterBlock_257_Loop
+still_Subsong0DisarkPointerRegionEnd1110
+
+
+still_Subsong0_RegisterBlock_268
+	db 131	; Initial State : software and hardware.
+	db 84, 0	; Software period.
+	db 11, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 169	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 169	; New LSB for software period.
+
+	db 237	; Non-initial State, software only.
+	db 82	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 237	; Non-initial State, software only.
+	db 169	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+still_Subsong0_RegisterBlock_268_Loop
+	db 105	; Non-initial State, software only.
+	db 42	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 169	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 42	; New LSB for software period.
+
+	db 233	; Non-initial State, software only.
+	db 82	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 233	; Non-initial State, software only.
+	db 169	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 84	; New LSB for software period.
+
+	db 8	; Loop to index 10.
+still_Subsong0DisarkPointerRegionStart1111
+	dw still_Subsong0_RegisterBlock_268_Loop
+still_Subsong0DisarkPointerRegionEnd1111
+
+
+still_Subsong0_RegisterBlock_515
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 239, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 239	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 119	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1112
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1112
+
+still_Subsong0_RegisterBlock_538
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 56, 2	; Software period.
+
+	db 253	; Non-initial State, software only.
+	db 195	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 253	; Non-initial State, software only.
+	db 56	; New LSB for software period.
+	db 2	; New MSB for software period, maybe with noise.
+
+	db 121	; Non-initial State, software only.
+	db 204	; New LSB for software period.
+
+	db 249	; Non-initial State, software only.
+	db 134	; New LSB for software period.
+	db 3	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+	db 241	; Non-initial State, software only.
+	db 112	; New LSB for software period.
+	db 4	; New MSB for software period, maybe with noise.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1113
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1113
+
+still_Subsong0_RegisterBlock_1
+	db 89	; Initial State: software only.
+	db 142, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1114
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1114
+
+still_Subsong0_RegisterBlock_6
+	db 89	; Initial State: software only.
+	db 169, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1115
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1115
+
+still_Subsong0_RegisterBlock_11
+	db 89	; Initial State: software only.
+	db 190, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1116
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1116
+
+still_Subsong0_RegisterBlock_16
+	db 89	; Initial State: software only.
+	db 159, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1117
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1117
+
+still_Subsong0_RegisterBlock_17
+	db 89	; Initial State: software only.
+	db 84, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1118
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1118
+
+still_Subsong0_RegisterBlock_29
+	db 89	; Initial State: software only.
+	db 213, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1119
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1119
+
+still_Subsong0_RegisterBlock_35
+	db 89	; Initial State: software only.
+	db 127, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1120
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1120
+
+still_Subsong0_RegisterBlock_40
+	db 89	; Initial State: software only.
+	db 106, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1121
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1121
+
+still_Subsong0_RegisterBlock_46
+	db 89	; Initial State: software only.
+	db 239, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1122
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1122
+
+still_Subsong0_RegisterBlock_128
+	db 89	; Initial State: software only.
+	db 179, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1123
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1123
+
+still_Subsong0_RegisterBlock_213
+	db 89	; Initial State: software only.
+	db 119, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1124
+	dw still_Subsong0_RegisterBlock_191 + 3	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1124
+
+still_Subsong0_RegisterBlock_270
+	db 131	; Initial State : software and hardware.
+	db 106, 0	; Software period.
+	db 13, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 237	; Non-initial State, software only.
+	db 170	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 237	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+	db 233	; Non-initial State, software only.
+	db 170	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 233	; Non-initial State, software only.
+	db 213	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 106	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+
+still_Subsong0_RegisterBlock_505
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 53, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 27	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 27	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 27	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 27	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 27	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 53	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 27	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1125
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1125
+
+still_Subsong0_RegisterBlock_506
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 63, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 63	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 32	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1126
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1126
+
+still_Subsong0_RegisterBlock_507
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 60, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 60	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 30	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1127
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1127
+
+still_Subsong0_RegisterBlock_508
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 71, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 71	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 36	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1128
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1128
+
+still_Subsong0_RegisterBlock_512
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 89, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 89	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 45	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1129
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1129
+
+still_Subsong0_RegisterBlock_513
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 80, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 80	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 40	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1130
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1130
+
+still_Subsong0_RegisterBlock_514
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 95, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 89	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 109	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 95	; New LSB for software period.
+
+	db 85	; Non-initial State, software only.
+	db 47	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1131
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1131
+
+still_Subsong0_RegisterBlock_542
+	db 124	; Initial State: no software, no hardware.
+	db 18	; Noise.
+
+	db 244	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 236	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 228	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 220	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 212	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 204	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 196	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 188	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 180	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 172	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 164	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 156	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 148	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 140	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1132
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1132
+
+still_Subsong0_RegisterBlock_0
+	db 0	; Initial State: no software, no hardware.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1133
+	dw still_Subsong0_RegisterBlock_539 + 1	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1133
+
+still_Subsong0_RegisterBlock_69
+	db 57	; Initial State: software only.
+	db 84, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1134
+	dw still_Subsong0_RegisterBlock_191 + 15	; Optimization: goto common Block at index 13.
+still_Subsong0DisarkPointerRegionEnd1134
+
+still_Subsong0_RegisterBlock_122
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 167, 6	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 83	; New LSB for software period.
+	db 3	; New MSB for software period, maybe with noise.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1135
+	dw still_Subsong0_RegisterBlock_545 + 9	; Optimization: goto common Block at index 4.
+still_Subsong0DisarkPointerRegionEnd1135
+
+still_Subsong0_RegisterBlock_197
+	db 167	; Initial State : software and hardware. Retrig.
+	db 63, 1	; Software period.
+	db 20, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 40	; Hardware period, LSB.
+	db 126	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 20	; Hardware period, LSB.
+	db 63	; Software period, LSB.
+	db 1	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 55	; Non-initial State, software and hardware.
+	db 40	; Hardware period, LSB.
+	db 126	; Software period, LSB.
+	db 2	; Software period, MSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+
+still_Subsong0_RegisterBlock_205
+	db 167	; Initial State : software and hardware. Retrig.
+	db 213, 0	; Software period.
+	db 13, 0	; Hardware period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1136
+	dw still_Subsong0_RegisterBlock_292 + 5	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1136
+
+still_Subsong0_RegisterBlock_282
+	db 131	; Initial State : software and hardware.
+	db 67, 0	; Software period.
+	db 8, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 57	; Non-initial State, software only.
+
+	db 121	; Non-initial State, software only.
+	db 134	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 67	; New LSB for software period.
+
+	db 49	; Non-initial State, software only.
+
+	db 113	; Non-initial State, software only.
+	db 134	; New LSB for software period.
+
+	db 237	; Non-initial State, software only.
+	db 12	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 237	; Non-initial State, software only.
+	db 134	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 105	; Non-initial State, software only.
+	db 67	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 34	; New LSB for software period.
+
+	db 105	; Non-initial State, software only.
+	db 67	; New LSB for software period.
+
+
+still_Subsong0_RegisterBlock_460
+	db 124	; Initial State: no software, no hardware.
+	db 18	; Noise.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1137
+	dw still_Subsong0_RegisterBlock_542 + 2	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1137
+
+still_Subsong0_RegisterBlock_461
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 56, 2	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1138
+	dw still_Subsong0_RegisterBlock_538 + 4	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1138
+
+still_Subsong0_RegisterBlock_467
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 246, 2	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 123	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1139
+	dw still_Subsong0_RegisterBlock_545 + 9	; Optimization: goto common Block at index 4.
+still_Subsong0DisarkPointerRegionEnd1139
+
+still_Subsong0_RegisterBlock_510
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 80, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1140
+	dw still_Subsong0_RegisterBlock_513 + 4	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1140
+
+still_Subsong0_RegisterBlock_532
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 112, 4	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1141
+	dw still_Subsong0_RegisterBlock_545 + 4	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1141
+
+still_Subsong0_RegisterBlock_546
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 225, 8	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 112	; New LSB for software period.
+	db 4	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+	db 49	; Non-initial State, software only.
+
+	db 45	; Non-initial State, software only.
+
+	db 105	; Non-initial State, software only.
+	db 113	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1142
+	dw still_Subsong0_RegisterBlock_545 + 13	; Optimization: goto common Block at index 8.
+still_Subsong0DisarkPointerRegionEnd1142
+
+still_Subsong0_RegisterBlock_550
+	db 131	; Initial State : software and hardware.
+	db 112, 4	; Software period.
+	db 1, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_550_Loop
+	db 19	; Non-initial State, software and hardware.
+	db 113	; Software period, LSB.
+
+	db 8	; Loop to index 7.
+still_Subsong0DisarkPointerRegionStart1143
+	dw still_Subsong0_RegisterBlock_550_Loop
+still_Subsong0DisarkPointerRegionEnd1143
+
+
+still_Subsong0_RegisterBlock_552
+	db 131	; Initial State : software and hardware.
+	db 115, 4	; Software period.
+	db 1, 0	; Hardware period.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+still_Subsong0_RegisterBlock_552_Loop
+	db 19	; Non-initial State, software and hardware.
+	db 116	; Software period, LSB.
+
+	db 8	; Loop to index 7.
+still_Subsong0DisarkPointerRegionStart1144
+	dw still_Subsong0_RegisterBlock_552_Loop
+still_Subsong0DisarkPointerRegionEnd1144
+
+
+still_Subsong0_RegisterBlock_92
+	db 41	; Initial State: software only.
+	db 106, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1145
+	dw still_Subsong0_RegisterBlock_191 + 8	; Optimization: goto common Block at index 6.
+still_Subsong0DisarkPointerRegionEnd1145
+
+still_Subsong0_RegisterBlock_120
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 119, 7	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 188	; New LSB for software period.
+	db 3	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+	db 49	; Non-initial State, software only.
+
+
+still_Subsong0_RegisterBlock_164
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 188, 3	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 222	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+	db 49	; Non-initial State, software only.
+
+
+still_Subsong0_RegisterBlock_212
+	db 41	; Initial State: software only.
+	db 123, 1	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1146
+	dw still_Subsong0_RegisterBlock_545 + 18	; Optimization: goto common Block at index 13.
+still_Subsong0DisarkPointerRegionEnd1146
+
+still_Subsong0_RegisterBlock_226
+	db 81	; Initial State: software only.
+	db 40, 0	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1147
+	dw still_Subsong0_RegisterBlock_224 + 30	; Optimization: goto common Block at index 14.
+still_Subsong0DisarkPointerRegionEnd1147
+
+still_Subsong0_RegisterBlock_456
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 112, 4	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1148
+	dw still_Subsong0_RegisterBlock_545 + 4	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1148
+
+still_Subsong0_RegisterBlock_457
+	db 124	; Initial State: no software, no hardware.
+	db 1	; Noise.
+
+	db 236	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 220	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 204	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 188	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+	db 172	; Non-initial State, no software no hardware.
+	db 1	; Noise.
+
+
+still_Subsong0_RegisterBlock_458
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 56, 2	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 28	; New LSB for software period.
+	db 1	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+	db 49	; Non-initial State, software only.
+
+
+still_Subsong0_RegisterBlock_468
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 250, 1	; Software period.
+
+	db 61	; Non-initial State, software only.
+
+	db 57	; Non-initial State, software only.
+
+	db 249	; Non-initial State, software only.
+	db 253	; New LSB for software period.
+	db 0	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+	db 49	; Non-initial State, software only.
+
+
+still_Subsong0_RegisterBlock_474
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 246, 2	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 90	; New LSB for software period.
+
+	db 125	; Non-initial State, software only.
+	db 246	; New LSB for software period.
+
+	db 249	; Non-initial State, software only.
+	db 188	; New LSB for software period.
+	db 3	; New MSB for software period, maybe with noise.
+
+	db 249	; Non-initial State, software only.
+	db 180	; New LSB for software period.
+	db 4	; New MSB for software period, maybe with noise.
+
+	db 53	; Non-initial State, software only.
+
+
+still_Subsong0_RegisterBlock_518
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 201, 0	; Software period.
+
+	db 125	; Non-initial State, software only.
+	db 100	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 201	; New LSB for software period.
+
+	db 97	; Non-initial State, software only.
+	db 100	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 201	; New LSB for software period.
+
+	db 117	; Non-initial State, software only.
+	db 100	; New LSB for software period.
+
+
+still_Subsong0_RegisterBlock_521
+	db 125	; Initial State: software only.
+	db 1	; Noise.
+	db 225, 8	; Software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1149
+	dw still_Subsong0_RegisterBlock_546 + 4	; Optimization: goto common Block at index 1.
+still_Subsong0DisarkPointerRegionEnd1149
+
+still_Subsong0_RegisterBlock_547
+	db 41	; Initial State: software only.
+	db 113, 4	; Software period.
+
+	db 81	; Non-initial State, software only.
+	db 114	; New LSB for software period.
+
+	db 8
+still_Subsong0DisarkPointerRegionStart1150
+	dw still_Subsong0_RegisterBlock_545 + 19	; Optimization: goto common Block at index 14.
+still_Subsong0DisarkPointerRegionEnd1150
+
+still_Subsong0_RegisterBlock_551
+	db 131	; Initial State : software and hardware.
+	db 113, 4	; Software period.
+	db 1, 0	; Hardware period.
+
+	db 19	; Non-initial State, software and hardware.
+	db 114	; Software period, LSB.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 3	; Non-initial State, software and hardware.
+
+	db 19	; Non-initial State, software and hardware.
+	db 115	; Software period, LSB.
+
+
+still_Subsong0DisarkByteRegionEnd1078
+
+Player:
+        ;       AKY music player - V1.0.
+;       By Julien Névo a.k.a. Targhan/Arkos.
+;       CPC PSG sending optimization trick by Madram/Overlanders.
+;       December 2016.
+
+;       This compiles with RASM. Please check the compatibility page on Arkos Tracker 2 website, there is a Source Converter (Disark) for ANY assembler!
+
+;       The player uses the stack for optimizations. Make sure the interruptions are disabled before it is called.
+;       The stack pointer is saved at the beginning and restored at the end.
+
+;       Multi-PSG
+;       ----------------------
+;       This player only target 1 PSG, as it allows some nice optimizations.
+;       For Multi-PSG hardware, such as PlayCity (CPC), TurboSound (Spectrum) or SpecNext, please check the PlayerAkyMultiPsg.asm!
+
+;       Hardware target
+;       ----------------------
+;       This code can target Amstrad CPC, MSX, Spectrum and Pentagon. By default, it targets Amstrad CPC.
+;       Simply use one of the follow line (BEFORE this player):
+;       PLY_AKY_HARDWARE_CPC = 1
+;       PLY_AKY_HARDWARE_MSX = 1
+;       PLY_AKY_HARDWARE_SPECTRUM = 1
+;       PLY_AKY_HARDWARE_PENTAGON = 1
+;       Note that the PRESENCE of this variable is tested, NOT its value.
+;
+;       ROM
+;       ----------------------
+;       To use a ROM player (no automodification, use of a small buffer to put in RAM):
+;       PLY_AKY_ROM = 1
+;       PLY_AKY_ROM_Buffer = #4000 (or wherever). The buffer is 29 bytes long (PLY_AKY_ROM_BufferSize).
+;       This makes the player a bit slower and very slightly bigger.
+;
+;       Optimizations
+;       ----------------------
+;       - Use the Player Configuration of Arkos Tracker 2 to generate a configuration file to be included at the beginning of this player.
+;         It will disable useless features according to your songs! Check the manual for more details, or more simply the testers.
+;       - SIZE: The JP hooks at the beginning can be removed if you include this code in yours directly (see the PLY_AKY_UseHooks flag below).
+;       - SIZE: If you don''t play a song twice, all the code in PLY_AKY_Init can be removed, except the first lines that skip the header.
+;       - SIZE: The header is only needed for players that want to load any song. Most of the time, you don''t need it. Erase both the init code and the header bytes in the song.
+;       - CPU:  We *could* save 3 NOPS by removing the first "jp PLY_AKY_ReadRegisterBlock" and stucking the whole code instead. But it would make the whole really ugly.
+;
+;       -------------------------------------------------------
+
+PLY_AKY_Start:
+
+        ;A nice trick to manage the offset using the same instructions, according to the player (ROM or not).
+        IFDEF PLY_AKY_ROM
+PLY_AKY_Offset1b: equ 0
+        ELSE
+PLY_AKY_Offset1b: equ 1
+        ENDIF
+
+        IFNDEF PLY_AKY_ROM
+PLY_AKY_OPCODE_OR_A: equ #b7                        ;Opcode for "or a".
+PLY_AKY_OPCODE_SCF: equ #37                         ;Opcode for "scf".
+        ELSE
+        ;Another trick for the ROM player. The original opcodes are converted to number, which will be multiplied by 2, provoking a carry or not.
+PLY_AKY_OPCODE_OR_A: equ 0                          ;0 * 2 = 0, no carry.
+PLY_AKY_OPCODE_SCF: equ #ff                         ;255 * 2 = carry.
+        ENDIF
+
+        ;Only 3 channels for this player.        
+        PLY_AKY_ChannelCount = 3
+        
+        ;Checks the hardware. Only one must be selected.
+PLY_AKY_HardwareCounter = 0
+        IFDEF PLY_AKY_HARDWARE_CPC
+                PLY_AKY_HardwareCounter = PLY_AKY_HardwareCounter + 1
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                PLY_AKY_HardwareCounter = PLY_AKY_HardwareCounter + 1
+                PLY_AKY_HARDWARE_SPECTRUM_OR_MSX = 1
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM
+                PLY_AKY_HardwareCounter = PLY_AKY_HardwareCounter + 1
+                PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON = 1
+                PLY_AKY_HARDWARE_SPECTRUM_OR_MSX = 1
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_PENTAGON
+                PLY_AKY_HardwareCounter = PLY_AKY_HardwareCounter + 1
+                PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON = 1
+        ENDIF
+        IF PLY_AKY_HARDWARECounter > 1
+                FAIL ''Only one hardware must be selected!''
+        ENDIF
+        ;By default, selects the Amstrad CPC.
+        IF PLY_AKY_HARDWARECounter == 0
+                PLY_AKY_HARDWARE_CPC = 1
+        ENDIF
+
+
+PLY_AKY_UseHooks: equ 1                             ;Use hooks for external calls? 0 if the Init/Play methods are directly called, will save a few bytes.
+
+        ;Is there a loaded Player Configuration source? If no, use a default configuration.
+        IFNDEF PLY_CFG_ConfigurationIsPresent
+                PLY_CFG_UseHardwareSounds = 1
+                PLY_CFG_UseRetrig = 1
+                PLY_CFG_NoSoftNoHard = 1
+                PLY_CFG_NoSoftNoHard_Noise = 1
+                PLY_CFG_SoftOnly = 1
+                PLY_CFG_SoftOnly_Noise = 1
+                PLY_CFG_SoftToHard = 1
+                PLY_CFG_SoftToHard_Noise = 1
+                PLY_CFG_SoftToHard_Retrig = 1
+                PLY_CFG_HardOnly = 1
+                PLY_CFG_HardOnly_Noise = 1
+                PLY_CFG_HardOnly_Retrig = 1
+                PLY_CFG_SoftAndHard = 1
+                PLY_CFG_SoftAndHard_Noise = 1
+                PLY_CFG_SoftAndHard_Retrig = 1
+        ENDIF
+        
+        
+        ;Agglomerates the hardware sound configuration flags, because they are treated the same in this player.
+        ;-------------------------------------------------------
+        IFDEF PLY_CFG_SoftToHard
+                PLY_AKY_USE_SoftAndHard_Agglomerated = 1
+        ENDIF
+        IFDEF PLY_CFG_SoftAndHard
+                PLY_AKY_USE_SoftAndHard_Agglomerated = 1
+        ENDIF
+        IFDEF PLY_CFG_HardToSoft
+                PLY_AKY_USE_SoftAndHard_Agglomerated = 1
+        ENDIF
+        
+        IFDEF PLY_CFG_SoftToHard_Noise
+                PLY_AKY_USE_SoftAndHard_Noise_Agglomerated = 1
+        ENDIF
+        IFDEF PLY_CFG_SoftAndHard_Noise
+                PLY_AKY_USE_SoftAndHard_Noise_Agglomerated = 1
+        ENDIF
+        IFDEF PLY_CFG_HardToSoft_Noise
+                PLY_AKY_USE_SoftAndHard_Noise_Agglomerated = 1
+        ENDIF
+        
+        ;Any noise?
+        IFDEF PLY_AKY_USE_SoftAndHard_Noise_Agglomerated
+                PLY_AKY_USE_Noise = 1
+        ENDIF
+        IFDEF PLY_CFG_NoSoftNoHard_Noise
+                PLY_AKY_USE_Noise = 1
+        ENDIF
+        IFDEF PLY_CFG_SoftOnly_Noise
+                PLY_AKY_USE_Noise = 1
+        ENDIF
+        
+        ;Disark macro: Word region Start.
+        disarkCounter = 0
+        IFNDEF dkws
+        MACRO dkws
+PLY_AKY_DisarkWordRegionStart_{disarkCounter}
+        ENDM
+        ENDIF
+        ;Disark macro: Word region End.
+        IFNDEF dkwe
+        MACRO dkwe
+PLY_AKY_DisarkWordRegionEnd_{disarkCounter}:
+        disarkCounter = disarkCounter + 1
+        ENDM
+        ENDIF
+        
+        ;Disark macro: Pointer region Start.
+        disarkCounter = 0
+        IFNDEF dkps
+        MACRO dkps
+PLY_AKY_DisarkPointerRegionStart_{disarkCounter}
+        ENDM
+        ENDIF
+        ;Disark macro: Pointer region End.
+        IFNDEF dkpe
+        MACRO dkpe
+PLY_AKY_DisarkPointerRegionEnd_{disarkCounter}:
+        disarkCounter = disarkCounter + 1
+        ENDM
+        ENDIF
+        
+        ;Disark macro: Byte region Start.
+        disarkCounter = 0
+        IFNDEF dkbs
+        MACRO dkbs
+PLY_AKY_DisarkByteRegionStart_{disarkCounter}
+        ENDM
+        ENDIF
+        ;Disark macro: Byte region End.
+        IFNDEF dkbe
+        MACRO dkbe
+PLY_AKY_DisarkByteRegionEnd_{disarkCounter}:
+        disarkCounter = disarkCounter + 1
+        ENDM
+        ENDIF
+
+        ;Disark macro: Force "No Reference Area" for 3 bytes (ld hl,xxxx).
+        IFNDEF dknr3
+        MACRO dknr3
+PLY_AKY_DisarkForceNonReferenceDuring3_{disarkCounter}:
+        disarkCounter = disarkCounter + 1
+        ENDM
+        ENDIF
+        
+        ;-------------------------------------------------------
+
+        ;Hooks for external calls. Can be removed if not needed.
+        if PLY_AKY_UseHooks
+                assert PLY_AKY_Start == $               ;Makes sure no byte has been added before the hooks.
+                jp PLY_AKY_Init             ;Player + 0.
+                jp PLY_AKY_Play             ;Player + 3.
+        endif
+
+;       Initializes the player.
+;       HL = music address.
+PLY_AKY_InitDisarkGenerateExternalLabel:
+PLY_AKY_Init:
+        ;Skips the header.
+        inc hl                          ;Skips the format version.
+        ld a,(hl)                       ;Channel count.
+        inc hl
+dknr3:  ld de,4
+PLY_AKY_Init_SkipHeaderLoop:                ;There is always at least one PSG to skip.
+        add hl,de
+        sub 3                           ;A PSG is three channels.
+        jr z,PLY_AKY_Init_SkipHeaderEnd
+        jr nc,PLY_AKY_Init_SkipHeaderLoop   ;Security in case of the PSG channel is not a multiple of 3.
+PLY_AKY_Init_SkipHeaderEnd:
+        ld (PLY_AKY_PtLinker + PLY_AKY_Offset1b),hl        ;HL now points on the Linker.
+
+        ld a,PLY_AKY_OPCODE_OR_A
+        REPEAT PLY_AKY_ChannelCount, ChannelNumber
+                ld (PLY_AKY_Channel{ChannelNumber}_RegisterBlockLineState_Opcode),a
+        REND
+dknr3:  ld hl,1
+        ld (PLY_AKY_PatternFrameCounter + PLY_AKY_Offset1b),hl
+
+        ret
+
+;       Plays the music. It must have been initialized before.
+;       The interruption SHOULD be disabled (DI), as the stack is heavily used.
+PLY_AKY_PlayDisarkGenerateExternalLabel:
+PLY_AKY_Play:
+        IFNDEF PLY_AKY_ROM
+        ld (PLY_AKY_Exit + 1),sp
+        ELSE
+        ld (PLY_AKY_SaveSp),sp
+        ENDIF
+
+
+;Linker.
+;----------------------------------------
+        IFNDEF PLY_AKY_ROM
+dknr3:
+PLY_AKY_PatternFrameCounter: ld hl,1                ;How many frames left before reading the next Pattern.
+        ELSE
+        ld hl,(PLY_AKY_PatternFrameCounter)
+        ENDIF
+        dec hl
+        ld a,l
+        or h
+        jr z,PLY_AKY_PatternFrameCounter_Over
+        ld (PLY_AKY_PatternFrameCounter + PLY_AKY_Offset1b),hl
+        ;The pattern is not over.
+        IFNDEF PLY_AKY_ROM
+        jr PLY_AKY_Channel1_WaitBeforeNextRegisterBlock
+        ELSE
+        jr PLY_AKY_Channel1_WaitBeforeNextRegisterBlock_Start
+        ENDIF
+
+PLY_AKY_PatternFrameCounter_Over:
+
+;The pattern is over. Reads the next one.
+        IFNDEF PLY_AKY_ROM
+dknr3:
+PLY_AKY_PtLinker: ld sp,0                                   ;Points on the Pattern of the linker.
+        ELSE
+        ld sp,(PLY_AKY_PtLinker)                            ;Points on the Pattern of the linker.
+        ENDIF
+        pop hl                                          ;Gets the duration of the Pattern, or 0 if end of the song.
+        ld a,l
+        or h
+        jr nz,PLY_AKY_LinkerNotEndSong
+        ;End of the song. Where to loop?
+        pop hl
+        ;We directly point on the frame counter of the pattern to loop to.
+        ld sp,hl
+        ;Gets the duration again. No need to check the end of the song,
+        ;we know it contains at least one pattern.
+        pop hl
+PLY_AKY_LinkerNotEndSong:
+        ld (PLY_AKY_PatternFrameCounter + PLY_AKY_Offset1b),hl
+
+        REPEAT PLY_AKY_ChannelCount, ChannelNumber
+                pop hl
+                ld (PLY_AKY_Channel{ChannelNumber}_PtTrack + PLY_AKY_Offset1b),hl
+        REND
+        ld (PLY_AKY_PtLinker + PLY_AKY_Offset1b),sp
+
+        ;Resets the RegisterBlocks of the channel >1. The first one is skipped so there is no need to do so.
+        ld a,1
+        REPEAT PLY_AKY_ChannelCount - 1, ChannelNumber
+                ld (PLY_AKY_Channel{ChannelNumber+1}_WaitBeforeNextRegisterBlock + PLY_AKY_Offset1b),a
+        REND
+        jr PLY_AKY_Channel1_WaitBeforeNextRegisterBlock_Over
+
+;Reading the Tracks.
+;----------------------------------------
+
+        REPEAT PLY_AKY_ChannelCount, ChannelNumber                        ; ------------------------------------ REPEAT
+
+        IFNDEF PLY_AKY_ROM
+PLY_AKY_Channel{ChannelNumber}_WaitBeforeNextRegisterBlock: ld a,1        ;Frames to wait before reading the next RegisterBlock. 0 = finished.
+        ELSE
+PLY_AKY_Channel{ChannelNumber}_WaitBeforeNextRegisterBlock_Start:
+        ld a,(PLY_AKY_Channel{ChannelNumber}_WaitBeforeNextRegisterBlock)
+        ENDIF
+        dec a
+        jr nz,PLY_AKY_Channel{ChannelNumber}_RegisterBlock_Process
+PLY_AKY_Channel{ChannelNumber}_WaitBeforeNextRegisterBlock_Over:
+        ;This RegisterBlock is finished. Reads the next one from the Track.
+        ;Obviously, starts at the initial state.
+        ld a,PLY_AKY_OPCODE_OR_A
+        ld (PLY_AKY_Channel{ChannelNumber}_RegisterBlockLineState_Opcode),a
+        IFNDEF PLY_AKY_ROM
+dknr3:
+PLY_AKY_Channel{ChannelNumber}_PtTrack: ld sp,0                   ;Points on the Track.
+        ELSE
+        ld sp,(PLY_AKY_Channel{ChannelNumber}_PtTrack)
+        ENDIF
+        dec sp                                  ;Only one byte is read. Compensate.
+        pop af                                  ;Gets the duration.
+        pop hl                                  ;Reads the RegisterBlock address.
+
+        ld (PLY_AKY_Channel{ChannelNumber}_PtTrack + PLY_AKY_Offset1b),sp
+        ld (PLY_AKY_Channel{ChannelNumber}_PtRegisterBlock + PLY_AKY_Offset1b),hl
+
+        ;A is the duration of the block.
+PLY_AKY_Channel{ChannelNumber}_RegisterBlock_Process:
+        ;Processes the RegisterBlock, whether it is the current one or a new one.
+        ld (PLY_AKY_Channel{ChannelNumber}_WaitBeforeNextRegisterBlock + PLY_AKY_Offset1b),a
+        
+        REND                                                            ; ------------------------------------ REPEAT END
+
+
+
+
+
+
+
+
+
+
+
+
+
+;Reading the RegisterBlock.
+;----------------------------------------
+        ;Auxiliary registers are for the PSG access.
+dknr3:          ld hl,0 * 256 + 8                       ;H = first frequency register, L = first volume register.
+        IFDEF PLY_AKY_HARDWARE_CPC
+dknr3:          ld de,#f4f6                             ;PSG ports.
+dknr3:          ld bc,#f690                             ;#90 used for both #80 for the PSG, and volume 16!
+
+                ld a,#c0                                ;Used for PSG.
+                out (c),a                               ;f6c0. Madram''s trick requires to start with this. out (c),b works, but will activate K7''s relay! Not clean.
+        ex af,af''
+        ENDIF
+
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld c,16                                 ;Hardware volume.
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+dknr3:          ld de,#bfff                             ;PSG ports. E is also used for Volume = Hardware (bit 5 to 1).
+dknr3:          ld bc,#fffd
+        ENDIF
+        exx
+
+        ;In B, R7 with default values: fully sound-open but noise-close.
+        ;R7 has been shift twice to the left, it will be shifted back as the channels are treated.
+dknr3:  ld bc,%11100000 * 256 + 255                     ;C is 255 to prevent the following LDIs to decrease B.
+
+        ld sp,PLY_AKY_RetTable_ReadRegisterBlock
+
+        ;This macro takes care of reading the RegisterBlock for one channel.        
+        MACRO PLY_AKY_ReadRegisterBlockMacro, ChannelNumber          ;-------------------------------------------------
+
+        IFNDEF PLY_AKY_ROM
+dknr3:
+PLY_AKY_Channel{ChannelNumber}_PtRegisterBlock: ld hl,0                   ;Points on the data of the RegisterBlock to read.
+        ELSE
+        ld hl,(PLY_AKY_Channel{ChannelNumber}_PtRegisterBlock)
+        ENDIF
+
+        IFNDEF PLY_AKY_ROM
+PLY_AKY_Channel{ChannelNumber}_RegisterBlockLineState_Opcode: or a        ;"or a" if initial state, "scf" (#37) if non-initial state.
+        ELSE
+        ld a,(PLY_AKY_Channel{ChannelNumber}_RegisterBlockLineState_Opcode)
+        add a,a                                             ;Carry is set according to the opcode.
+        ENDIF
+        jp PLY_AKY_ReadRegisterBlock
+PLY_AKY_Channel{ChannelNumber}_RegisterBlock_Return:
+        ld a,PLY_AKY_OPCODE_SCF
+        ld (PLY_AKY_Channel{ChannelNumber}_RegisterBlockLineState_Opcode),a
+        ld (PLY_AKY_Channel{ChannelNumber}_PtRegisterBlock + PLY_AKY_Offset1b),hl        ;This is new pointer on the RegisterBlock.
+        
+        ENDM                                                    ;--------------------------------------------------
+
+        ;Channel 1
+        PLY_AKY_ReadRegisterBlockMacro 1
+
+        ;Channel 2
+        ;Shifts the R7 for the next channels.
+        srl b           ;Not RR, because we have to make sure the b6 is 0, else no more keyboard (on CPC)!
+                        ;Also, on MSX, bit 6 must be 0.
+
+        PLY_AKY_ReadRegisterBlockMacro 2
+        
+        ;Channel 3
+        ;Shifts the R7 for the next channels.
+        IFDEF PLY_AKY_HARDWARE_MSX
+                scf             ;On MSX, bit 7 must be 1.
+                rr b
+        ELSE
+                rr b            ;Safe to use RR, we don''t care if b7 of R7 is 0 or 1.
+        ENDIF
+
+        PLY_AKY_ReadRegisterBlockMacro 3
+        
+        ;Register 7 to A.
+        ld a,b
+
+;Almost all the channel specific registers have been sent. Now sends the remaining registers (6, 7, 11, 12, 13).
+
+;Register 7. Note that managing register 7 before 6/11/12 is done on purpose (the 6/11/12 registers are filled using OUTI).
+        exx
+        IFDEF PLY_AKY_HARDWARE_CPC
+                inc h           ;Was 6, so now 7!
+
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+
+;Register 6
+                        IFDEF PLY_AKY_USE_Noise         ;CONFIG SPECIFIC
+                dec h
+
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+
+                ld hl,PLY_AKY_PsgRegister6
+                dec b           ; -1, not -2 because of OUTI does -1 before doing the out.
+                outi            ;f400 + value
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+                        ELSE
+                        ;No noise. Still, makes HL points on the data after the noise.
+                        ld hl,PLY_AKY_PsgRegister6 + 1
+                        ENDIF ;PLY_AKY_USE_Noise
+
+                        IFDEF PLY_CFG_UseHardwareSounds         ;CONFIG SPECIFIC
+;Register 11
+                ld a,11         ;Next register
+
+                ld b,d
+                out (c),a       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                dec b
+                outi            ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+
+
+;Register 12
+                inc a           ;Next register
+
+                ld b,d
+                out (c),a       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                dec b
+                outi            ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+                        ENDIF ;PLY_CFG_UseHardwareSounds
+                
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                inc h           ;Was 6, so now 7!
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value
+                ld b,e
+        
+                ;Register 6.
+                        IFDEF PLY_AKY_USE_Noise         ;CONFIG SPECIFIC
+                dec h
+                out (c),h       ;#fffd + register.
+                ld b,d
+                ld a,(PLY_AKY_PsgRegister6)     ;COULD be optimized, but I didn''t want to change the code structure from one platform to another one.
+                out (c),a       ;#bffd + value
+                ld b,e
+                        ENDIF ;PLY_AKY_USE_Noise
+
+                        IFDEF PLY_CFG_UseHardwareSounds         ;CONFIG SPECIFIC
+
+                ;Register 11.
+                ld h,11
+                out (c),h       ;#fffd + register.
+                ld b,d
+                ld a,(PLY_AKY_PsgRegister11)
+                out (c),a       ;#bffd + value
+                ld b,e
+                
+                ;Register 12.
+                inc h
+                out (c),h       ;#fffd + register.
+                ld b,d
+                ld a,(PLY_AKY_PsgRegister12)
+                out (c),a       ;#bffd + value
+                ld b,e
+                        ENDIF ;PLY_CFG_UseHardwareSounds
+                
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a          ;Preserves R7.
+                ld a,7
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        
+                        IFDEF PLY_AKY_USE_Noise         ;CONFIG SPECIFIC
+                ld a,6
+                out (#a0),a     ;Register.
+                ld a,(PLY_AKY_PsgRegister6)     ;COULD be optimized, but I didn''t want to change the code structure from one platform to another one.
+                out (#a1),a     ;Value.
+                        ENDIF ;PLY_AKY_USE_Noise
+                
+                        IFDEF PLY_CFG_UseHardwareSounds         ;CONFIG SPECIFIC
+                ld a,11
+                out (#a0),a     ;Register.
+                ld a,(PLY_AKY_PsgRegister11)
+                out (#a1),a     ;Value.
+                
+                ld a,12
+                out (#a0),a     ;Register.
+                ld a,(PLY_AKY_PsgRegister12)
+                out (#a1),a     ;Value.
+                        ENDIF ;PLY_CFG_UseHardwareSounds
+        ENDIF
+
+;Register 13
+                        IFDEF PLY_CFG_UseHardwareSounds         ;CONFIG SPECIFIC
+PLY_AKY_PsgRegister13_Code
+        IFDEF PLY_AKY_ROM
+                ld a,(PLY_AKY_PsgRegister13_Retrig)     ;ROM: needs to keep retrig in a register to compare A with it later.
+                ld b,a
+        ENDIF
+
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld a,(hl)
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                ld a,(PLY_AKY_PsgRegister13)
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld a,(PLY_AKY_PsgRegister13)
+        ENDIF
+        
+        IFNDEF PLY_AKY_ROM
+PLY_AKY_PsgRegister13_Retrig: cp 255                         ;If IsRetrig?, force the R13 to be triggered.
+        ELSE
+                cp b
+        ENDIF
+                jr z,PLY_AKY_PsgRegister13_End
+                ld (PLY_AKY_PsgRegister13_Retrig + PLY_AKY_Offset1b),a
+
+
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                ld l,13
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ;ex af,af''
+                
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                IFDEF PLY_AKY_ROM
+                        ld b,e  ;B has been modified if ROM.
+                ENDIF
+                ld l,13
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value
+                
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,13
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.           
+        ENDIF
+PLY_AKY_PsgRegister13_End:
+
+                        ENDIF ;PLY_CFG_UseHardwareSounds
+
+        IFNDEF PLY_AKY_ROM
+dknr3:
+PLY_AKY_Exit: ld sp,0
+        ELSE
+        ld sp,(PLY_AKY_SaveSp)
+        ENDIF
+        ret
+
+
+
+
+
+
+
+
+;Generic code interpreting the RegisterBlock
+;IN:    HL = First byte.
+;       Carry = 0 = initial state, 1 = non-initial state.
+;----------------------------------------------------------------
+
+PLY_AKY_ReadRegisterBlock:
+        ;Gets the first byte of the line. What type? Jump to the matching code.
+        ld a,(hl)
+        inc hl
+        jp c,PLY_AKY_RRB_NonInitialState
+        ;Initial state.
+        rra
+        jr c,PLY_AKY_RRB_IS_SoftwareOnlyOrSoftwareAndHardware
+        rra
+                        IFDEF PLY_CFG_HardOnly  ;CONFIG SPECIFIC
+        jr c,PLY_AKY_RRB_IS_HardwareOnly
+                        ENDIF ;PLY_CFG_HardOnly
+        ;jr PLY_AKY_RRB_IS_NoSoftwareNoHardware
+
+;Generic code interpreting the RegisterBlock - Initial state.
+;----------------------------------------------------------------
+;IN:    HL = Points after the first byte.
+;       A = First byte, twice shifted to the right (type removed).
+;       B = Register 7. All sounds are open (0) by default, all noises closed (1). The code must put ONLY bit 2 and 5 for sound and noise respectively. NOT any other bits!
+;       C = May be used as a temp. BUT must NOT be 0, as ldi will decrease it, we do NOT want B to be decreased!!
+;       DE = free to use.
+;       IX = free to use (not used!).
+;       IY = free to use (not used!).
+
+;       A'' = free to use (not used).
+;       DE'' = f4f6
+;       BC'' = f680
+;       L'' = Volume register.
+;       H'' = LSB frequency register.
+
+;OUT:   HL MUST point after the structure.
+;       B = updated (ONLY bit 2 and 5).
+;       L'' = Volume register increased of 1 (*** IMPORTANT! The code MUST increase it, even if not using it! ***)
+;       H'' = LSB frequency register, increased of 2 (see above).
+;       DE'' = unmodified (f4f6)
+;       BC'' = unmodified (f680)
+
+PLY_AKY_RRB_NoiseChannelBit: equ 5          ;Bit to modify to set/reset the noise channel.
+PLY_AKY_RRB_SoundChannelBit: equ 2          ;Bit to modify to set/reset the sound channel.
+
+                        IFDEF PLY_CFG_NoSoftNoHard        ;CONFIG SPECIFIC
+PLY_AKY_RRB_IS_NoSoftwareNoHardware:
+        ;No software no hardware.
+        rra                     ;Noise?
+                        IFDEF PLY_CFG_NoSoftNoHard_Noise        ;CONFIG SPECIFIC
+        jr nc,PLY_AKY_RRB_NIS_NoSoftwareNoHardware_ReadVolume
+        ;There is a noise. Reads it.
+        ld de,PLY_AKY_PsgRegister6
+        ldi                     ;Safe for B, C is not 0. Preserves A.
+
+        ;Opens the noise channel.
+        res PLY_AKY_RRB_NoiseChannelBit, b
+PLY_AKY_RRB_NIS_NoSoftwareNoHardware_ReadVolume:
+                        ENDIF ;PLY_CFG_NoSoftNoHard_Noise
+        ;The volume is now in b0-b3.
+        ;and %1111      ;No need, the bit 7 was 0.
+
+        exx
+                ;Sends the volume.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value
+                ld b,e
+        ENDIF
+                inc l           ;Increases the volume register.
+                inc h           ;Increases the frequency register.
+                inc h
+        exx
+
+        ;Closes the sound channel.
+        set PLY_AKY_RRB_SoundChannelBit, b
+        ret
+                        ENDIF ;PLY_CFG_NoSoftNoHard
+
+
+;---------------------
+                        IFDEF PLY_CFG_HardOnly  ;CONFIG SPECIFIC
+PLY_AKY_RRB_IS_HardwareOnly:
+        ;Retrig?
+        rra
+                        IFDEF PLY_CFG_HardOnly_Retrig   ;CONFIG SPECIFIC
+        jr nc,PLY_AKY_RRB_IS_HO_NoRetrig
+        set 7,a                         ;A value to make sure the retrig is performed, yet A can still be use.
+        ld (PLY_AKY_PsgRegister13_Retrig + PLY_AKY_Offset1b),a
+PLY_AKY_RRB_IS_HO_NoRetrig:
+                        ENDIF ;PLY_CFG_HardOnly_Retrig
+
+        ;Noise?
+        rra
+                        IFDEF PLY_CFG_HardOnly_Noise   ;CONFIG SPECIFIC
+        jr nc,PLY_AKY_RRB_IS_HO_NoNoise
+        ;Reads the noise.
+        ld de,PLY_AKY_PsgRegister6
+        ldi                     ;Safe for B, C is not 0. Preserves A.
+        ;Opens the noise channel.
+        res PLY_AKY_RRB_NoiseChannelBit, b
+PLY_AKY_RRB_IS_HO_NoNoise:
+                        ENDIF ;PLY_CFG_HardOnly_Noise
+
+        ;The envelope.
+        and %1111
+        ld (PLY_AKY_PsgRegister13),a
+
+        ;Copies the hardware period.
+        ld de,PLY_AKY_PsgRegister11
+        ldi
+        ldi
+
+        ;Closes the sound channel.
+        set PLY_AKY_RRB_SoundChannelBit, b
+
+        exx
+                ;Sets the hardware volume.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),c       ;f400 + value (volume to 16).
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),e       ;#bffd + value (volume to 16).
+                ld b,e        
+        ENDIF
+
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,c
+                out (#a1),a     ;Value (volume to 16).
+        ENDIF
+
+                inc l           ;Increases the volume register.
+                inc h           ;Increases the frequency register (mandatory!).
+                inc h
+        exx
+        ret
+                        ENDIF ;PLY_CFG_HardOnly
+
+
+;---------------------
+PLY_AKY_RRB_IS_SoftwareOnlyOrSoftwareAndHardware:
+        ;Another decision to make about the sound type.
+        rra
+                        IFDEF PLY_AKY_USE_SoftAndHard_Agglomerated      ;CONFIG SPECIFIC
+        jr c,PLY_AKY_RRB_IS_SoftwareAndHardware
+                        ENDIF ;PLY_AKY_USE_SoftAndHard_Agglomerated
+
+        ;Software only. Structure: 0vvvvntt.
+        ;Noise?
+        rra
+                        IFDEF PLY_CFG_SoftOnly_Noise    ;CONFIG SPECIFIC
+        jr nc,PLY_AKY_RRB_IS_SoftwareOnly_NoNoise
+        ;Noise. Reads it.
+        ld de,PLY_AKY_PsgRegister6
+        ldi                     ;Safe for B, C is not 0. Preserves A.
+        ;Opens the noise channel.
+        res PLY_AKY_RRB_NoiseChannelBit, b
+PLY_AKY_RRB_IS_SoftwareOnly_NoNoise:
+                        ENDIF ;PLY_CFG_SoftOnly_Noise
+        ;Reads the volume (now b0-b3).
+        ;Note: we do NOT peform a "and %1111" because we know the bit 7 of the original byte is 0, so the bit 4 is currently 0. Else the hardware volume would be on!
+        exx
+                ;Sends the volume.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value.
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                inc l           ;Increases the volume register.
+        exx
+
+        ;Reads the software period.
+        ld a,(hl)
+        inc hl
+        exx
+                ;Sends the LSB software frequency.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                inc h           ;Increases the frequency register.
+        exx
+
+        ld a,(hl)
+        inc hl
+        exx
+                ;Sends the MSB software frequency.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                inc h           ;Increases the frequency register.
+        exx
+
+        ret
+
+
+
+
+
+;---------------------
+                        IFDEF PLY_AKY_USE_SoftAndHard_Agglomerated      ;CONFIG SPECIFIC
+PLY_AKY_RRB_IS_SoftwareAndHardware:
+        ;Retrig?
+        rra
+                                IFDEF PLY_CFG_UseRetrig      ;CONFIG SPECIFIC
+        jr nc,PLY_AKY_RRB_IS_SAH_NoRetrig
+        set 7,a                         ;A value to make sure the retrig is performed, yet A can still be use.
+        ld (PLY_AKY_PsgRegister13_Retrig + PLY_AKY_Offset1b),a
+PLY_AKY_RRB_IS_SAH_NoRetrig:
+                                ENDIF ;PLY_CFG_UseRetrig
+
+        ;Noise?
+        rra
+                                IFDEF PLY_AKY_USE_SoftAndHard_Noise_Agglomerated
+        jr nc,PLY_AKY_RRB_IS_SAH_NoNoise
+        ;Reads the noise.
+        ld de,PLY_AKY_PsgRegister6
+        ldi                     ;Safe for B, C is not 0. Preserves A.
+        ;Opens the noise channel.
+        res PLY_AKY_RRB_NoiseChannelBit, b
+PLY_AKY_RRB_IS_SAH_NoNoise:
+                                ENDIF ;PLY_AKY_USE_SoftAndHard_Noise_Agglomerated
+
+        ;The envelope.
+        and %1111
+        ld (PLY_AKY_PsgRegister13),a
+
+        ;Reads the software period.
+        ld a,(hl)
+        inc hl
+        exx
+                ;Sends the LSB software frequency.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                inc h           ;Increases the frequency register.
+        exx
+
+        ld a,(hl)
+        inc hl
+        exx
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ;Sends the MSB software frequency.
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                inc h           ;Increases the frequency register.
+
+                ;Sets the hardware volume.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),c       ;f400 + value (volume to 16).
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+                
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),e       ;#bffd + value (volume to 16).
+                ld b,e
+                
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,c
+                out (#a1),a     ;Value (volume to 16).
+                        
+        ENDIF
+                inc l           ;Increases the volume register.
+        exx
+
+        ;Copies the hardware period.
+        ld de,PLY_AKY_PsgRegister11
+        ldi
+        ldi
+        ret
+                        ENDIF ;PLY_AKY_USE_SoftAndHard_Agglomerated
+
+
+
+
+
+
+
+        ;Manages the loop. This code is put here so that no jump needs to be coded when its job is done.
+PLY_AKY_RRB_NIS_NoSoftwareNoHardware_Loop
+        ;Loops. Reads the next pointer to this RegisterBlock.
+        ld a,(hl)
+        inc hl
+        ld h,(hl)
+        ld l,a
+
+        ;Makes another iteration to read the new data.
+        ;Since we KNOW it is not an initial state (because no jump goes to an initial state), we can directly go to the right branching.
+        ;Reads the first byte.
+        ld a,(hl)
+        inc hl
+        ;jr PLY_AKY_RRB_NonInitialState
+
+;Generic code interpreting the RegisterBlock - Non initial state. See comment about the Initial state for the registers ins/outs.
+;----------------------------------------------------------------
+PLY_AKY_RRB_NonInitialState:
+        rra
+        jr c,PLY_AKY_RRB_NIS_SoftwareOnlyOrSoftwareAndHardware
+        rra
+                        IFDEF PLY_CFG_HardOnly  ;CONFIG SPECIFIC
+        jp c,PLY_AKY_RRB_NIS_HardwareOnly
+                        ENDIF ;PLY_CFG_HardOnly
+
+        ;No software, no hardware, OR loop.
+
+        ld e,a
+        and %11         ;Bit 3:loop?/volume bit 0, bit 2: volume?
+        cp %10          ;If no volume, yet the volume is >0, it means loop.
+        jr z,PLY_AKY_RRB_NIS_NoSoftwareNoHardware_Loop
+
+        ;No loop: so "no software no hardware".
+                        IFDEF PLY_CFG_NoSoftNoHard        ;CONFIG SPECIFIC
+
+        ;Closes the sound channel.
+        set PLY_AKY_RRB_SoundChannelBit, b
+
+        ;Volume? bit 2 - 2.
+        ld a,e
+        rra
+        jr nc,PLY_AKY_RRB_NIS_NoVolume
+        and %1111
+        exx
+                ;Sends the volume.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value.
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+        exx
+PLY_AKY_RRB_NIS_NoVolume:
+        ;Sadly, have to lose a bit of CPU here, as this must be done in all cases.
+        exx
+                inc l           ;Next volume register.
+                inc h           ;Next frequency registers.
+                inc h
+        exx
+
+        ;Noise? Was on bit 7, but there has been two shifts. We can''t use A, it may have been modified by the volume AND.
+                        IFDEF PLY_CFG_NoSoftNoHard_Noise        ;CONFIG SPECIFIC
+        bit 7 - 2, e
+        ret z
+        ;Noise.
+        ld a,(hl)
+        ld (PLY_AKY_PsgRegister6),a
+        inc hl
+        ;Opens the noise channel.
+        res PLY_AKY_RRB_NoiseChannelBit, b
+                        ENDIF ;PLY_CFG_NoSoftNoHard_Noise
+        ret
+                        ENDIF ;PLY_CFG_NoSoftNoHard
+
+
+
+
+
+
+PLY_AKY_RRB_NIS_SoftwareOnlyOrSoftwareAndHardware:
+        ;Another decision to make about the sound type.
+        rra
+                        IFDEF PLY_AKY_USE_SoftAndHard_Agglomerated      ;CONFIG SPECIFIC
+        jp c,PLY_AKY_RRB_NIS_SoftwareAndHardware
+                        ENDIF
+
+
+;---------------------
+                        IFDEF PLY_CFG_SoftOnly  ;CONFIG SPECIFIC
+        ;Software only. Structure: mspnoise lsp v  v  v  v  (0  1).
+        ld e,a
+        ;Gets the volume (already shifted).
+        and %1111
+        exx
+                ;Sends the volume.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value.
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                inc l           ;Increases the volume register.
+        exx
+
+        ;LSP? (Least Significant byte of Period). Was bit 6, but now shifted.
+        bit 6 - 2, e
+        jr z,PLY_AKY_RRB_NIS_SoftwareOnly_NoLSP
+        ld a,(hl)
+        inc hl
+        exx
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ;Sends the LSB software frequency.
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value.
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                ;H not incremented on purpose.
+        exx
+PLY_AKY_RRB_NIS_SoftwareOnly_NoLSP:
+
+        ;MSP AND/OR (Noise and/or new Noise)? (Most Significant byte of Period).
+        bit 7 - 2, e
+        jr nz,PLY_AKY_RRB_NIS_SoftwareOnly_MSPAndMaybeNoise
+        ;Bit of loss of CPU, but has to be done in all cases.
+        exx
+                inc h
+                inc h
+        exx
+        ret
+PLY_AKY_RRB_NIS_SoftwareOnly_MSPAndMaybeNoise:
+        ;MSP and noise?, in the next byte. nipppp (n = newNoise? i = isNoise? p = MSB period).
+        ld a,(hl)       ;Useless bits at the end, not a problem.
+        inc hl
+        exx
+                ;Sends the MSB software frequency.
+                inc h           ;Was not increased before.
+
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value.
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                inc h           ;Increases the frequency register.
+        exx
+                                IFDEF PLY_CFG_SoftOnly_Noise  ;CONFIG SPECIFIC
+        rla     ;Carry is isNoise?
+        ret nc
+
+        ;Opens the noise channel.
+        res PLY_AKY_RRB_NoiseChannelBit, b
+
+        ;Is there a new noise value? If yes, gets the noise.
+        rla
+        ret nc
+        ;Gets the noise.
+        ld de,PLY_AKY_PsgRegister6
+        ldi
+                                ENDIF ;PLY_CFG_SoftOnly_Noise
+        ret
+                        ENDIF ;PLY_CFG_SoftOnly
+
+
+;---------------------
+                        IFDEF PLY_CFG_HardOnly  ;CONFIG SPECIFIC
+PLY_AKY_RRB_NIS_HardwareOnly
+        ;Gets the envelope (initially on b2-b4, but currently on b0-b2). It is on 3 bits, must be encoded on 4. Bit 0 must be 0.
+        rla
+        ld e,a
+        and %1110
+        ld (PLY_AKY_PsgRegister13),a
+
+        ;Closes the sound channel.
+        set PLY_AKY_RRB_SoundChannelBit, b
+
+        ;Hardware volume.
+        exx
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),c       ;f400 + value (16, hardware volume).
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),e       ;#bffd + value (volume to 16).
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,c
+                out (#a1),a     ;Value (16, hardware volume).
+        ENDIF
+
+                inc l           ;Increases the volume register.
+
+                inc h           ;Increases the frequency register.
+                inc h
+        exx
+
+        ld a,e
+
+        ;LSB for hardware period? Currently on b6.
+        rla
+        rla
+        jr nc,PLY_AKY_RRB_NIS_HardwareOnly_NoLSB
+        ld de,PLY_AKY_PsgRegister11
+        ldi
+PLY_AKY_RRB_NIS_HardwareOnly_NoLSB:
+
+        ;MSB for hardware period?
+        rla
+        jr nc,PLY_AKY_RRB_NIS_HardwareOnly_NoMSB
+        ld de,PLY_AKY_PsgRegister12
+        ldi
+PLY_AKY_RRB_NIS_HardwareOnly_NoMSB:
+
+        ;Noise or retrig?
+        rla
+        jr c,PLY_AKY_RRB_NIS_Hardware_Shared_NoiseOrRetrig_AndStop          ;The retrig/noise code is shared.
+
+        ret
+                        ENDIF ;PLY_CFG_HardOnly
+
+
+;---------------------
+                        IFDEF PLY_AKY_USE_SoftAndHard_Agglomerated      ;CONFIG SPECIFIC
+PLY_AKY_RRB_NIS_SoftwareAndHardware:
+        ;Hardware volume.
+        exx
+                ;Sends the volume.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),l       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),c       ;f400 + value (16 = hardware volume).
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),l       ;#fffd + register.
+                ld b,d
+                out (c),e       ;#bffd + value (volume to 16).
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a          ;A must be preserved.
+                ld a,l
+                out (#a0),a     ;Register.
+                ld a,c
+                out (#a1),a     ;Value (16 = hardware volume).
+                ld a,b
+        ENDIF
+        
+                inc l           ;Increases the volume register.
+        exx
+
+        ;LSB of hardware period?
+        rra
+        jr nc,PLY_AKY_RRB_NIS_SAHH_AfterLSBH
+        ld de,PLY_AKY_PsgRegister11
+        ldi
+PLY_AKY_RRB_NIS_SAHH_AfterLSBH:
+        ;MSB of hardware period?
+        rra
+        jr nc,PLY_AKY_RRB_NIS_SAHH_AfterMSBH
+        ld de,PLY_AKY_PsgRegister12
+        ldi
+PLY_AKY_RRB_NIS_SAHH_AfterMSBH:
+
+        ;LSB of software period?
+        rra
+        jr nc,PLY_AKY_RRB_NIS_SAHH_AfterLSBS
+        ld e,a
+        ld a,(hl)
+        inc hl
+        exx
+                ;Sends the LSB software frequency.
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value.
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                ;H not increased on purpose.
+        exx
+        ld a,e
+PLY_AKY_RRB_NIS_SAHH_AfterLSBS:
+
+        ;MSB of software period?
+        rra
+        jr nc,PLY_AKY_RRB_NIS_SAHH_AfterMSBS
+        ld e,a
+        ld a,(hl)
+        inc hl
+        exx
+                ;Sends the MSB software frequency.
+                inc h
+
+        IFDEF PLY_AKY_HARDWARE_CPC
+                ld b,d
+                out (c),h       ;f400 + register.
+                ld b,e
+                out (c),0       ;f600.
+                ld b,d
+                out (c),a       ;f400 + value.
+                ld b,e
+                out (c),c       ;f680
+                ex af,af''
+                out (c),a       ;f6c0.
+                ex af,af''
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_SPECTRUM_OR_PENTAGON
+                out (c),h       ;#fffd + register.
+                ld b,d
+                out (c),a       ;#bffd + value.
+                ld b,e
+        ENDIF
+        IFDEF PLY_AKY_HARDWARE_MSX
+                ld b,a
+                ld a,h
+                out (#a0),a     ;Register.
+                ld a,b
+                out (#a1),a     ;Value.
+        ENDIF
+                dec h           ;Yup. Will be compensated below.
+        exx
+        ld a,e
+PLY_AKY_RRB_NIS_SAHH_AfterMSBS:
+        ;A bit of loss of CPU, but this has to be done every time!
+        exx
+                inc h
+                inc h
+        exx
+
+        ;New hardware envelope?
+        rra
+        jr nc,PLY_AKY_RRB_NIS_SAHH_AfterEnvelope
+        ld de,PLY_AKY_PsgRegister13
+        ldi
+PLY_AKY_RRB_NIS_SAHH_AfterEnvelope:
+
+        ;Retrig and/or noise?
+        rra
+        ret nc
+                        ENDIF ;PLY_AKY_USE_SoftAndHard_Agglomerated
+
+                        IFDEF PLY_CFG_UseHardwareSounds         ;CONFIG SPECIFIC
+        ;This code is shared with the HardwareOnly. It reads the Noise/Retrig byte, interprets it and exits.
+        ;------------------------------------------
+PLY_AKY_RRB_NIS_Hardware_Shared_NoiseOrRetrig_AndStop:
+        ;Noise or retrig. Reads the next byte.
+        ld a,(hl)
+        inc hl
+
+        ;Retrig?
+        rra
+                        IFDEF PLY_CFG_UseRetrig         ;CONFIG SPECIFIC
+        jr nc,PLY_AKY_RRB_NIS_S_NOR_NoRetrig
+        set 7,a                         ;A value to make sure the retrig is performed, yet A can still be use.
+        ld (PLY_AKY_PsgRegister13_Retrig + PLY_AKY_Offset1b),a
+PLY_AKY_RRB_NIS_S_NOR_NoRetrig:
+                        ENDIF ;PLY_CFG_UseRetrig
+
+                        IFDEF PLY_AKY_USE_SoftAndHard_Noise_Agglomerated        ;CONFIG SPECIFIC
+        ;Noise? If no, nothing more to do.
+        rra
+        ret nc
+        ;Noise. Opens the noise channel.
+        res PLY_AKY_RRB_NoiseChannelBit, b
+        ;Is there a new noise value? If yes, gets the noise.
+        rra
+        ret nc
+        ;Sets the noise.
+        ld (PLY_AKY_PsgRegister6),a
+                        ENDIF ;PLY_AKY_USE_SoftAndHard_Noise_Agglomerated
+        ret
+                        ENDIF ;PLY_CFG_UseHardwareSounds
+
+
+        IFNDEF PLY_AKY_ROM
+;Some stored PSG registers. They MUST be consecutive.
+dkbs
+PLY_AKY_PsgRegister6: db 0
+PLY_AKY_PsgRegister11: db 0
+PLY_AKY_PsgRegister12: db 0
+PLY_AKY_PsgRegister13: db 0
+dkbe
+        assert (PLY_AKY_PsgRegister11 - PLY_AKY_PsgRegister6) == 1
+        assert (PLY_AKY_PsgRegister12 - PLY_AKY_PsgRegister11) == 1
+        assert (PLY_AKY_PsgRegister13 - PLY_AKY_PsgRegister12) == 1
+        ENDIF
+
+;RET table for the Read RegisterBlock code to know where to return.
+PLY_AKY_RetTable_ReadRegisterBlock:
+dkps
+        REPEAT PLY_AKY_ChannelCount, ChannelNumber
+                dw PLY_AKY_Channel{ChannelNumber}_RegisterBlock_Return
+        REND
+dkpe
+        
+        
+;Buffer used for the ROM player. This part needs to be set to RAM.
+        IFDEF PLY_AKY_ROM
+dkbs
+        ;Bytes first.
+PLY_AKY_ROM_BufferSize = 0
+                REPEAT PLY_AKY_ChannelCount, ChannelNumber
+PLY_AKY_Channel{ChannelNumber}_WaitBeforeNextRegisterBlock:     equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 1
+                REND
+                REPEAT PLY_AKY_ChannelCount, ChannelNumber
+PLY_AKY_Channel{ChannelNumber}_RegisterBlockLineState_Opcode:   equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 1
+                REND
+;Some stored PSG registers. They MUST be consecutive (assertion don''t work in this case...).
+PLY_AKY_PsgRegister6:                                           equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 1
+PLY_AKY_PsgRegister11:                                          equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 1
+PLY_AKY_PsgRegister12:                                          equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 1
+PLY_AKY_PsgRegister13:                                          equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 1
+PLY_AKY_PsgRegister13_Retrig:                                   equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 1
+dkbe
+        ;Words.
+dkws
+PLY_AKY_PtLinker:                                               equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_SaveSp:                                                 equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_PatternFrameCounter:                                    equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_Channel1_PtTrack:                                       equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_Channel2_PtTrack:                                       equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_Channel3_PtTrack:                                       equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_Channel1_PtRegisterBlock:                               equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_Channel2_PtRegisterBlock:                               equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+PLY_AKY_Channel3_PtRegisterBlock:                               equ PLY_AKY_ROM_Buffer + PLY_AKY_ROM_BufferSize : PLY_AKY_ROM_BufferSize = PLY_AKY_ROM_BufferSize + 2
+dkwe
+        assert PLY_AKY_ROM_BufferSize == 29
+
+        ENDIF
+',
+    true,
+    0
+  );
+
+  -- Add z80code tag
+  SELECT id INTO tag_uuid FROM tags WHERE name = 'z80code';
+  IF tag_uuid IS NOT NULL THEN
+    INSERT INTO project_tags (project_id, tag_id) VALUES (project_uuid, tag_uuid);
+  END IF;
+
+  -- Add category tag: arkos-tracker-2
+  SELECT id INTO tag_uuid FROM tags WHERE name = 'arkos-tracker-2';
+  IF tag_uuid IS NOT NULL THEN
+    INSERT INTO project_tags (project_id, tag_id) VALUES (project_uuid, tag_uuid);
+  END IF;
+END $$;

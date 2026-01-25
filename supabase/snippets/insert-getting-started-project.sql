@@ -6,7 +6,7 @@
 DO $$
 DECLARE
   project_uuid uuid := gen_random_uuid();
-  owner_user_id uuid := '<YOUR_USER_ID>'::uuid; -- Replace with actual user ID
+  owner_user_id uuid := 'bd6a166d-e0bf-4374-94c3-5222e517d75c'::uuid;
 BEGIN
   -- Insert the project
   INSERT INTO projects (id, user_id, name, description, visibility, is_library, is_sticky)
