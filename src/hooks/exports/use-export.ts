@@ -9,7 +9,7 @@ import { useCallback, useState } from 'react'
 import type { Project } from '@/domain/entities/project.entity'
 import { container } from '@/infrastructure/container'
 import { createLogger } from '@/lib/logger'
-import { compilationOutputAtom, outputFormatAtom } from '@/store'
+import { compilationOutputAtom } from '@/store'
 
 const logger = createLogger('useExport')
 
@@ -97,7 +97,6 @@ function addFilesToFolder(folder: JSZip, files: FileWithProject[]): number {
 export function useExport() {
   const [exportingProject, setExportingProject] = useState(false)
   const compilationOutput = useAtomValue(compilationOutputAtom)
-  const outputFormat = useAtomValue(outputFormatAtom)
 
   /**
    * Export project as a ZIP archive with individual files and dependencies
@@ -176,22 +175,22 @@ export function useExport() {
         return false
       }
 
-      const extension = outputFormat
+      const extension = compilationOutput.format
       const safeName = projectName ? sanitizeFileName(projectName) : 'program'
       const fileName = `${safeName}.${extension}`
 
       const blob = uint8ArrayToBlob(
-        compilationOutput,
+        compilationOutput.binary,
         'application/octet-stream'
       )
       downloadFile(blob, fileName)
 
       logger.info(
-        `Binary exported: ${fileName} (${compilationOutput.length} bytes)`
+        `Binary exported: ${fileName} (${compilationOutput.binary.length} bytes)`
       )
       return true
     },
-    [compilationOutput, outputFormat]
+    [compilationOutput]
   )
 
   /**
@@ -233,6 +232,6 @@ export function useExport() {
     exportSna,
     exportingProject,
     hasCompiledOutput: !!compilationOutput,
-    currentOutputFormat: outputFormat
+    compiledOutputFormat: compilationOutput?.format ?? null
   }
 }

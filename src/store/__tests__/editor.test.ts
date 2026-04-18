@@ -107,9 +107,12 @@ describe('Editor Store', () => {
     })
 
     it('should allow setting binary output', () => {
-      const binary = new Uint8Array([0x00, 0x01, 0x02])
-      store.set(compilationOutputAtom, binary)
-      expect(store.get(compilationOutputAtom)).toBe(binary)
+      const output = {
+        binary: new Uint8Array([0x00, 0x01, 0x02]),
+        format: 'sna' as const
+      }
+      store.set(compilationOutputAtom, output)
+      expect(store.get(compilationOutputAtom)).toBe(output)
     })
   })
 
