@@ -50,8 +50,13 @@ export function Toolbar() {
   const { compile } = useAssembler()
   const { isReady, loadSna, loadDsk, injectDsk, isInjectAvailable, reset } =
     useEmulator()
-  const { exportBinary, exportProject, hasCompiledOutput, exportingProject } =
-    useExport()
+  const {
+    exportBinary,
+    exportProject,
+    hasCompiledOutput,
+    compiledOutputFormat,
+    exportingProject
+  } = useExport()
   const toast = useToastActions()
   const { handleCreate: createProject, loading: creating } =
     useHandleCreateProject()
@@ -61,7 +66,7 @@ export function Toolbar() {
     if (success) {
       toast.success(
         'Binary exported',
-        `${outputFormat.toUpperCase()} file downloaded`
+        `${(compiledOutputFormat ?? outputFormat).toUpperCase()} file downloaded`
       )
     } else {
       toast.error('No compiled output', 'Compile your project first')
@@ -237,6 +242,7 @@ export function Toolbar() {
       isReady={isReady}
       isCompiling={isCompiling}
       isLibrary={currentProject?.isLibrary ?? false}
+      compiledOutputFormat={compiledOutputFormat}
       onRun={handleCompileAndRun}
       onInject={handleCompileAndInject}
       isInjectAvailable={isInjectAvailable()}

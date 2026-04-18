@@ -115,7 +115,7 @@ export function useAssembler() {
 
         const binary = result.binary as Uint8Array
         setCompilationStatus('success')
-        setCompilationOutput(binary)
+        setCompilationOutput({ binary, format: outputFormat })
         addConsoleMessage({
           type: 'success',
           text: `Compilation successful! ${outputFormat.toUpperCase()} size: ${binary.length} bytes`

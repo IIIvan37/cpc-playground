@@ -35,6 +35,7 @@ type RunControlsViewProps = Readonly<{
   isCompiling: boolean
   isLibrary: boolean
   outputFormat: string
+  compiledOutputFormat: string | null
   onRun: () => void
   onInject: () => void
   isInjectAvailable: boolean
@@ -48,6 +49,7 @@ export function RunControlsView({
   isCompiling,
   isLibrary,
   outputFormat,
+  compiledOutputFormat,
   onRun,
   onInject,
   isInjectAvailable,
@@ -56,6 +58,8 @@ export function RunControlsView({
   hasCompiledOutput
 }: RunControlsViewProps) {
   const canInject = outputFormat === 'dsk' && isInjectAvailable
+  const exportLabel =
+    compiledOutputFormat?.toUpperCase() ?? outputFormat.toUpperCase()
 
   return (
     <>
@@ -83,10 +87,10 @@ export function RunControlsView({
         <Button
           variant='secondary'
           onClick={onExportBinary}
-          title={`Download ${outputFormat.toUpperCase()} file`}
+          title={`Download ${exportLabel} file`}
         >
           <DownloadIcon />
-          <span>{outputFormat.toUpperCase()}</span>
+          <span>{exportLabel}</span>
         </Button>
       )}
       <Button variant='secondary' onClick={onReset} disabled={!isReady}>
@@ -133,6 +137,7 @@ export type ToolbarViewProps = Readonly<{
   isReady: boolean
   isCompiling: boolean
   isLibrary: boolean
+  compiledOutputFormat: string | null
   onRun: () => void
   onInject: () => void
   isInjectAvailable: boolean
@@ -171,6 +176,7 @@ export function ToolbarView({
   isReady,
   isCompiling,
   isLibrary,
+  compiledOutputFormat,
   onRun,
   onInject,
   isInjectAvailable,
@@ -234,6 +240,7 @@ export function ToolbarView({
           isCompiling={isCompiling}
           isLibrary={isLibrary}
           outputFormat={outputFormat}
+          compiledOutputFormat={compiledOutputFormat}
           onRun={onRun}
           onInject={onInject}
           isInjectAvailable={isInjectAvailable}

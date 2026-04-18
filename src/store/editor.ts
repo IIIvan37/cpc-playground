@@ -1,5 +1,8 @@
 import { atom } from 'jotai'
-import type { AssemblerType } from '@/domain/services/assembler.interface'
+import type {
+  OutputFormat as AssemblerOutputFormat,
+  AssemblerType
+} from '@/domain/services/assembler.interface'
 
 // Editor content
 export const codeAtom = atom(`; CPC Playground - Z80 Assembly
@@ -42,7 +45,11 @@ export const outputFormatAtom = atom<OutputFormat>('sna')
 export type CompilationStatus = 'idle' | 'compiling' | 'success' | 'error'
 export const compilationStatusAtom = atom<CompilationStatus>('idle')
 export const compilationErrorAtom = atom<string | null>(null)
-export const compilationOutputAtom = atom<Uint8Array | null>(null)
+export type CompilationOutput = {
+  binary: Uint8Array
+  format: AssemblerOutputFormat
+}
+export const compilationOutputAtom = atom<CompilationOutput | null>(null)
 
 // Go to line in editor (triggered from console errors)
 export const goToLineAtom = atom<number | null>(null)

@@ -23,12 +23,13 @@ vi.mock('@/lib/logger', () => ({
 }))
 
 // Mock store atoms
-let mockCompilationOutput: Uint8Array | null = null
-let mockOutputFormat: 'sna' | 'dsk' = 'sna'
+let mockCompilationOutput: {
+  binary: Uint8Array
+  format: 'sna' | 'dsk'
+} | null = null
 
 vi.mock('@/store', () => ({
-  compilationOutputAtom: { key: 'compilationOutput' },
-  outputFormatAtom: { key: 'outputFormat' }
+  compilationOutputAtom: { key: 'compilationOutput' }
 }))
 
 vi.mock('jotai', async (importOriginal) => {
@@ -38,9 +39,6 @@ vi.mock('jotai', async (importOriginal) => {
     useAtomValue: (atom: { key: string }) => {
       if (atom.key === 'compilationOutput') {
         return mockCompilationOutput
-      }
-      if (atom.key === 'outputFormat') {
-        return mockOutputFormat
       }
       return null
     }
@@ -97,7 +95,6 @@ describe('useExport', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockCompilationOutput = null
-    mockOutputFormat = 'sna'
   })
 
   describe('initial state', () => {
@@ -106,7 +103,7 @@ describe('useExport', () => {
 
       expect(result.current.exportingProject).toBe(false)
       expect(result.current.hasCompiledOutput).toBe(false)
-      expect(result.current.currentOutputFormat).toBe('sna')
+      expect(result.current.compiledOutputFormat).toBeNull()
       expect(typeof result.current.exportProject).toBe('function')
       expect(typeof result.current.exportBinary).toBe('function')
       expect(typeof result.current.exportDsk).toBe('function')
@@ -114,7 +111,10 @@ describe('useExport', () => {
     })
 
     it('returns hasCompiledOutput true when compilation output exists', () => {
-      mockCompilationOutput = new Uint8Array([1, 2, 3])
+      mockCompilationOutput = {
+        binary: new Uint8Array([1, 2, 3]),
+        format: 'sna'
+      }
 
       const { result } = renderHook(() => useExport())
       expect(result.current.hasCompiledOutput).toBe(true)
@@ -247,7 +247,10 @@ describe('useExport', () => {
     })
 
     it('exports binary when compilation output exists', () => {
-      mockCompilationOutput = new Uint8Array([0x00, 0x01, 0x02, 0x03])
+      mockCompilationOutput = {
+        binary: new Uint8Array([0x00, 0x01, 0x02, 0x03]),
+        format: 'sna'
+      }
 
       const { result } = renderHook(() => useExport())
 
@@ -259,19 +262,24 @@ describe('useExport', () => {
     })
 
     it('uses correct output format extension', () => {
-      mockCompilationOutput = new Uint8Array([0x00, 0x01])
-      mockOutputFormat = 'dsk'
+      mockCompilationOutput = {
+        binary: new Uint8Array([0x00, 0x01]),
+        format: 'dsk'
+      }
 
       const { result } = renderHook(() => useExport())
 
       result.current.exportBinary('my-program')
 
       expect(mockClick).toHaveBeenCalled()
-      expect(result.current.currentOutputFormat).toBe('dsk')
+      expect(result.current.compiledOutputFormat).toBe('dsk')
     })
 
     it('uses default name when not provided', () => {
-      mockCompilationOutput = new Uint8Array([0x00])
+      mockCompilationOutput = {
+        binary: new Uint8Array([0x00]),
+        format: 'sna'
+      }
 
       const { result } = renderHook(() => useExport())
 
